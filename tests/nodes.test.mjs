@@ -93,6 +93,31 @@ test('node-card and room signature changes, alias collisions, and manifest repla
   assert.equal((await readStore(f.a)).bindings.alice.remote, undefined);
 });
 
+test('a valid peer alias matching an inherited object property can be imported', async t => {
+  const f = await fixture(t);
+  const binding = await withStore(f.b, store => createBinding(store, { ...f.bob, alias: 'constructor', sessionId: 'ses_constructor' }));
+  await pairPeer(f.a, await exportNode(f.b), f.transport(f.b));
+  const store = await readStore(f.a);
+  assert.equal(Object.hasOwn(store.bindings, 'constructor'), true);
+  assert.equal(store.bindings.constructor.id, binding.id);
+  assert.equal(store.bindings.constructor.remote, true);
+});
+
+test('oversized encoded Unicode and escaped ledger frames are rejected before durable intents or messages', async t => {
+  const f = await fixture(t);
+  for (const text of ['中'.repeat(21_000), '\\'.repeat(31_000)]) {
+    const incoming = f.wire({ text });
+    await assert.rejects(receiveEnvelope(f.b, incoming), /encoded frame exceeds local ledger argv limit/i);
+    assert.deepEqual((await nodeStatus(f.b)).inbox, {});
+    await assert.rejects(sendRemote(f.a, { room: f.room.id, from: 'operator', to: 'bob', text }, {
+      exchangeImpl: async () => { assert.fail('Oversized frame must not invoke transport'); },
+    }), /encoded frame exceeds local ledger argv limit/i);
+    assert.deepEqual((await nodeStatus(f.a)).outbox, {});
+    assert.equal((await events(f.a)).length, 0);
+    assert.equal((await events(f.b)).length, 0);
+  }
+});
+
 test('wire gate rejects unknown rooms, bad signatures, wrong nodes and nonmember aliases', async t => {
   const f = await fixture(t);
   const good = f.wire();
@@ -165,6 +190,21 @@ test('lost transport receipt retries the same outbox ID without duplicate remote
   assert.equal((await events(f.a)).length, 1);
   assert.equal((await events(f.b)).length, 1);
   assert.equal((await nodeStatus(f.a)).outbox[messageId].remoteEventId, 1);
+});
+
+test('a failed retry preserves an earlier confirmed remote-stored receipt', async t => {
+  const f = await fixture(t);
+  const result = await sendRemote(f.a, { room: f.room.id, from: 'operator', to: 'bob', text: 'Keep confirmed storage evidence.' }, {
+    exchangeImpl: async (_peer, envelope) => receiveEnvelope(f.b, envelope),
+  });
+  const before = (await nodeStatus(f.a)).outbox[result.messageId];
+  assert.equal(before.status, 'remote-stored');
+  await assert.rejects(flushMessage(f.a, result.messageId, {
+    exchangeImpl: async () => { throw new Error('Peer is temporarily offline'); },
+  }), error => error.uncertain === true && error.messageId === result.messageId && /prior remote-stored evidence is retained/.test(error.message));
+  assert.deepEqual((await nodeStatus(f.a)).outbox[result.messageId], before);
+  assert.equal((await events(f.a)).length, 1);
+  assert.equal((await events(f.b)).length, 1);
 });
 
 test('ingress append followed by lost hcom response is reconciled without replaying send', async t => {

@@ -86,6 +86,8 @@ B 端以同样方式导入 `card-a.json`，保存到 A 端的 SSH 路由。若�
 
 每次接收时只执行已经保存的固定程序和 `node receive`。请求正文与签名通过 stdin 传入，不拼入远程 shell；响应通过 stdout 返回。单次请求/响应限制为 256 KiB，执行超时为 20 秒。
 
+跨节点frame和本地排队请求在进入hcom前，另有120000字节的UTF-8编码上限，以兼容Linux单个命令参数限制。签名封装会重复正文并加入元数据；按编码后的整体frame计算，不只按字符数计算。超限在写入inbox/outbox intent前拒绝。
+
 ## 建立共同的 room
 
 双方完成配对后，在 A 端创建 room。A 成为这个 room 的 owner：
@@ -144,6 +146,8 @@ agent-dialogue bridge status
 | 实际模型回复 | 模型已经处理并作出回复，可继续核对其项目内容 |
 
 `stored` ACK 不代表原生聊天已经受理，也不代表模型读过或完成了工作。SSH 已返回但 bridge 暂停时，消息可以停留在对端账本，等待正确的本地 adapter 恢复。
+
+受限模型shell可使用`collab send --queue`，只向本地账本提交请求，后台source worker执行相同的原生/节点校验和网络投递。Codex默认得到这种命令。此时`queued`只是本地请求回执，source worker的`forwarded`记录才关联实际消息；消息的`remote-stored`和对方模型回复仍分别核对。模型不需要直接访问SSH或原生loopback API，但必须能够写入当前通信目录。
 
 网络中断、超时或响应丢失会留下 `unknown`。先检查两端节点、账本与 adapter 状态，再用原全局消息 ID 对账：
 

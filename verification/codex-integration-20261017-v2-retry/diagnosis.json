@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "scope": "Read-only review of the explicitly owned Codex integration thread, its exact persisted rollout, and the existing private test snapshot. No model submission, permission change, or unrelated chat inspection.",
+  "conclusions": {
+    "native_shell_tool_existed_and_executed": true,
+    "command_execution_item_observed": true,
+    "command_exit_code": 1,
+    "cli_error_category": "OpenCode native request failed or timed out before collaboration ledger submission",
+    "same_turn_sandbox": {
+      "type": "workspace-write",
+      "network_access": false,
+      "approval_policy": "never",
+      "writable_root_count": 1,
+      "communication_state_inside_selected_workspace": true
+    },
+    "completed_turn_observed_in_persisted_rollout": true,
+    "permission_root_cause": "The turn had restricted network access. Failure at the loopback OpenCode native guard is consistent with that restriction; the underlying operating-system error was not retained, so precise causality is not asserted.",
+    "prior_missing_tool_items": "The earlier run's model report alone does not prove command execution or identify an operating-system failure. The retry has a real commandExecution item and must be diagnosed independently."
+  },
+  "live_state_review": {
+    "status": "unavailable",
+    "reason": "The existing daemon socket and the previously pinned socket were unavailable during this read-only follow-up. No daemon was started or resumed.",
+    "loaded_and_queue_status": "not verified; do not infer from persisted history",
+    "existing_test_cleanup_record": "Both owned bindings were detached while preserving native chats."
+  },
+  "minimum_next_step": "Keep the model-side command local: persist a bounded collaboration submission in the project-writable state, then have the already authorized bridge worker perform exact native-session validation and network delivery. Verify with an actual tool item, submission receipt, ledger event, linked peer response, and final synthesis. Do not widen the model sandbox to make the transport work.",
+  "privacy": "No native chat text, paths, credentials, socket identities, or private markers are included."
+}

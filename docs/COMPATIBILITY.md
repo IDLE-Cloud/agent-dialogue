@@ -55,6 +55,10 @@ Codex共享daemon当前未加载的thread默认拒绝。明确`attach codex ... 
 
 Codex原生测试首轮`verification/codex-integration-20261017-v1/metrics.json`为部分通过：显式恢复原测试thread，精确queue受理、启动与真实assistant回复通过；后续主动CLI协作未形成peer事件。追加诊断记录模型报告本地命令EPERM，原生turn未记录工具执行条目，因此只记录为模型报告。该原thread为`workspaceWrite`/`approvalPolicy=never`，首轮通信state确在其可写root之外；后续在原项目允许范围内设置state独立验证，不修改模型或权限。首轮partial保留。
 
+2026-10-18补充：`verification/codex-integration-20261017-v2-retry/diagnosis.json`确认实际commandExecution失败，原turn配置禁用网络，失败输出来自CLI访问OpenCode API阶段。改用本地submission队列后，`verification/codex-queued-integration-20261018-v2/metrics.json`的7项真实断言通过：同一owned Codex原线程发起请求，原生shell工具返回queued，后台worker与正式消息映射吻合，OpenCode关联回复并返回其预存项目事实。模型和权限保持，Codex未获额外批准。旧共享daemon已不在运行，本次显式使用专用本机0.162.1验证server并恢复同一原thread，不宣称接入活跃桌面窗口。
+
+双节点原场景于2026-10-18再验17/17通过，项目交流16536ms，证据为`verification/node-integration-20261018-v2/metrics.json`。同日v1因模型构造命令遗漏state前缀而被限定权限拒绝，其failed记录保留，没有放宽规则后冒充通过。新增排队、恢复状态和编码边界后的单元测试146项通过，打包/全局安装检查通过。
+
 独立仓库的安装、单元和平台结果以其 CI/验证记录为准。原型通过项目问答不替代各平台上的兼容性验收。
 
 

@@ -6,6 +6,8 @@
 - Add Ed25519 node identities, signed public binding cards, pinned peers and owner-signed room manifests accepted on each node.
 - Add fixed SSH stdio and local-process test transports, signed global message/reply IDs, sender/receiver routing checks, ledger reconciliation and duplicate receipt recovery.
 - Keep message bodies in local hcom ledgers; store only routing hashes, IDs and state in inbox/outbox metadata.
+- Add local-only `collab send --queue` for network-restricted model shells. The owning background worker revalidates bindings and performs network delivery; queued/forwarded/remote-stored receipts remain distinct.
+- Preserve prior remote-stored evidence after a failed retry, accept legal aliases without inherited-object collisions, and reject oversized encoded ledger frames before saving intents.
 - Verify two independent local nodes with actual free OpenCode model tool calls and preserved pre-attachment project context. Real two-host SSH remains a separate pending acceptance check.
 
 ## 0.2.0

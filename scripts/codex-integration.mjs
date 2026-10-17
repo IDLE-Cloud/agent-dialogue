@@ -14,11 +14,11 @@ const options = {};
 for (let i = 2; i < process.argv.length; i++) {
   const arg = process.argv[i];
   if (arg === '--help') {
-    console.log('node scripts/codex-integration.mjs --owned-codex-thread UUID --codex-cwd ABSOLUTE_PATH [--state-dir ABSOLUTE_PATH] [--active-cli-only] [--timeout SECONDS] [--output DIRECTORY]');
-    console.log('Explicitly resumes only the named owned test thread in the existing Codex daemon, preserves its model/permissions, and creates one owned free-model OpenCode chat. Uses an isolated local room. Never approves Codex shell requests. Raw errors and transcripts stay under ignored .state; published metrics contain no chat IDs, paths, credentials or message bodies.');
+    console.log('node scripts/codex-integration.mjs --owned-codex-thread UUID --codex-cwd ABSOLUTE_PATH [--state-dir ABSOLUTE_PATH] [--active-cli-only] [--validation-server] [--timeout SECONDS] [--output DIRECTORY]');
+    console.log('Explicitly resumes only the named owned test thread through the selected running Codex server, preserves its model/permissions, and creates one owned free-model OpenCode chat. --validation-server labels a separately started test server; this script never starts one. Uses an isolated local room. Never approves Codex shell requests. Raw errors and transcripts stay under ignored .state; published metrics contain no chat IDs, paths, credentials or message bodies.');
     process.exit(0);
   }
-  if (arg === '--active-cli-only') { options['active-cli-only'] = true; continue; }
+  if (['--active-cli-only', '--validation-server'].includes(arg)) { options[arg.slice(2)] = true; continue; }
   if (!['--owned-codex-thread', '--codex-cwd', '--state-dir', '--timeout', '--output'].includes(arg) || !process.argv[i + 1]) throw new Error('Unknown or incomplete integration option.');
   options[arg.slice(2)] = process.argv[++i];
 }
@@ -35,6 +35,8 @@ for (const key of Object.keys(env)) if (/^(HCOM_|CODEX_(SESSION|THREAD|PARENT|AG
 env.AGENT_DIALOGUE_STATE_DIR = stateDir; env.AGENT_DIALOGUE_CACHE_DIR = cacheDir;
 const summary = { run_id: runId, started_at: new Date().toISOString(), status: 'running', scope: 'one existing explicitly selected owned Codex test thread and one new owned normal OpenCode chat, one local room', codex: { explicit_resume_requested: true, model_changed: false, permissions_changed: false, approvals_granted: 0 }, opencode: { model, zero_cost_verified: false, approvals_once: 0 }, stages: [], assertions: {}, cleanup: [] };
 summary.active_cli_only = Boolean(options['active-cli-only']);
+summary.codex.connection_kind = options['validation-server'] ? 'separately-started-local-validation-server' : 'selected-existing-codex-server';
+summary.codex.outbound_delivery = 'local-submission-queue-then-owning-worker-forward';
 summary.communication_state_in_selected_workspace = stateDir.startsWith(resolve(expectedCwd) + '/');
 const privateData = { codex_thread: codexId, expected_cwd: expectedCwd, state_dir: stateDir, errors: [], snapshots: {} };
 let codex, opencode, openId, room, phase = 'initializing', attached = [], latestCodexMessages = [], baselineCodexIds = new Set();
@@ -136,6 +138,13 @@ async function waitFor(role, marker, { timeout = seconds, ledgerCheck } = {}) {
     await permissionChecks();
     const messages = role === 'codex' ? await codex.messages(codexId, { limit: 100 }) : await opencode.messages(openId, { limit: 100 });
     if (role === 'codex') latestCodexMessages = messages;
+    if (role === 'codex') {
+      const failed = messages.find(message => !baselineCodexIds.has(message.id) && message.type === 'commandExecution' && message.command?.includes(runId) && message.exitCode !== null && message.exitCode !== undefined && message.exitCode !== 0);
+      if (failed) {
+        privateData.errors.push({ phase, failed_native_command: failed });
+        throw new Error('Owned native commandExecution reported a nonzero exit; raw tool result retained privately.');
+      }
+    }
     const answer = messages.find(message => (role !== 'codex' || !baselineCodexIds.has(message.id)) && ['assistant', 'agentMessage'].includes(message.type) && (role === 'codex' || message.time?.completed) && textOf(message).includes(marker));
     const idle = role === 'codex' ? (await codex.session(codexId)).nativeStatus === 'idle' : messages.some(message => message.type === 'idle');
     if (answer && idle) return answer;
@@ -155,12 +164,21 @@ async function waitFor(role, marker, { timeout = seconds, ledgerCheck } = {}) {
 
 try {
   codex = await CodexClient.discover({ env });
+  summary.codex.transport_version = codex.identity.version;
   const before = await codex.session(codexId);
   if (before.location.directory !== resolve(expectedCwd)) throw new Error('Owned Codex thread cwd differs from the explicit expected project.');
   privateData.codex_before = before; summary.codex.was_loaded = before.loaded;
   await stage('explicit_owned_codex_thread_verified', { loaded_before: before.loaded });
   opencode = await OpenCodeClient.discover({ serviceFile: env.AGENT_DIALOGUE_OPENCODE_SERVICE_FILE });
-  const selected = (await opencode.request('GET', '/api/model')).data.find(item => item.id === model.id && item.providerID === model.providerID);
+  let selected, catalogReads = 0;
+  for (; catalogReads < 5; catalogReads++) {
+    selected = (await opencode.request('GET', '/api/model')).data.find(item => item.id === model.id && item.providerID === model.providerID);
+    // A freshly started service can still be hydrating its model catalog.
+    // Re-read only an absent exact model; a disabled or priced model is rejected immediately.
+    if (selected || catalogReads === 4) break;
+    await delay(1000);
+  }
+  summary.opencode.model_catalog_reads = catalogReads + 1;
   privateData.selected_model_check = { found: Boolean(selected), enabled: selected?.enabled, cost: selected?.cost };
   if (!selected?.enabled || !selected.cost?.length || !selected.cost.every(tier => tier.input === 0 && tier.output === 0 && tier.cache?.read === 0 && tier.cache?.write === 0)) throw new Error('Owned OpenCode model must advertise only zero-cost tiers.');
   summary.opencode.zero_cost_verified = true;
@@ -191,7 +209,7 @@ try {
   baselineCodexIds = new Set((await codex.messages(codexId, { limit: 100 })).map(item => item.id));
   }
   const question = `Run token ${runId}. Share your preexisting private compatibility fact and marker; send exactly one linked CLI reply and then stop.`;
-  const command = `${prefix()} collab send --room ${quote(room.id)} --from ${quote(aliases.codex)} --to ${quote(aliases.opencode)} --message ${quote(question)}`;
+  const command = `${prefix()} collab send --queue --room ${quote(room.id)} --from ${quote(aliases.codex)} --to ${quote(aliases.opencode)} --message ${quote(question)}`;
   const final = `CODEX_PEER_COMPLETE_${suffix}`;
   call(['collab', 'send', '--room', room.id, '--from', 'operator', '--to', aliases.codex, '--message', `Owned run ${runId}. Use your shell tool to execute exactly this ONE project question command, no other tools:\n${command}\nFinish the turn after sending without sleeping or polling. When the peer reply arrives, reply in this chat with ${final}, your preexisting private budget and marker, and the peer's compatibility rule and marker. Do not guess facts, send extra messages, or change permissions. If the shell requires approval, keep the request visible; this test will not approve Codex requests.`]);
   const synthesis = await waitFor('codex', final, { ledgerCheck: stream => {
@@ -200,6 +218,14 @@ try {
   } });
   summary.assertions.codex_model_origin_request = requestEvent?.data.sender_kind === 'instance';
   summary.assertions.opencode_model_origin_linked_reply = requestReplyEvent?.data.sender_kind === 'instance';
+  const executed = latestCodexMessages.find(message => !baselineCodexIds.has(message.id) && message.type === 'commandExecution' && message.command?.includes(runId) && message.command.includes('--queue') && message.exitCode === 0);
+  let queuedReceipt;
+  try { queuedReceipt = JSON.parse(executed?.aggregatedOutput?.trim() || 'null'); } catch { /* Native evidence must contain a real JSON receipt. */ }
+  summary.assertions.codex_native_tool_queued_local_submission = Boolean(executed && queuedReceipt?.status === 'queued' && /^q_[0-9a-f-]{36}$/.test(queuedReceipt.submissionId) && Number.isSafeInteger(queuedReceipt.event_id));
+  const sourceRuntime = call(['bindings']).bindings.find(binding => binding.alias === aliases.codex)?.worker;
+  const forwarded = sourceRuntime?.receipts?.[queuedReceipt?.event_id];
+  summary.assertions.codex_owning_worker_forwarded_submission = Boolean(forwarded?.status === 'forwarded' && forwarded.submissionId === queuedReceipt?.submissionId && forwarded.result?.event_id === requestEvent?.id);
+  privateData.queued_tool_receipt = { nativeId: executed?.nativeId, turnId: executed?.turnId, receipt: queuedReceipt, forwarded };
   if (options['active-cli-only']) summary.assertions.peer_preexisting_context_returned = textOf(synthesis).includes(openFact);
   else summary.assertions.existing_project_facts_combined = textOf(synthesis).includes(openFact) && textOf(synthesis).includes(codexFact) && /\b17\b/.test(textOf(synthesis));
   await stage('codex_to_opencode_linked_model_exchange_verified');

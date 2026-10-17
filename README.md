@@ -115,6 +115,8 @@ agent-dialogue node export > card-a.json
 
 Codex adapter 使用已有共享 daemon 的原生队列，默认要求线程已经加载并可接受输入。`--resume` 加载原线程，不等同于连接任意活跃桌面窗口。worker 只尝试启动本桥接已受理的队列输入；忙碌或其他来源的队列首项会等待，不改变原聊天的模型或权限。
 
+Codex的受限shell可使用`collab send --queue`先写本地hcom账本，由后台worker完成原生API和SSH投递；原生投递说明默认提供此形式。通信state仍需位于该线程允许写入的目录。已用保持`workspaceWrite`、禁用网络及原模型的Codex测试线程完成主动发问、OpenCode关联回复和项目事实返回，7项真实断言通过；这轮明确使用专用本机验证server，不能当作任意活跃桌面窗口附着的证明。
+
 ## 启动 Codex、OpenCode 等 CLI
 
 这条路径复用 hcom 的原生集成，和上面的已有聊天 room 路径分别使用：

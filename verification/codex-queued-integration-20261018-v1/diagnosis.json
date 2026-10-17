@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "stage": "model-catalog-preflight",
+  "result": "Stopped before native thread resume, model submission, or binding creation.",
+  "evidence": {
+    "selected_model_present_on_initial_read": false,
+    "selected_model_present_on_followup_read": true,
+    "same_selected_model_enabled_and_all_cost_tiers_zero_on_followup": true,
+    "model_automatically_changed": false,
+    "permissions_changed": false
+  },
+  "interpretation": "The just-started OpenCode service initially returned a catalog without the selected free model. A separate read-only follow-up returned the same configured model with zero prices. The first run was preserved and a new run uses a fresh state and verification directory.",
+  "privacy": "No chat IDs, private paths, credentials or native message bodies are included."
+}

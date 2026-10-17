@@ -36,7 +36,8 @@ const HELP = `agent-dialogue — cross-node, cross-harness agent communication
        [--service-file PATH] [--codex-home PATH]
   node status | node flush [--message ID]  Inspect nodes / retry the same durable message
   collab send --room ID --from ALIAS --to ALIAS --message TEXT
-       [--reply-to EVENT] [--expected-session ID]
+       [--reply-to EVENT] [--expected-session ID] [--queue]
+                                           Queue locally when the model shell has no network
   bridge start ALIAS | bridge status       Start/inspect the native-session bridge
   detach ALIAS                            Stop bridge; preserve the original chat
   hcom <read-command> [arguments...]       Restricted read-only upstream access
@@ -260,8 +261,9 @@ export async function main(args = process.argv.slice(2), sourceEnv = process.env
       const { options, rest } = parseOptions(input.slice(1), { '--file': 'value' }); noRest(rest);
       result = await (await import('../lib/nodes.mjs')).acceptRoom(context, await readJsonFile(options['--file']));
     } else if (command === 'collab' && input[0] === 'send') {
-      const { options, rest } = parseOptions(input.slice(1), { '--room': 'value', '--from': 'value', '--to': 'value', '--message': 'value', '--reply-to': 'value', '--expected-session': 'value' }); noRest(rest);
-      result = await bridge.collabSend(context, { room: options['--room'], from: options['--from'], to: options['--to'], text: options['--message'], replyTo: options['--reply-to'] || null, expectedSession: options['--expected-session'] });
+      const { options, rest } = parseOptions(input.slice(1), { '--room': 'value', '--from': 'value', '--to': 'value', '--message': 'value', '--reply-to': 'value', '--expected-session': 'value', '--queue': 'boolean' }); noRest(rest);
+      const message = { room: options['--room'], from: options['--from'], to: options['--to'], text: options['--message'], replyTo: options['--reply-to'] || null, expectedSession: options['--expected-session'] };
+      result = options['--queue'] ? await (await import('../lib/submissions.mjs')).queueSubmission(context, message) : await bridge.collabSend(context, message);
     } else if (command === 'bridge' && input[0] === 'start' && input.length === 2) result = await bridge.startBridge(context, input[1]);
     else if (command === 'detach' && input.length === 1) result = await bridge.detach(context, input[0]);
     else fail('Invalid collaboration command; see --help.');

@@ -1,0 +1,46 @@
+{
+  "schema_version": 1,
+  "result": "passed",
+  "scope": "One explicitly selected existing owned Codex test thread and one new owned OpenCode free-model chat in one strict local collaboration room.",
+  "codex_connection": {
+    "kind": "separately-started-local-validation-server",
+    "version": "0.162.1",
+    "thread_created_for_this_run": false,
+    "same_owned_thread_resumed_explicitly": true,
+    "active_desktop_chat_attachment_tested": false
+  },
+  "native_evidence": {
+    "command_execution_count_in_this_run": 1,
+    "command_execution_status": "completed",
+    "command_exit_code": 0,
+    "command_used_local_queue_flag": true,
+    "stdout_contained_valid_queued_json_receipt": true,
+    "owning_worker_receipt_status": "forwarded",
+    "forwarded_submission_id_and_actual_message_event_matched": true,
+    "actual_request_source_kind": "instance",
+    "peer_reply_source_kind": "instance",
+    "peer_reply_referenced_actual_request_event": true,
+    "final_assistant_returned_peer_preexisting_context_marker": true
+  },
+  "sandbox_observed_for_both_owned_codex_turns": {
+    "type": "workspace-write",
+    "network_access": false,
+    "approval_policy": "never"
+  },
+  "preserved": {
+    "codex_model": true,
+    "codex_permissions": true,
+    "both_exact_native_session_ids": true,
+    "codex_approvals_granted": 0
+  },
+  "cleanup": {
+    "both_owned_bindings_inactive": true,
+    "native_chats_preserved": true,
+    "codex_live_status_after_run": "idle",
+    "codex_native_queue_count_after_run": 0,
+    "private_diagnostic_errors": 0
+  },
+  "interpretation": "The model-side command persisted a local submission without native API access. The owning worker validated and forwarded it to the exact peer session. A real model-origin linked reply returned to the same existing Codex thread while its network restriction stayed in force.",
+  "limitations": "This is a same-machine cross-harness verification through an explicitly started test server. It does not establish two-machine connectivity or attachment to an active Codex desktop chat.",
+  "privacy": "No native message bodies, project facts, chat IDs, private paths, credentials, socket identities or private markers are included."
+}

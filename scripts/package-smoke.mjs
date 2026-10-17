@@ -23,7 +23,7 @@ try {
   for (const path of paths) assert.ok(!/(^|\/)(\.state|\.runtime|research|verification|node_modules|tests)(\/|$)/.test(path), path);
   assert.ok(paths.includes('bin/agent-dialogue.mjs')); assert.ok(paths.includes('config/hcom.lock.json'));
   assert.ok(paths.includes('lib/paths.mjs')); assert.ok(!paths.includes('docs/NEXT_STEPS.source.md'));
-  for (const path of ['lib/adapters.mjs', 'lib/codex.mjs', 'lib/nodes.mjs', 'lib/node-identity.mjs', 'lib/node-transport.mjs', 'docs/NODES.md']) assert.ok(paths.includes(path), path);
+  for (const path of ['lib/adapters.mjs', 'lib/codex.mjs', 'lib/nodes.mjs', 'lib/node-identity.mjs', 'lib/node-transport.mjs', 'lib/submissions.mjs', 'docs/NODES.md']) assert.ok(paths.includes(path), path);
   const prefix = join(temp, 'prefix'), cwd = join(temp, 'unrelated cwd'), state = join(temp, 'state'), cache = join(temp, 'cache');
   await mkdir(cwd); await mkdir(state);
   await call('npm', ['install', '--global', '--prefix', prefix, '--ignore-scripts', '--no-audit', '--no-fund', join(temp, packed.filename)]);
