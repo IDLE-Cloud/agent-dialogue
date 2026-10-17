@@ -1,0 +1,11 @@
+node_modules/
+.state/
+.runtime/
+.cache/
+*.tgz
+*.log
+.DS_Store
+coverage/
+dist/
+# Local provenance reference, not part of this distributable tool.
+docs/NEXT_STEPS.source.md

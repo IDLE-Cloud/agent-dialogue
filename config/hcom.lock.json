@@ -1,0 +1,24 @@
+{
+  "repository": "https://github.com/aannoo/hcom",
+  "version": "0.7.30",
+  "release_commit": "7165097353099bb80f7544d91e5c0d4494134eb6",
+  "release_url": "https://github.com/aannoo/hcom/releases/tag/v0.7.30",
+  "assets": {
+    "darwin-arm64": {
+      "asset_url": "https://github.com/aannoo/hcom/releases/download/v0.7.30/hcom-aarch64-apple-darwin.tar.gz",
+      "sha256": "53d1354be8c2c1f3ec9b66a730bef2765f4d03a185c2e3a2bdff1e858d224d2a"
+    },
+    "darwin-x64": {
+      "asset_url": "https://github.com/aannoo/hcom/releases/download/v0.7.30/hcom-x86_64-apple-darwin.tar.gz",
+      "sha256": "c27055cfaff83b60a4c54859e84cc34674f408138c76d6e79b4a1a9c269a1edb"
+    },
+    "linux-arm64": {
+      "asset_url": "https://github.com/aannoo/hcom/releases/download/v0.7.30/hcom-aarch64-unknown-linux-gnu.tar.gz",
+      "sha256": "07e00790934874dd912fc3aebc34f7bb89f6835b74b5c682640c6e54cf22c45e"
+    },
+    "linux-x64": {
+      "asset_url": "https://github.com/aannoo/hcom/releases/download/v0.7.30/hcom-x86_64-unknown-linux-gnu.tar.gz",
+      "sha256": "437564d05c28d6b92f31725e4721f76cad149ca79b02b71fb58568270df0c818"
+    }
+  }
+}

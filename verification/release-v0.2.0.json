@@ -1,0 +1,33 @@
+{
+  "recorded_at": "2026-10-17T11:11:38.304437+00:00",
+  "version": "0.2.0",
+  "local_platform": "darwin-arm64",
+  "node": "26.10.0",
+  "unit_tests": {
+    "passed": 70,
+    "failed": 0,
+    "duration_ms": 11762.24775
+  },
+  "package_install": {
+    "status": "passed",
+    "name": "@idle-cloud/agent-dialogue",
+    "checks": [
+      "allowlist",
+      "isolated global prefix",
+      "global executable through npm symlink",
+      "arbitrary cwd",
+      "external state/cache",
+      "no package writes"
+    ]
+  },
+  "native_dependency": {
+    "version": "0.7.30",
+    "status": "installed_and_idempotent_setup_verified",
+    "sha256": "53d1354be8c2c1f3ec9b66a730bef2765f4d03a185c2e3a2bdff1e858d224d2a"
+  },
+  "scope": "Distribution verification; native model integration results originate in the prototype. Cross-machine routing is not implemented.",
+  "regressions_fixed": [
+    "npm global executable symlink entrypoint",
+    "full runtime configuration in agent reply commands"
+  ]
+}
