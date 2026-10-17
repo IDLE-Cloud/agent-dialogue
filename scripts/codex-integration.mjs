@@ -14,11 +14,12 @@ const options = {};
 for (let i = 2; i < process.argv.length; i++) {
   const arg = process.argv[i];
   if (arg === '--help') {
-    console.log('node scripts/codex-integration.mjs --owned-codex-thread UUID --codex-cwd ABSOLUTE_PATH [--timeout SECONDS] [--output DIRECTORY]');
+    console.log('node scripts/codex-integration.mjs --owned-codex-thread UUID --codex-cwd ABSOLUTE_PATH [--state-dir ABSOLUTE_PATH] [--active-cli-only] [--timeout SECONDS] [--output DIRECTORY]');
     console.log('Explicitly resumes only the named owned test thread in the existing Codex daemon, preserves its model/permissions, and creates one owned free-model OpenCode chat. Uses an isolated local room. Never approves Codex shell requests. Raw errors and transcripts stay under ignored .state; published metrics contain no chat IDs, paths, credentials or message bodies.');
     process.exit(0);
   }
-  if (!['--owned-codex-thread', '--codex-cwd', '--timeout', '--output'].includes(arg) || !process.argv[i + 1]) throw new Error('Unknown or incomplete integration option.');
+  if (arg === '--active-cli-only') { options['active-cli-only'] = true; continue; }
+  if (!['--owned-codex-thread', '--codex-cwd', '--state-dir', '--timeout', '--output'].includes(arg) || !process.argv[i + 1]) throw new Error('Unknown or incomplete integration option.');
   options[arg.slice(2)] = process.argv[++i];
 }
 const codexId = options['owned-codex-thread'], expectedCwd = options['codex-cwd'];
@@ -26,13 +27,15 @@ if (!/^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(codexId || '') || !ex
 const seconds = Number(options.timeout || 150);
 if (!Number.isInteger(seconds) || seconds < 30 || seconds > 600) throw new Error('--timeout must be 30..600 seconds.');
 const suffix = randomUUID().replaceAll('-', '').slice(0, 8), runId = `codex-room-${new Date().toISOString().replace(/[:.]/g, '-')}-${suffix}`;
-const privateRoot = join(project, '.state', runId), stateDir = join(privateRoot, 'space'), workspace = join(privateRoot, 'workspace');
+const privateRoot = join(project, '.state', runId), stateDir = options['state-dir'] ? resolve(options['state-dir']) : join(privateRoot, 'space'), workspace = join(privateRoot, 'workspace');
 const output = resolve(options.output || join(privateRoot, 'result')), cacheDir = runtimeEnvironment().cacheDir;
 const aliases = { codex: 'owned-codex', opencode: 'owned-opencode' }, model = { providerID: 'opencode', id: 'deepseek-v4.1-flash-free' };
 const env = { ...process.env };
 for (const key of Object.keys(env)) if (/^(HCOM_|CODEX_(SESSION|THREAD|PARENT|AGENT|PROCESS|APP|INTERNAL)|CLAUDE_)/.test(key)) delete env[key];
 env.AGENT_DIALOGUE_STATE_DIR = stateDir; env.AGENT_DIALOGUE_CACHE_DIR = cacheDir;
 const summary = { run_id: runId, started_at: new Date().toISOString(), status: 'running', scope: 'one existing explicitly selected owned Codex test thread and one new owned normal OpenCode chat, one local room', codex: { explicit_resume_requested: true, model_changed: false, permissions_changed: false, approvals_granted: 0 }, opencode: { model, zero_cost_verified: false, approvals_once: 0 }, stages: [], assertions: {}, cleanup: [] };
+summary.active_cli_only = Boolean(options['active-cli-only']);
+summary.communication_state_in_selected_workspace = stateDir.startsWith(resolve(expectedCwd) + '/');
 const privateData = { codex_thread: codexId, expected_cwd: expectedCwd, state_dir: stateDir, errors: [], snapshots: {} };
 let codex, opencode, openId, room, phase = 'initializing', attached = [], latestCodexMessages = [], baselineCodexIds = new Set();
 let requestEvent, requestReplyEvent, reverseEvent, reverseReplyEvent, codexFact = `CODEX_FACT_${suffix}`, openFact = `OPEN_FACT_${suffix}`;
@@ -136,6 +139,13 @@ async function waitFor(role, marker, { timeout = seconds, ledgerCheck } = {}) {
     const answer = messages.find(message => (role !== 'codex' || !baselineCodexIds.has(message.id)) && ['assistant', 'agentMessage'].includes(message.type) && (role === 'codex' || message.time?.completed) && textOf(message).includes(marker));
     const idle = role === 'codex' ? (await codex.session(codexId)).nativeStatus === 'idle' : messages.some(message => message.type === 'idle');
     if (answer && idle) return answer;
+    if (role === 'codex' && idle) {
+      const latest = messages.find(message => !baselineCodexIds.has(message.id) && message.type === 'agentMessage');
+      if (latest && /\bEPERM\b|command failed|request was not sent/i.test(textOf(latest))) {
+        privateData.errors.push({ phase, assistant_reported_command_failure: textOf(latest) });
+        throw new Error('Owned model reported a local command failure; tool outcome is not inferred from model text.');
+      }
+    }
     if (messages.some(message => message.type === 'assistant' && message.error)) throw new Error('Owned model session failed; raw native response retained privately.');
     if (Date.now() - progress >= 15000) { await stage('waiting_for_owned_native_response', { role, elapsed_seconds: Math.round((Date.now() - begin) / 1000) }); progress = Date.now(); }
     await delay(1000);
@@ -151,6 +161,7 @@ try {
   await stage('explicit_owned_codex_thread_verified', { loaded_before: before.loaded });
   opencode = await OpenCodeClient.discover({ serviceFile: env.AGENT_DIALOGUE_OPENCODE_SERVICE_FILE });
   const selected = (await opencode.request('GET', '/api/model')).data.find(item => item.id === model.id && item.providerID === model.providerID);
+  privateData.selected_model_check = { found: Boolean(selected), enabled: selected?.enabled, cost: selected?.cost };
   if (!selected?.enabled || !selected.cost?.length || !selected.cost.every(tier => tier.input === 0 && tier.output === 0 && tier.cache?.read === 0 && tier.cache?.write === 0)) throw new Error('Owned OpenCode model must advertise only zero-cost tiers.');
   summary.opencode.zero_cost_verified = true;
   const open = await opencode.createSession({ title: `Owned cross-harness room test ${suffix}`, agent: 'build', model, location: { directory: workspace }, permissions: [{ action: '*', resource: '*', effect: 'ask' }] });
@@ -167,6 +178,7 @@ try {
   baselineCodexIds = new Set((await codex.messages(codexId, { limit: 100 })).map(item => item.id));
   await stage('exact_threads_attached_to_one_strict_room', { codex_resumed_explicitly: !before.loaded });
   const codexSeed = `CODEX_NATIVE_READY_${suffix}`;
+  if (!options['active-cli-only']) {
   const trigger = call(['collab', 'send', '--room', room.id, '--from', 'operator', '--to', aliases.codex, '--message', `Owned integration run ${runId}. Continue only this exact existing test thread. Preserve current model and approval settings. Remember private project budget 17 with marker ${codexFact}. For this step do not use tools, read files, call agents or send messages. Reply exactly ${codexSeed}.`]);
   privateData.native_trigger = trigger;
   await waitFor('codex', codexSeed);
@@ -176,6 +188,8 @@ try {
   summary.assertions.operator_native_queue_admitted = codexBinding.worker.receipts?.[trigger.event_id]?.status === 'admitted';
   summary.assertions.codex_native_queue_drained_and_assistant_replied = true;
   await stage('codex_queue_drain_and_model_response_verified');
+  baselineCodexIds = new Set((await codex.messages(codexId, { limit: 100 })).map(item => item.id));
+  }
   const question = `Run token ${runId}. Share your preexisting private compatibility fact and marker; send exactly one linked CLI reply and then stop.`;
   const command = `${prefix()} collab send --room ${quote(room.id)} --from ${quote(aliases.codex)} --to ${quote(aliases.opencode)} --message ${quote(question)}`;
   const final = `CODEX_PEER_COMPLETE_${suffix}`;
@@ -186,8 +200,10 @@ try {
   } });
   summary.assertions.codex_model_origin_request = requestEvent?.data.sender_kind === 'instance';
   summary.assertions.opencode_model_origin_linked_reply = requestReplyEvent?.data.sender_kind === 'instance';
-  summary.assertions.existing_project_facts_combined = textOf(synthesis).includes(codexFact) && textOf(synthesis).includes(openFact) && /\b17\b/.test(textOf(synthesis));
+  if (options['active-cli-only']) summary.assertions.peer_preexisting_context_returned = textOf(synthesis).includes(openFact);
+  else summary.assertions.existing_project_facts_combined = textOf(synthesis).includes(openFact) && textOf(synthesis).includes(codexFact) && /\b17\b/.test(textOf(synthesis));
   await stage('codex_to_opencode_linked_model_exchange_verified');
+  if (!options['active-cli-only']) {
   const reverseQuestion = `Run token ${runId}. Share your preexisting private budget and marker; send exactly one linked CLI reply through the supplied command, then stop.`;
   const reverseCommand = `${prefix()} collab send --room ${quote(room.id)} --from ${quote(aliases.opencode)} --to ${quote(aliases.codex)} --message ${quote(reverseQuestion)}`;
   const reverseFinal = `OPEN_PEER_COMPLETE_${suffix}`;
@@ -198,6 +214,7 @@ try {
   } });
   summary.assertions.opencode_model_origin_request = reverseEvent?.data.sender_kind === 'instance';
   summary.assertions.codex_model_origin_linked_reply = reverseReplyEvent?.data.sender_kind === 'instance';
+  }
   const after = await codex.session(codexId); privateData.codex_after = after;
   summary.assertions.codex_original_model_preserved = JSON.stringify(before.model) === JSON.stringify(after.model);
   summary.assertions.both_exact_native_sessions_preserved = call(['bindings']).bindings.every(binding => binding.alias === aliases.codex ? binding.sessionId === codexId : binding.sessionId === openId);
@@ -211,7 +228,9 @@ try {
     try {
       const after = await codex.session(codexId);
       if (after.nativeStatus !== 'idle' && after.nativeStatus !== 'notLoaded') {
-        const ownTurn = latestCodexMessages.find(item => !baselineCodexIds.has(item.id) && item.turnId)?.turnId;
+        const status = call(['bindings']), worker = status.bindings.find(item => item.alias === aliases.codex)?.worker;
+        const inputs = new Set(Object.values(worker?.receipts || {}).filter(item => item.status === 'admitted' && item.sessionId === codexId).map(item => item.inputId));
+        const ownTurn = latestCodexMessages.find(item => item.type === 'userMessage' && !baselineCodexIds.has(item.id) && inputs.has(item.id))?.turnId;
         if (ownTurn) { await codex.request('turn/interrupt', { threadId: codexId, turnId: ownTurn }); summary.cleanup.push({ target: 'owned-codex-test-turn', interrupted: true }); }
       }
       privateData.snapshots.codex = (await codex.messages(codexId, { limit: 100 })).filter(item => !baselineCodexIds.has(item.id));

@@ -51,6 +51,10 @@ OpenCode 原生 adapter 按本机 2.0.20 接口实现：`/api/session`、`/api/s
 
 Codex共享daemon当前未加载的thread默认拒绝。明确`attach codex ... --resume`时才加载同一个原thread；不会新建thread、自动切换model或放宽工具权限。busy时只排队，worker仅尝试启动自己已确认受理的队列首项。原生queue/add成功与queue/start后的模型完成分别记录。
 
+实现提交`be23e96`的[CI 39040659553](https://github.com/IDLE-Cloud/agent-dialogue/actions/runs/39040659553)已完成：Ubuntu Node22/24/26与macOS Node24均通过130项测试、独立prefix全局安装、签名卡片导出、真实hcom下载校验与doctor。CI不调用模型，也不替代真实双机验收。
+
+Codex原生测试首轮`verification/codex-integration-20261017-v1/metrics.json`为部分通过：显式恢复原测试thread，精确queue受理、启动与真实assistant回复通过；后续主动CLI协作未形成peer事件。追加诊断记录模型报告本地命令EPERM，原生turn未记录工具执行条目，因此只记录为模型报告。该原thread为`workspaceWrite`/`approvalPolicy=never`，首轮通信state确在其可写root之外；后续在原项目允许范围内设置state独立验证，不修改模型或权限。首轮partial保留。
+
 独立仓库的安装、单元和平台结果以其 CI/验证记录为准。原型通过项目问答不替代各平台上的兼容性验收。
 
 

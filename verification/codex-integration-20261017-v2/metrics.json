@@ -1,0 +1,38 @@
+{
+  "run_id": "codex-room-2026-10-17T14-46-50-454Z-0fc3f0fe",
+  "started_at": "2026-10-17T14:46:50.458Z",
+  "status": "failed",
+  "scope": "one existing explicitly selected owned Codex test thread and one new owned normal OpenCode chat, one local room",
+  "codex": {
+    "explicit_resume_requested": true,
+    "model_changed": false,
+    "permissions_changed": false,
+    "approvals_granted": 0,
+    "was_loaded": true
+  },
+  "opencode": {
+    "model": {
+      "providerID": "opencode",
+      "id": "deepseek-v4.1-flash-free"
+    },
+    "zero_cost_verified": false,
+    "approvals_once": 0
+  },
+  "stages": [
+    {
+      "name": "explicit_owned_codex_thread_verified",
+      "at": "2026-10-17T14:46:50.476Z",
+      "loaded_before": true
+    }
+  ],
+  "assertions": {},
+  "cleanup": [],
+  "active_cli_only": true,
+  "communication_state_in_selected_workspace": true,
+  "failure": {
+    "stage": "explicit_owned_codex_thread_verified",
+    "category": "owned-integration-error",
+    "raw_diagnosis_private": true
+  },
+  "finished_at": "2026-10-17T14:46:50.534Z"
+}

@@ -66,6 +66,8 @@ v0.3开发版使用已有Codex共享daemon，不另启app-server。`sessions cod
 
 同一逻辑节点的`node.json`保存在当前通信空间内，升级程序保留它；新电脑独立生成身份。跨节点需要双向导入卡片并接受同一签名room，发送端配置的路径均为接收端路径，步骤见[NODES.md](NODES.md)。
 
+模型通过shell调用`collab send`时，也需要能写入所选通信目录。若Codex原线程为`workspaceWrite`且禁止交互批准，用户目录下的默认state可能超出其可写范围。可以在该项目允许写入的目录中明确选择通信state，例如`AGENT_DIALOGUE_STATE_DIR=/absolute/allowed/project/.agent-dialogue`，并让本机命令、bridge和peer路由始终使用这个目录。多工作目录共享一个节点时，需要该共享state对各参与聊天的现有执行策略都可写；本工具不自动扩大原线程的权限。
+
 ## 停止与恢复
 
 `detach ALIAS` 停用指定绑定、停止其 bridge 并保留原生聊天。它不停止整个 OpenCode 服务，也不影响其他未接入聊天。进程崩溃留下的 pending 或锁不自动清除；先确认输入是否已受理、是否仍有活跃 worker，再明确恢复，避免重复注入或并发占用。
