@@ -59,6 +59,8 @@ Codex原生测试首轮`verification/codex-integration-20261017-v1/metrics.json`
 
 双节点原场景于2026-10-18再验17/17通过，项目交流16536ms，证据为`verification/node-integration-20261018-v2/metrics.json`。同日v1因模型构造命令遗漏state前缀而被限定权限拒绝，其failed记录保留，没有放宽规则后冒充通过。新增排队、恢复状态和编码边界后的单元测试146项通过，打包/全局安装检查通过。
 
+功能提交`07a5796`的[CI 39049968905](https://github.com/IDLE-Cloud/agent-dialogue/actions/runs/39049968905)四组均成功，包含146项测试、安装检查与真实hcom setup/doctor；静态摘要见`verification/multinode-unit-20261018/metrics.json`。
+
 独立仓库的安装、单元和平台结果以其 CI/验证记录为准。原型通过项目问答不替代各平台上的兼容性验收。
 
 
