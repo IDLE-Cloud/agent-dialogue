@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.3.0 (development)
+
+- Add native adapter contracts and an exact Codex shared-daemon client using its existing Unix WebSocket and durable input queue. Resume is explicit and execution starts only bridge-owned queued inputs.
+- Add Ed25519 node identities, signed public binding cards, pinned peers and owner-signed room manifests accepted on each node.
+- Add fixed SSH stdio and local-process test transports, signed global message/reply IDs, sender/receiver routing checks, ledger reconciliation and duplicate receipt recovery.
+- Keep message bodies in local hcom ledgers; store only routing hashes, IDs and state in inbox/outbox metadata.
+- Verify two independent local nodes with actual free OpenCode model tool calls and preserved pre-attachment project context. Real two-host SSH remains a separate pending acceptance check.
+
 ## 0.2.0
 
 - Extract the local communication prototype into a standalone GitHub-installable CLI.

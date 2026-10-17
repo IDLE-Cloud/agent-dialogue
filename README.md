@@ -2,9 +2,9 @@
 
 [![Tests and installation](https://github.com/IDLE-Cloud/agent-dialogue/actions/workflows/test.yml/badge.svg)](https://github.com/IDLE-Cloud/agent-dialogue/actions/workflows/test.yml)
 
-让不同 agent 使用各自的项目聊天交流。既可以启动受管 CLI，也可以把已有 OpenCode 聊天加入项目讨论，保留原会话与上下文；不要求新建“通信专用会话”或预先定义业务角色。
+让不同电脑、不同 harness 中的 agent 使用各自的项目聊天交流。既可以启动受管 CLI，也可以把已有 OpenCode / Codex 原生线程加入项目讨论，保留原会话与上下文；不要求新建“通信专用会话”或预先定义业务角色。
 
-当前重点是本机同一用户的协作。Codex CLI 与 OpenCode 的双向交流、OpenCode 三个已有聊天之间的项目问答及错误绑定拒收，已在 macOS arm64 原型中实测。独立版本已通过70项自动化检查、独立npm全局安装检查及macOS arm64真实依赖安装；Ubuntu Node22/24/26与macOS Node24的CI也已通过测试、全局包安装和真实依赖安装，详见兼容性说明。跨机通信、已有 Codex 桌面聊天接入和进程退出自动恢复尚未完成。
+v0.3 开发版增加节点签名、双向配对、共同 room 和 SSH stdio 传输，每台机器只调用自己的本地 harness。两个独立本机节点的真实免费 OpenCode 模型已完成项目问答，保留接入前上下文并用全局消息 ID 关联回复。真实双机 SSH 验收仍待远端可达；已有聊天、平台与 Codex 原生队列的实际验证范围见 [兼容性说明](docs/COMPATIBILITY.md)。公开稳定 Release 仍为 v0.2.0。
 
 ## 安装
 
@@ -25,12 +25,20 @@ npm install -g --prefix "$HOME/.local" https://github.com/IDLE-Cloud/agent-dialo
 export PATH="$HOME/.local/bin:$PATH"
 ```
 
-也可以从仓库安装当前代码：
+也可以从仓库安装当前稳定 main：
 
 ```bash
 npm install -g git+https://github.com/IDLE-Cloud/agent-dialogue.git
 agent-dialogue setup
 agent-dialogue doctor
+```
+
+本页的节点和 Codex 原生队列功能位于 v0.3 开发分支，测试该版本请明确安装：
+
+```bash
+npm install -g 'git+https://github.com/IDLE-Cloud/agent-dialogue.git#codex/multinode-adapters'
+agent-dialogue setup
+agent-dialogue node status
 ```
 
 或从源码安装。`npm link` 使用该源码目录，因此之后应保留它：
@@ -86,6 +94,27 @@ agent-dialogue detach code-b
 
 `detach` 停止桥接，保留原生聊天和历史。历史 alias 不复用；接入新聊天时明确新建 alias 和 room。
 
+## 多电脑与多 harness
+
+在每台机器安装同一版本，接入该机器上的已有聊天，再交换签名节点卡片与 room 清单。传输只允许进入对端固定的 `node receive`；OpenCode API、Codex socket 和模型凭据继续留在各自本机。已有 ZeroTier 可承载 SSH，工具不另外部署 MQTT 或开放消息端口。
+
+```bash
+# 在各自机器上，选择本机已有的精确聊天。
+agent-dialogue node init --name computer-a
+agent-dialogue sessions codex --cwd /absolute/path/to/project
+agent-dialogue attach codex --session FULL_THREAD_UUID --alias codex-a
+
+# 如果上一步因线程未加载而拒绝，改用这一行；两行attach选其一。
+# 显式选择后才加载同一个原线程。
+agent-dialogue attach codex --session FULL_THREAD_UUID --alias codex-a --resume
+
+agent-dialogue node export > card-a.json
+```
+
+对方可以使用 OpenCode，也可以使用 Codex。节点卡片需要双向导入，共同 room 由一端创建、签名导出，另一端明确接受后才允许投递。完整的两机步骤和对端路径配置见 [NODES.md](docs/NODES.md)。跨节点回复使用全局 `--reply-to m_UUID`，本地数字事件 ID 只在各自账本内有效。
+
+Codex adapter 使用已有共享 daemon 的原生队列，默认要求线程已经加载并可接受输入。`--resume` 加载原线程，不等同于连接任意活跃桌面窗口。worker 只尝试启动本桥接已受理的队列输入；忙碌或其他来源的队列首项会等待，不改变原聊天的模型或权限。
+
 ## 启动 Codex、OpenCode 等 CLI
 
 这条路径复用 hcom 的原生集成，和上面的已有聊天 room 路径分别使用：
@@ -106,7 +135,7 @@ agent-dialogue send codex-实际名称 \
 
 消息正文保存在 hcom 账本，绑定和回执保存在当前通信空间。`collab send` 成功表示入账，worker 的 `admitted` 表示原生会话受理，实际模型回复另行核对。结果不确定时先查同一输入 ID；无法确认就暂停，不盲目重复提交。残留锁需要检查进程与所有权后明确恢复。
 
-本机 alias 适用于同一用户的可信进程，不是多用户认证边界。不同电脑各自安装本工具，并不意味着已经互通；实时跨机消息和节点权限仍待接入，不能直接暴露 OpenCode/Codex 原生服务来代替。
+本机 alias 适用于同一用户的可信进程。跨节点签名固定发送节点，room 固定双方绑定；它们没有把每个模型变成独立的 OS 用户。网络中断或回执丢失时用 `node status` 和 `node flush --message m_UUID` 对账，同 ID 同内容返回原回执。`remote-stored` 只代表对方账本收妥，原生会话受理和实际模型回复分别核验。
 
 更多配置见 [CONFIGURATION.md](docs/CONFIGURATION.md)，从原项目目录迁移见 [MIGRATION.md](docs/MIGRATION.md)，平台和功能边界见 [COMPATIBILITY.md](docs/COMPATIBILITY.md)。
 
@@ -116,4 +145,4 @@ agent-dialogue send codex-实际名称 \
 node --test tests/*.test.mjs
 ```
 
-后续优先统一 adapter 并把 Codex 的确切已有会话接入 room，再经现有 ZeroTier 连接两机；自动启动退出进程、桌面空闲唤醒和更完整的离线恢复逐项扩展。本仓库只分发实现、测试和使用说明，不携带原研究仓库的第三方源码快照、账号数据或完整聊天记录。
+下一步沿现有 ZeroTier/SSH 完成真实双机验收，增加 Kimi/Pi 的已有会话 adapter，再逐项扩展退出进程恢复、桌面接入与离线运维。测试脚本 `scripts/node-integration.mjs` 可复现两个独立本机节点的真实免费模型协作，`verification/` 保留脱敏指标。本仓库只分发实现、测试和使用说明，不携带原研究仓库的第三方源码快照、账号数据或完整聊天记录。

@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { admit, inputId } from '../lib/native-admission.mjs';
+import { CodexClient } from '../lib/codex.mjs';
 
 const binding = { id: 'b_fixed', revision: 1, sessionId: 'ses_existing' };
 
@@ -34,13 +35,45 @@ test('persists metadata before the sole exact-session POST, with deterministic i
 test('accepted POST with a disconnected response reconciles the durable inbox without a second POST', async () => {
   let posts = 0, reads = 0;
   const id = inputId(binding, 42);
-  const { args } = fixture({
+  const { args, calls } = fixture({
     prompt: async () => { posts++; throw new Error('response disconnected'); },
     inbox: async session => { reads++; assert.equal(session, binding.sessionId); return [{ id }]; },
     messages: async () => assert.fail('inbox evidence should suffice'),
   });
   assert.deepEqual(await admit(args), { inputId: id, reconciled: true });
   assert.equal(posts, 1); assert.equal(reads, 1);
+  assert.equal(calls.filter(call => call[0] === 'persist' && call[1] === null).length, 0);
+});
+
+test('known unloaded Codex preflight clears pending, then exact-thread resume permits one queue', async () => {
+  const sessionId = '11111111-1111-4111-8111-111111111111';
+  let loaded = false, posts = 0, pending = null;
+  const persisted = [];
+  const thread = () => ({ id: sessionId, cwd: '/project', createdAt: 1, updatedAt: 2, canAcceptDirectInput: loaded, status: { type: loaded ? 'idle' : 'notLoaded' } });
+  const client = new CodexClient({ identity: { serviceId: 'same-daemon', origin: 'unix:///tmp/codex.sock', version: '0.163.0' }, requestImpl: async (method, params) => {
+    if (method === 'thread/read') return { thread: thread() };
+    if (method === 'thread/loaded/list') return { data: loaded ? [sessionId] : [] };
+    if (method === 'thread/resume') { loaded = true; return { thread: thread() }; }
+    if (method === 'thread/queue/add') { posts++; return { queuedSubmission: { id: 'native-queue', clientUserMessageId: params.clientUserMessageId } }; }
+    assert.fail('A known preflight rejection must not reconcile nonexistent native input.');
+  } });
+  const args = { client, binding: { ...binding, sessionId }, eventId: 42, text: 'Review the existing project.', onPending: async value => { pending = value; persisted.push(value); } };
+  await assert.rejects(admit(args), error => error.notSubmitted === true && error.retryable === true);
+  assert.equal(pending, null);
+  assert.equal(posts, 0);
+  assert.equal(persisted.length, 2);
+  assert.equal(persisted[1], null);
+  await client.resumeThread(sessionId);
+  assert.deepEqual(await admit({ ...args, pending }), { inputId: inputId(args.binding, 42), reconciled: false });
+  assert.equal(posts, 1);
+});
+
+test('known non-submission cannot continue if durable pending clear fails', async () => {
+  const rejection = Object.assign(new Error('thread temporarily not loaded'), { notSubmitted: true, retryable: true });
+  const { args } = fixture({ prompt: async () => { throw rejection; }, inbox: async () => assert.fail('known absence requires no reconcile') });
+  let pending;
+  await assert.rejects(admit({ ...args, onPending: async value => { if (value === null) throw new Error('disk full clearing intent'); pending = value; } }), error => error.uncertain === true && /could not be durably cleared/.test(error.message));
+  assert.equal(pending.status, 'submitting');
 });
 
 test('pending restart reconciles projected native message shapes and never POSTs again', async () => {
@@ -83,7 +116,7 @@ test('absent pending input, unrelated evidence, and stale pending generation all
 
 test('failed durable intent write never submits or reconciles an input', async () => {
   const { args, calls } = fixture();
-  await assert.rejects(admit({ ...args, onPending: async () => { throw new Error('disk full'); } }), /disk full/);
+  await assert.rejects(admit({ ...args, onPending: async () => { throw new Error('disk full'); } }), error => error.uncertain === true && /intent persistence failed before submission/.test(error.message));
   assert.deepEqual(calls, []);
 });
 

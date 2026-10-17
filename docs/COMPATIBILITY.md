@@ -21,12 +21,13 @@ Linux GNU 发布包支持不包含 Alpine/musl。平台安装检查与真实模�
 
 | 对象 | 可用入口 | 验证与限制 |
 |---|---|---|
-| Codex CLI | `launch codex`，hcom 原生收发 | macOS arm64 原型已验证与 OpenCode 双向问答及连续追问；严格已有聊天 room adapter 尚未完成 |
+| Codex CLI | `launch codex`，hcom 原生收发 | macOS arm64 原型已验证与 OpenCode 双向问答及连续追问；与下方原生队列adapter分别验收 |
+| Codex 0.163.0 共享 daemon | `sessions codex`、`attach codex`、`room`、`collab send` | 使用既有WebSocket-over-UDS；精确thread UUID/服务/CWD校验、稳定client输入ID、队列归属与显式resume已实现；真实模型验证另记 |
 | OpenCode CLI | `launch opencode`，hcom 原生收发 | macOS arm64 原型已验证与 Codex 互通 |
 | OpenCode 2.0.20 已有聊天 | `sessions opencode`、`attach`、`room`、`collab send` | 已验证精确原生 session、三个已有聊天项目问答、错误绑定拒收与 worker 重启检查；当前仅现有本机 loopback 服务 |
 | Kimi Code CLI | `launch kimi` | 提供启动入口，尚未完成该版本真实双向模型验收 |
 | Pi | `launch pi` | 原型已观察启动、绑定与消息交入；配置供应商额度错误使模型回复未通过 |
-| Codex/ZCode 等桌面已有聊天 | 后续 adapter | 不能把新 CLI 或原 session 恢复启动描述为已经接入当前桌面聊天 |
+| 任意桌面前端当前活跃聊天、ZCode | 后续集成 | 列表/绑定精确原生thread不代表已经连接该前端；不能把原thread恢复启动描述为已接入当前活跃桌面实例 |
 
 OpenCode 原生 adapter 按本机 2.0.20 接口实现：`/api/session`、`/api/session/{ID}/prompt`、收件箱与消息查询。默认读取 `~/.local/state/opencode/service.json`，可用 `AGENT_DIALOGUE_OPENCODE_SERVICE_FILE` 明确选择另一本机服务记录。其他版本需要实际兼容检查，不自动套用旧版或网页最新 API。
 
@@ -39,8 +40,16 @@ OpenCode 原生 adapter 按本机 2.0.20 接口实现：`/api/session`、`/api/s
 - room 是讨论路由，不隔离已有聊天的模型上下文；两个 room 使用同一聊天就共享其历史。
 - `admitted` 是原生接口受理回执；模型回复和项目产物需要另查证据。
 - 当前没有自动拉起退出进程、任意远端控制、自动破锁或可承诺的完整离线 exactly-once。
-- 不同机器各自安装后仍是独立节点。ZeroTier、MQTT 配对与跨机 room 尚未打通；不应通过把原生模型服务暴露到外网来代替。
+- v0.3已有独立节点卡片、共同room、SSH stdio和全局消息ID；两个独立本机节点的真实免费OpenCode模型项目协作已验证。真实双机SSH仍待远端可达，不把local-process验证当成双机通过。详见[NODES.md](NODES.md)。
 - 当前面向同一用户的可信本机进程；alias、通信空间和 room 不是多用户认证或沙箱边界。
+
+## v0.3 开发验证
+
+`verification/node-integration-20261017-v1/metrics.json`：两个普通OpenCode2.0.20聊天先保存项目事实，再接入两个独立state/node。免费deepseek-v4.1-flash-free实际shell发问和全局ID关联回复，综合双方原上下文；9项断言通过，18658ms，桥接均detach。使用同机local-process传输和一个原生OpenCode服务，没有真实两台机器或SSH端到端结论。
+
+第二轮`verification/node-integration-20261017-v2/metrics.json`：17项断言通过，项目问答14562ms。同ID重放返回原远端event；同ID改正文重新签名、无效签名、未接受room通过实际CLI接收入口均被拒绝。原生稳定输入各仍为1，hcom消息和原生user输入数不变；2/2桥detach。
+
+Codex共享daemon当前未加载的thread默认拒绝。明确`attach codex ... --resume`时才加载同一个原thread；不会新建thread、自动切换model或放宽工具权限。busy时只排队，worker仅尝试启动自己已确认受理的队列首项。原生queue/add成功与queue/start后的模型完成分别记录。
 
 独立仓库的安装、单元和平台结果以其 CI/验证记录为准。原型通过项目问答不替代各平台上的兼容性验收。
 

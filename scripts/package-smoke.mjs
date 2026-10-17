@@ -23,6 +23,7 @@ try {
   for (const path of paths) assert.ok(!/(^|\/)(\.state|\.runtime|research|verification|node_modules|tests)(\/|$)/.test(path), path);
   assert.ok(paths.includes('bin/agent-dialogue.mjs')); assert.ok(paths.includes('config/hcom.lock.json'));
   assert.ok(paths.includes('lib/paths.mjs')); assert.ok(!paths.includes('docs/NEXT_STEPS.source.md'));
+  for (const path of ['lib/adapters.mjs', 'lib/codex.mjs', 'lib/nodes.mjs', 'lib/node-identity.mjs', 'lib/node-transport.mjs', 'docs/NODES.md']) assert.ok(paths.includes(path), path);
   const prefix = join(temp, 'prefix'), cwd = join(temp, 'unrelated cwd'), state = join(temp, 'state'), cache = join(temp, 'cache');
   await mkdir(cwd); await mkdir(state);
   await call('npm', ['install', '--global', '--prefix', prefix, '--ignore-scripts', '--no-audit', '--no-fund', join(temp, packed.filename)]);
@@ -32,12 +33,16 @@ try {
   const env = { ...process.env, PATH: `${join(prefix, 'bin')}${delimiter}${dirname(process.execPath)}${delimiter}/usr/bin${delimiter}/bin`, AGENT_DIALOGUE_STATE_DIR: state, AGENT_DIALOGUE_CACHE_DIR: cache, AGENT_DIALOGUE_HCOM: fake };
   const pkg = join(prefix, 'lib/node_modules/@idle-cloud/agent-dialogue');
   const before = await readdir(pkg);
-  assert.match(await call(command, ['--help'], { cwd, env }), /attach opencode/);
+  assert.match(await call(command, ['--help'], { cwd, env }), /attach <opencode\|codex>/);
   assert.deepEqual(JSON.parse(await call(command, ['bindings'], { cwd, env })), { bindings: [], rooms: [] });
+  const node = JSON.parse(await call(command, ['node', 'init', '--name', 'package-test'], { cwd, env }));
+  const exported = JSON.parse(await call(command, ['node', 'export'], { cwd, env }));
+  assert.equal(node.nodeId, exported.payload.node.nodeId); assert.ok(exported.signature);
+  assert.equal(JSON.stringify(exported).includes('privateKey'), false);
   const doctor = JSON.parse(await call(command, ['doctor', '--json'], { cwd, env }));
   assert.equal(doctor.stateDir, state); assert.equal(doctor.cacheDir, cache); assert.equal(doctor.hcom.version, 'hcom 0.7.30');
   assert.deepEqual(await readdir(pkg), before, 'Running installed CLI must not create state/cache inside package');
   const installed = JSON.parse(await readFile(join(pkg, 'package.json'), 'utf8'));
-  assert.equal(installed.version, '0.2.0');
-  console.log(JSON.stringify({ status: 'passed', name: installed.name, version: installed.version, packedFiles: paths.length, packedBytes: packed.size, checks: ['package allowlist', 'isolated prefix install', 'global executable', 'arbitrary working directory', 'external state/cache', 'no package mutation'] }, null, 2));
+  assert.equal(installed.version, JSON.parse(await readFile(join(root, 'package.json'), 'utf8')).version);
+  console.log(JSON.stringify({ status: 'passed', name: installed.name, version: installed.version, packedFiles: paths.length, packedBytes: packed.size, checks: ['package allowlist', 'isolated prefix install', 'global executable', 'arbitrary working directory', 'external state/cache', 'signed public node export', 'no package mutation'] }, null, 2));
 } finally { await rm(temp, { recursive: true, force: true }); }

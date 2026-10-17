@@ -1,0 +1,127 @@
+{
+  "run_id": "node-project-2026-10-17T14-19-46-865Z-304a1e74",
+  "started_at": "2026-10-17T14:19:46.866Z",
+  "status": "passed",
+  "transport": "local-process",
+  "scope": "two independent local nodes, one existing OpenCode service; no two-host claim",
+  "model": {
+    "providerID": "opencode",
+    "id": "deepseek-v4.1-flash-free",
+    "zero_cost_verified": true,
+    "service_version": "2.0.20"
+  },
+  "stages": [
+    {
+      "name": "zero_cost_model_verified",
+      "at": "2026-10-17T14:19:46.900Z"
+    },
+    {
+      "name": "normal_project_chat_seeded",
+      "at": "2026-10-17T14:19:50.249Z",
+      "role": "a"
+    },
+    {
+      "name": "existing_project_chat_attached",
+      "at": "2026-10-17T14:19:50.563Z",
+      "role": "a"
+    },
+    {
+      "name": "normal_project_chat_seeded",
+      "at": "2026-10-17T14:19:58.773Z",
+      "role": "b"
+    },
+    {
+      "name": "existing_project_chat_attached",
+      "at": "2026-10-17T14:19:58.956Z",
+      "role": "b"
+    },
+    {
+      "name": "public_cards_paired_and_room_imported",
+      "at": "2026-10-17T14:19:59.347Z"
+    },
+    {
+      "name": "project_collaboration_triggered",
+      "at": "2026-10-17T14:19:59.431Z"
+    },
+    {
+      "name": "checking_same_id_replay_and_signed_ingress_guards",
+      "at": "2026-10-17T14:20:13.993Z"
+    },
+    {
+      "name": "duplicate_and_signed_ingress_guards_completed",
+      "at": "2026-10-17T14:20:15.815Z",
+      "collision_rejected": true,
+      "signature_rejected": true,
+      "unaccepted_room_rejected": true
+    },
+    {
+      "name": "project_collaboration_completed",
+      "at": "2026-10-17T14:20:15.815Z",
+      "status": "passed",
+      "elapsed_ms": 14562
+    }
+  ],
+  "assertions": {
+    "seeded_before_attach": true,
+    "exactly_one_model_origin_request": true,
+    "exactly_one_model_origin_linked_reply": true,
+    "remote_stored_receipts": true,
+    "original_session_ids_preserved": true,
+    "original_private_context_combined": true,
+    "independent_node_identities": true,
+    "request_and_reply_reconciled_on_both_nodes": true,
+    "only_bounded_once_permissions": true,
+    "same_id_flush_returns_original_remote_event": true,
+    "signed_same_id_different_body_rejected": true,
+    "tampered_signature_rejected_at_cli_ingress": true,
+    "unaccepted_room_rejected_at_cli_ingress": true,
+    "replay_and_rejections_preserve_both_inbox_mappings": true,
+    "duplicate_does_not_repeat_stable_native_inputs": true,
+    "rejections_add_no_native_user_input": true,
+    "replay_and_rejections_add_no_message_ledger_event": true
+  },
+  "permissions": {
+    "once": 2,
+    "rejected": 0
+  },
+  "cleanup": [
+    {
+      "role": "a",
+      "detached": true
+    },
+    {
+      "role": "b",
+      "detached": true
+    }
+  ],
+  "elapsed_ms": 14562,
+  "message_ids": {
+    "request": "m_8c40c964-2d4a-4748-9126-bde64d43d4b1",
+    "reply": "m_29989943-4556-4da2-8d7a-2bc58695a1e9"
+  },
+  "guards": {
+    "collision": {
+      "rejected": true,
+      "exit_code": 1
+    },
+    "invalid_signature": {
+      "rejected": true,
+      "exit_code": 1
+    },
+    "unaccepted_room": {
+      "rejected": true,
+      "exit_code": 1
+    },
+    "stable_native_input_counts": {
+      "before": {
+        "a": 1,
+        "b": 1
+      },
+      "after": {
+        "a": 1,
+        "b": 1
+      }
+    }
+  },
+  "finished_at": "2026-10-17T14:20:15.926Z"
+}

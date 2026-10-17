@@ -1,9 +1,9 @@
 {
   "name": "@idle-cloud/agent-dialogue",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "private": true,
   "type": "module",
-  "description": "Local cross-harness agent messaging and exact existing-chat collaboration",
+  "description": "Cross-node, cross-harness agent messaging with exact existing-chat bindings",
   "license": "UNLICENSED",
   "repository": { "type": "git", "url": "https://github.com/IDLE-Cloud/agent-dialogue.git" },
   "bugs": { "url": "https://github.com/IDLE-Cloud/agent-dialogue/issues" },
@@ -11,7 +11,7 @@
   "engines": { "node": ">=22" },
   "os": ["darwin", "linux"],
   "bin": { "agent-dialogue": "bin/agent-dialogue.mjs" },
-  "files": ["bin/", "lib/", "config/", "docs/CONFIGURATION.md", "docs/MIGRATION.md", "docs/COMPATIBILITY.md", "docs/ROADMAP.md", "README.md", "CHANGELOG.md", "THIRD_PARTY_NOTICES.md"],
+  "files": ["bin/", "lib/", "config/", "docs/CONFIGURATION.md", "docs/MIGRATION.md", "docs/COMPATIBILITY.md", "docs/ROADMAP.md", "docs/NODES.md", "docs/V0.3-DESIGN.md", "README.md", "CHANGELOG.md", "THIRD_PARTY_NOTICES.md"],
   "scripts": {
     "test": "node --test tests/*.test.mjs",
     "doctor": "node bin/agent-dialogue.mjs doctor",
