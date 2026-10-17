@@ -10,7 +10,7 @@ Node.js 要求为 22 或更新版本，无 npm 运行依赖。`setup` 显式下�
 |---|---|---|
 | macOS arm64 | 固定发布包安装入口 | 原项目已完成本机 Codex/OpenCode 双向交流与 OpenCode 三个已有聊天协作；独立版70项测试、npm全局安装、固定依赖安装与幂等setup通过 |
 | macOS x64 | 固定发布包安装入口 | 尚未完成该硬件上的真实模型验收 |
-| Linux GNU x64 | 固定发布包安装入口 | 需要 CI 包校验与真实 harness 联调；不能由下载支持推定端到端通过 |
+| Linux GNU x64 | 固定发布包安装入口 | Ubuntu CI已通过Node22/24/26测试、全局包安装、真实hcom setup和doctor；真实模型联调仍待该平台验收 |
 | Linux GNU arm64 | 固定发布包安装入口 | 需要 CI 包校验与真实 harness 联调 |
 | Windows 原生 | 当前不支持 `setup` | 尚未适配本机进程、路径与安装行为 |
 | Windows WSL2 | 可选择 Linux 环境尝试部署 | 使用 WSL 内的 Node、harness 和服务；真实 WSL 端到端尚未验收，不等于连接 Windows 原生已有聊天 |
@@ -34,6 +34,7 @@ OpenCode 原生 adapter 按本机 2.0.20 接口实现：`/api/session`、`/api/s
 
 ## 已知边界
 
+- hcom的CLI启动会注入其hooks/plugin，并可能清理旧的hcom专有配置；通信state隔离不代表全部harness全局配置隔离。单纯安装及已有OpenCode原生attach不执行这类CLI启动配置。
 - `launch/send` 与原生 `attach/collab send` 目前是两条路径；只有后者提供本版 room 的精确绑定检查，不能把任意 hcom 端点直接当作 room 成员。
 - room 是讨论路由，不隔离已有聊天的模型上下文；两个 room 使用同一聊天就共享其历史。
 - `admitted` 是原生接口受理回执；模型回复和项目产物需要另查证据。
@@ -42,3 +43,6 @@ OpenCode 原生 adapter 按本机 2.0.20 接口实现：`/api/session`、`/api/s
 - 当前面向同一用户的可信本机进程；alias、通信空间和 room 不是多用户认证或沙箱边界。
 
 独立仓库的安装、单元和平台结果以其 CI/验证记录为准。原型通过项目问答不替代各平台上的兼容性验收。
+
+
+首次独立发行CI：[run 39027853400](https://github.com/IDLE-Cloud/agent-dialogue/actions/runs/39027853400)。Ubuntu Node22/24/26与macOS Node24四个job均通过70项测试、独立全局安装、真实依赖下载校验及doctor；它们不包含远程模型调用。

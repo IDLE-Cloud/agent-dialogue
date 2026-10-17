@@ -1,0 +1,36 @@
+{
+  "run_id": 39027853400,
+  "url": "https://github.com/IDLE-Cloud/agent-dialogue/actions/runs/39027853400",
+  "source_commit": "fdcf9271d06f25bb082aface196290e794cd4cfa",
+  "conclusion": "success",
+  "jobs": [
+    {
+      "runner": "ubuntu-latest",
+      "node": 22,
+      "conclusion": "success"
+    },
+    {
+      "runner": "ubuntu-latest",
+      "node": 24,
+      "conclusion": "success"
+    },
+    {
+      "runner": "ubuntu-latest",
+      "node": 26,
+      "conclusion": "success"
+    },
+    {
+      "runner": "macos-latest",
+      "node": 24,
+      "conclusion": "success"
+    }
+  ],
+  "checks": [
+    "70 offline tests",
+    "isolated npm global package install",
+    "official pinned hcom download and SHA-256 verification",
+    "native hcom version execution",
+    "doctor"
+  ],
+  "model_calls": false
+}
