@@ -21,12 +21,13 @@ export const fixtureIDs = {
   queue: 'q_40000000-0000-4000-8000-000000000001',
 };
 
-export function makeSources() {
+export function makeSources({ sealedManifest = false } = {}) {
   const alpha = testNode(11, 'Synthetic laptop'), beta = testNode(22, 'Synthetic workstation');
   const pin = (node, alias, bindingId) => ({ nodeId: node.nodeId, alias, bindingId, revision: 1 });
   const alice = pin(alpha, 'alice', fixtureIDs.alice), bob = pin(beta, 'bob', fixtureIDs.bob);
   const binding = (p, harness) => ({ alias: p.alias, id: p.bindingId, revision: p.revision, nodeId: p.nodeId, harness, sessionId: `synthetic-session-${p.alias}`, active: true });
   const room = { id: fixtureIDs.room, name: 'Viewer demonstration', revision: 1, ownerNodeId: alpha.nodeId, manifestHash: 'a'.repeat(64), members: [alice, bob] };
+  if (sealedManifest) room.manifestHash = payloadHash({ type: 'room', version: 1, id: room.id, name: room.name, revision: room.revision, ownerNodeId: room.ownerNodeId, members: room.members });
   const question = { type: 'message', version: 1, messageId: fixtureIDs.question, roomId: room.id, roomRevision: 1, manifestHash: room.manifestHash,
     from: alice, to: bob, text: 'Please review the retry behavior. Which evidence confirms delivery?', replyToMessageId: null, createdAt: '2026-10-18T00:00:01.000Z' };
   const reply = { ...question, messageId: fixtureIDs.reply, from: bob, to: alice,
