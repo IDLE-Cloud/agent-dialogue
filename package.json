@@ -8,10 +8,10 @@
   "repository": { "type": "git", "url": "https://github.com/IDLE-Cloud/agent-dialogue.git" },
   "bugs": { "url": "https://github.com/IDLE-Cloud/agent-dialogue/issues" },
   "homepage": "https://github.com/IDLE-Cloud/agent-dialogue#readme",
-  "engines": { "node": ">=22" },
+  "engines": { "node": ">=22.13" },
   "os": ["darwin", "linux"],
   "bin": { "agent-dialogue": "bin/agent-dialogue.mjs" },
-  "files": ["bin/", "lib/", "config/", "docs/CONFIGURATION.md", "docs/MIGRATION.md", "docs/COMPATIBILITY.md", "docs/ROADMAP.md", "docs/NODES.md", "docs/V0.3-DESIGN.md", "README.md", "CHANGELOG.md", "THIRD_PARTY_NOTICES.md"],
+  "files": ["bin/", "lib/", "web/viewer/", "config/", "docs/CONFIGURATION.md", "docs/MIGRATION.md", "docs/COMPATIBILITY.md", "docs/ROADMAP.md", "docs/NODES.md", "docs/V0.3-DESIGN.md", "docs/VIEWER.md", "README.md", "CHANGELOG.md", "THIRD_PARTY_NOTICES.md"],
   "scripts": {
     "test": "node --test tests/*.test.mjs",
     "doctor": "node bin/agent-dialogue.mjs doctor",

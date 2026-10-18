@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "scenario": "replay-existing-owned-real-Codex-OpenCode-ledgers",
+  "recordedAt": "2026-10-18T02:14:46.807Z",
+  "modelCalls": 0,
+  "completed": false,
+  "failed": 1,
+  "reason": "Current activity status incorrectly treated remote peer binding cards as authoritative.",
+  "expected": "Both owning-node detached bindings project active=false.",
+  "observed": "Some room participants retained stale peer-card active=true.",
+  "resolution": "Only the binding owning node can assert current active status; added two projection regression tests. Retest in v3."
+}

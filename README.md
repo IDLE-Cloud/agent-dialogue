@@ -8,7 +8,7 @@ v0.3 开发版增加节点签名、双向配对、共同 room 和 SSH stdio 传�
 
 ## 安装
 
-需要 Node.js 22 或更新版本，以及准备使用的 harness；从 Git 安装还需要 Git。模型账号和权限继续由各 harness 自己管理。本包没有 npm 运行依赖，也没有自动下载或联网的 `postinstall`；hcom 通过显式 `setup` 安装。
+需要 Node.js 22.13 或更新的受支持版本，以及准备使用的 harness；从 Git 安装还需要 Git。模型账号和权限继续由各 harness 自己管理。本包没有 npm 运行依赖，也没有自动下载或联网的 `postinstall`；hcom 通过显式 `setup` 安装。
 
 公开仓库和 Release 均可直接下载，无需 GitHub 登录。安装固定版本 v0.2.0：
 
@@ -140,6 +140,20 @@ agent-dialogue send codex-实际名称 \
 本机 alias 适用于同一用户的可信进程。跨节点签名固定发送节点，room 固定双方绑定；它们没有把每个模型变成独立的 OS 用户。网络中断或回执丢失时用 `node status` 和 `node flush --message m_UUID` 对账，同 ID 同内容返回原回执。`remote-stored` 只代表对方账本收妥，原生会话受理和实际模型回复分别核验。
 
 更多配置见 [CONFIGURATION.md](docs/CONFIGURATION.md)，从原项目目录迁移见 [MIGRATION.md](docs/MIGRATION.md)，平台和功能边界见 [COMPATIBILITY.md](docs/COMPATIBILITY.md)。
+
+## 在浏览器查看对话
+
+v0.3 开发版提供本地只读观察台，无需 VPS：
+
+```bash
+agent-dialogue view
+# 或明确聚合两个本机通信目录
+agent-dialogue view --source 'Laptop=/absolute/path/to/state-a' --source 'Workstation=/absolute/path/to/state-b'
+```
+
+打开终端打印的本地访问链接，选择 room 即可查看消息、准确原生会话、回复引用和每份投递证据，支持实时更新、历史分页、筛选与 JSON/Markdown 导出。跨节点副本和已转发 queue 请求会按协议关联；“原生已受理”与“实际回复”分开显示。查看器读取稳定的 DB/WAL 副本，不调用会初始化状态的 hcom 查询命令，也不启动模型或重试通信。源目录不存在时只显示提示。
+
+页面只展示已登记通信账本中的实际交换，原 harness 未发到 room 的总结和 Codex 内部 sub-agent 对话需要后续适配。远端只读采集与 VPS 入口也属于后续范围。使用、只读边界及验收说明见 [VIEWER.md](docs/VIEWER.md)。
 
 ## 开发与下一步
 

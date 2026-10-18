@@ -1,0 +1,63 @@
+{
+  "version": 1,
+  "scenario": "actual-in-app-browser-viewer-acceptance",
+  "recordedAt": "2026-10-18T02:19:04.761Z",
+  "baseCommit": "19d96e4",
+  "implementationSha256": "bc6fcdd7a5ccbd5d6bb0cde8df2143c4cf78952b231c999bdcae4bbf136c78eb",
+  "modelCalls": 0,
+  "publicScreenshotsUseSyntheticDataOnly": true,
+  "passed": 9,
+  "failed": 0,
+  "checks": [
+    {
+      "name": "owned-Codex-OpenCode-queue-fold-reply-jump-and-detached-identities",
+      "passed": true
+    },
+    {
+      "name": "two-synthetic-wire-messages-with-all-source-evidence",
+      "passed": true
+    },
+    {
+      "name": "literal-script-and-markdown-image-safe-text",
+      "passed": true,
+      "unsafeScriptOrImageElements": 0
+    },
+    {
+      "name": "reply-preview-outside-current-filter",
+      "passed": true
+    },
+    {
+      "name": "browser-JSON-download-matches-filtered-scope",
+      "passed": true,
+      "messages": 1,
+      "referencedSources": 2
+    },
+    {
+      "name": "source-unavailable-retains-history-and-displays-observation-time",
+      "passed": true
+    },
+    {
+      "name": "source-recovery-clears-read-error",
+      "passed": true
+    },
+    {
+      "name": "narrow-390px-no-document-horizontal-overflow",
+      "passed": true,
+      "clientWidth": 390,
+      "scrollWidth": 390
+    },
+    {
+      "name": "history-load-more-100-to-200-without-duplicate-bodies",
+      "passed": true,
+      "totalRoomMessages": 5001,
+      "loaded": 200,
+      "uniqueBodies": 200
+    }
+  ],
+  "screenshots": [
+    "desktop.jpg",
+    "desktop-final.jpg",
+    "narrow.jpg"
+  ],
+  "browserErrorLogs": []
+}

@@ -2,6 +2,10 @@
 
 ## 0.3.0 (development)
 
+- Add a loopback-only read-only browser viewer for explicit local sources, exact session identities, protocol-linked replies, queue/result folding, signed wire-copy deduplication and delivery evidence.
+- Read stable DB/WAL byte snapshots through SQLite only in private temporary copies; leave communication DB/WAL/SHM, stores, worker cursors and lifecycle untouched. Observe late receipts separately from new events.
+- Add filtered history paging, bounded SSE replay/reset, selected-room JSON/Markdown export and source availability diagnostics. Serve plain message text with local access tokens, Host/Origin checks and restrictive CSP.
+- Package the viewer's static assets and installation smoke check; require Node >=22.13 for built-in SQLite without a startup flag.
 - Add native adapter contracts and an exact Codex shared-daemon client using its existing Unix WebSocket and durable input queue. Resume is explicit and execution starts only bridge-owned queued inputs.
 - Add Ed25519 node identities, signed public binding cards, pinned peers and owner-signed room manifests accepted on each node.
 - Add fixed SSH stdio and local-process test transports, signed global message/reply IDs, sender/receiver routing checks, ledger reconciliation and duplicate receipt recovery.

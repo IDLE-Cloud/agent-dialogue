@@ -23,7 +23,7 @@ try {
   for (const path of paths) assert.ok(!/(^|\/)(\.state|\.runtime|research|verification|node_modules|tests)(\/|$)/.test(path), path);
   assert.ok(paths.includes('bin/agent-dialogue.mjs')); assert.ok(paths.includes('config/hcom.lock.json'));
   assert.ok(paths.includes('lib/paths.mjs')); assert.ok(!paths.includes('docs/NEXT_STEPS.source.md'));
-  for (const path of ['lib/adapters.mjs', 'lib/codex.mjs', 'lib/nodes.mjs', 'lib/node-identity.mjs', 'lib/node-transport.mjs', 'lib/submissions.mjs', 'docs/NODES.md']) assert.ok(paths.includes(path), path);
+  for (const path of ['lib/adapters.mjs', 'lib/codex.mjs', 'lib/nodes.mjs', 'lib/node-identity.mjs', 'lib/node-transport.mjs', 'lib/submissions.mjs', 'docs/NODES.md', 'lib/viewer/server.mjs', 'lib/viewer/readers/local.mjs', 'web/viewer/index.html', 'web/viewer/app.js', 'web/viewer/style.css', 'docs/VIEWER.md']) assert.ok(paths.includes(path), path);
   const prefix = join(temp, 'prefix'), cwd = join(temp, 'unrelated cwd'), state = join(temp, 'state'), cache = join(temp, 'cache');
   await mkdir(cwd); await mkdir(state);
   await call('npm', ['install', '--global', '--prefix', prefix, '--ignore-scripts', '--no-audit', '--no-fund', join(temp, packed.filename)]);
@@ -41,8 +41,47 @@ try {
   assert.equal(JSON.stringify(exported).includes('privateKey'), false);
   const doctor = JSON.parse(await call(command, ['doctor', '--json'], { cwd, env }));
   assert.equal(doctor.stateDir, state); assert.equal(doctor.cacheDir, cache); assert.equal(doctor.hcom.version, 'hcom 0.7.30');
+  const sourceBefore = await readdir(state);
+  const viewer = spawn(command, ['view'], { cwd, env, shell: false, stdio: ['ignore', 'pipe', 'pipe'] });
+  let viewerClosed = false;
+  const viewerClose = new Promise(resolveClosed => viewer.once('close', () => { viewerClosed = true; resolveClosed(); }));
+  try {
+    const url = await new Promise((resolveURL, rejectURL) => {
+      let output = '';
+      const timeout = setTimeout(() => rejectURL(new Error('Installed viewer did not become ready.')), 10000);
+      viewer.once('error', error => { clearTimeout(timeout); rejectURL(error); });
+      viewer.once('exit', code => { clearTimeout(timeout); rejectURL(new Error(`Installed viewer exited before readiness: ${code}`)); });
+      viewer.stdout.on('data', chunk => {
+        output += chunk;
+        const match = output.match(/http:\/\/127\.0\.0\.1:\d+\/\?token=[A-Za-z0-9_-]+/);
+        if (match) { clearTimeout(timeout); resolveURL(match[0]); }
+      });
+      viewer.stderr.resume();
+    });
+    const bootstrap = await fetch(url, { redirect: 'manual', signal: AbortSignal.timeout(10000) });
+    assert.equal(bootstrap.status, 303);
+    const cookie = bootstrap.headers.get('set-cookie').split(';')[0], origin = new URL(url).origin;
+    for (const path of ['/', '/app.js', '/style.css', '/api/snapshot']) {
+      const response = await fetch(`${origin}${path}`, { headers: { cookie }, signal: AbortSignal.timeout(10000) });
+      assert.equal(response.status, 200, path);
+      if (path === '/api/snapshot') {
+        const snapshot = await response.json();
+        assert.equal(snapshot.sources.length, 1);
+        assert.equal(snapshot.sources[0].available, false, 'Opening a viewer must not initialize a missing ledger');
+      } else assert.ok((await response.text()).length > 100, path);
+    }
+    assert.deepEqual(await readdir(state), sourceBefore);
+  } finally {
+    if (!viewerClosed) {
+      if (viewer.exitCode === null && viewer.signalCode === null) viewer.kill('SIGTERM');
+      await new Promise(resolveStopped => {
+        const timeout = setTimeout(() => { viewer.kill('SIGKILL'); resolveStopped(); }, 3000);
+        viewerClose.then(() => { clearTimeout(timeout); resolveStopped(); });
+      });
+    }
+  }
   assert.deepEqual(await readdir(pkg), before, 'Running installed CLI must not create state/cache inside package');
   const installed = JSON.parse(await readFile(join(pkg, 'package.json'), 'utf8'));
   assert.equal(installed.version, JSON.parse(await readFile(join(root, 'package.json'), 'utf8')).version);
-  console.log(JSON.stringify({ status: 'passed', name: installed.name, version: installed.version, packedFiles: paths.length, packedBytes: packed.size, checks: ['package allowlist', 'isolated prefix install', 'global executable', 'arbitrary working directory', 'external state/cache', 'signed public node export', 'no package mutation'] }, null, 2));
+  console.log(JSON.stringify({ status: 'passed', name: installed.name, version: installed.version, packedFiles: paths.length, packedBytes: packed.size, checks: ['package allowlist', 'isolated prefix install', 'global executable', 'arbitrary working directory', 'external state/cache', 'signed public node export', 'installed viewer assets/API', 'viewer leaves missing ledger absent', 'no package mutation'] }, null, 2));
 } finally { await rm(temp, { recursive: true, force: true }); }

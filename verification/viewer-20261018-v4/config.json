@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "scenario": "synthetic-local-read-only-viewer",
+  "realModelTraffic": false,
+  "sources": 2,
+  "performanceLogicalMessages": 10002,
+  "performanceLocalMessages": 10000,
+  "signedWireLogicalMessages": 2,
+  "signedWireLedgerCopies": 4,
+  "queueEvents": 1,
+  "pollMs": 750,
+  "historyPageLimit": 100,
+  "startupTargetMs": 3000,
+  "updateTargetMs": 2000,
+  "sourceStorage": "SQLite WAL with live owned fixture writers",
+  "node": "v26.10.0",
+  "platform": "darwin",
+  "arch": "arm64",
+  "baseCommit": "19d96e45cdc4947b605c17f605bfd173366c85c3"
+}

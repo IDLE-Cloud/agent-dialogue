@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="light">
+    <meta name="referrer" content="no-referrer">
+    <title>Agent Dialogue · 对话查看器</title>
+    <link rel="stylesheet" href="/style.css">
+    <script src="/app.js" defer></script>
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar" aria-label="通信空间">
+        <a class="brand" href="/" aria-label="Agent Dialogue 首页">
+          <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>
+          <span>agent dialogue<small>对话观察台</small></span>
+        </a>
+        <div class="sidebar-heading"><span>项目对话</span><span class="small-count" id="room-count">0</span></div>
+        <nav id="room-list" class="room-list" aria-label="项目对话列表"><p class="quiet sidebar-empty">正在读取通信记录…</p></nav>
+        <section class="source-section" aria-labelledby="sources-heading">
+          <div class="sidebar-heading"><span id="sources-heading">本地数据源</span><span class="source-local">LOCAL</span></div>
+          <div id="source-list" class="source-list"></div>
+          <p class="sidebar-note">只观察已登记的通信记录。<br>关闭页面不影响 Agent 协作。</p>
+        </section>
+      </aside>
+
+      <main class="workspace">
+        <header class="workspace-header">
+          <div class="breadcrumb">工作空间 <span aria-hidden="true">/</span> <span id="breadcrumb-room">对话查看器</span></div>
+          <div class="header-states"><span class="readonly-badge"><span aria-hidden="true">◉</span> 只读观察</span><span class="connection" id="connection" role="status"><span class="status-dot"></span><span>正在连接</span></span></div>
+        </header>
+
+        <section class="room-heading" aria-labelledby="room-title">
+          <div class="room-title-row"><div><p class="eyebrow">COLLABORATION ROOM</p><h1 id="room-title">查看 Agent 之间的协作</h1></div><div class="exports" aria-label="导出当前筛选范围"><button id="export-json" class="button secondary" type="button" disabled>导出 JSON</button><button id="export-markdown" class="button secondary" type="button" disabled>Markdown <span aria-hidden="true">↗</span></button></div></div>
+          <p class="room-description" id="room-description">选择一个项目对话，查看实际消息、参与身份和投递证据。</p>
+          <div id="room-meta" class="room-meta"></div>
+        </section>
+
+        <div id="notice" class="notice" role="status" hidden></div>
+        <div id="error-banner" class="error-banner" role="alert" hidden></div>
+
+        <section class="filter-bar" aria-label="消息筛选">
+          <label class="search-control"><span aria-hidden="true">⌕</span><input id="search" type="search" maxlength="200" placeholder="搜索当前对话的消息原文" autocomplete="off" aria-label="搜索消息原文"></label>
+          <div class="select-controls"><label class="select-control"><span>来源</span><select id="filter-source" aria-label="按数据源筛选"><option value="">全部来源</option></select></label><label class="select-control"><span>成员</span><select id="filter-participant" aria-label="按成员筛选"><option value="">全部成员</option></select></label><label class="select-control"><span>证据</span><select id="filter-status" aria-label="按证据状态筛选"><option value="">全部状态</option></select></label><button id="clear-filters" class="text-button" type="button" hidden>重置</button></div>
+        </section>
+
+        <section class="conversation" aria-label="消息时间线">
+          <div class="timeline-heading"><span id="timeline-count">消息时间线</span><span class="timeline-hint">按来源事件顺序及回复关系关联</span></div>
+          <div id="timeline-scroll" class="timeline-scroll" tabindex="-1">
+            <div id="history-control" class="history-control" hidden><button id="load-more" class="button secondary" type="button">加载更早的消息</button></div>
+            <div id="reply-preview" hidden></div>
+            <div id="timeline" class="timeline"><div class="empty-state"><span class="empty-icon" aria-hidden="true">↔</span><h2>让协作过程看得见</h2><p>这里展示进入项目 room 的真实交换记录。<br>选择左侧对话开始阅读。</p></div></div>
+          </div>
+          <footer class="timeline-footer"><span><span class="tiny-dot" aria-hidden="true"></span> 正文来自通信账本</span><span id="scope-note">未选择对话</span></footer>
+        </section>
+      </main>
+
+      <aside class="details-panel" aria-label="身份与消息证据">
+        <div class="details-heading"><span>对话详情</span><span class="detail-symbol" aria-hidden="true">☷</span></div>
+        <div id="details" class="details-content"><div class="detail-intro"><span class="detail-intro-symbol" aria-hidden="true">◎</span><h2>身份清楚，证据可追溯</h2><p>选择一条消息，查看它来自哪个节点和原生会话，以及实际记录到的投递证据。</p></div></div>
+        <p class="evidence-note">证据可以并存。“已受理”不代表模型已完成任务；来源缺失也不代表发送失败。</p>
+      </aside>
+    </div>
+    <div id="toast" class="toast" role="status" hidden></div>
+  </body>
+</html>

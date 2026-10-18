@@ -23,6 +23,8 @@ const HELP = `agent-dialogue — cross-node, cross-harness agent communication
   send TARGET --message TEXT [--reply-to ID] [--thread NAME]
        [--intent request|inform|ack]        Send as the external operator (bigboss)
   history [--last N] [--thread NAME]       Read full message events as JSON Lines
+  view [--source LABEL=PATH ...] [--port N]
+                                           Open a local read-only dialogue observer
   stop NAME                               Stop one existing local endpoint
   sessions <opencode|codex> [--cwd PATH]    List exact native chats and capabilities
   attach <opencode|codex> --session ID --alias NAME [--resume]
@@ -203,6 +205,10 @@ export async function main(args = process.argv.slice(2), sourceEnv = process.env
   const context = runtimeEnvironment(sourceEnv);
   await protectPersonalState(context.stateDir);
   await protectPersonalState(context.cacheDir);
+  if (command === 'view') {
+    const { runViewer } = await import('../lib/viewer/cli.mjs');
+    return await runViewer(input, context);
+  }
   if (command === 'setup') { if (input.length) fail('setup takes no arguments.'); return await installHcom(context); }
   if (command === 'doctor') {
     const { options, rest } = parseOptions(input, { '--json': 'boolean' }); noRest(rest);
