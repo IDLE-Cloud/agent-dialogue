@@ -84,3 +84,5 @@ node scripts/viewer-verify.mjs viewer-20261018-v99
 `tests/viewer-*` 覆盖只读、关联、冲突、错误来源、查询边界、续读、分页和导出。`verification/viewer-*` 保存脱敏性能/回放结果；真实模型旧账本回放与新模型运行明确区分。代码索引为 `lib/viewer/readers/`、`projection.mjs`、`stream.mjs`、`server.mjs`、`cli.mjs` 和 `web/viewer/`。
 
 当前首版只聚合显式登记的**本机目录**。已有跨机消息传输仍使用各节点本地 adapter 和签名 SSH stdio；真实两台机器的通信验收另行进行。后续可增加限定 room 的 SSH 只读采集，再考虑 VPS 的认证与持久在线入口。Codex 内部 sub-agent 工具对话、原 harness 未交换到 room 的总结和任意桌面窗口都不会自动出现在本页面。
+
+首版交付验证：实现提交 `d996db0` 的 [四平台组合 CI](https://github.com/IDLE-Cloud/agent-dialogue/actions/runs/39089715479) 全部通过，包括185项测试、独立全局prefix安装、网页资源/API和pinned hcom安装校验。合成性能与浏览器截图见仓库 `verification/viewer-20261018-v4/`、`verification/viewer-browser-20261018/`；旧真实模型账本的只读回放见 `verification/viewer-owned-20261018-v3/`，不是本轮新模型实验。
