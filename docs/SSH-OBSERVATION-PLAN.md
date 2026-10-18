@@ -1,6 +1,6 @@
 # SSH 只读观察：测试先行实施增量
 
-状态：LOCAL_IMPLEMENTATION_COMPLETE；OBS-01～05已完成，OBS-06交付验收进行中，OBS-07真实远端待验证。用户于2026-10-18授权继续远端观察，并要求“先写好相关测试”。本文件新增VIEW-11的实施细节，不改动已经完成的VIEW-01～10或历史验收结构。
+状态：LOCAL_DELIVERY_VERIFIED；OBS-01～06已完成，OBS-07真实远端待验证。用户于2026-10-18授权继续远端观察，并要求“先写好相关测试”。本文件新增VIEW-11的实施细节，不改动已经完成的VIEW-01～10或历史验收结构。
 
 ## 契约与范围
 
@@ -21,7 +21,7 @@ SSH仅执行固定`view-export --state-dir PATH`，请求通过stdin发送，禁
 | OBS-03 | 固定SSH transport与非阻塞采集 | 安全argv/stdin、限额、超时、断连恢复、退出清理测试通过 | 已完成 |
 | OBS-04 | 配置/CLI/现有viewer集成 | 显式local+ssh混合、opaque source ID、页面保持只读 | 已完成 |
 | OBS-05 | 本机fake-SSH全链路验收 | 走真实export CLI，验证网络替身/重连/readonly/hash/关联，不宣称双机已验 | 已完成 |
-| OBS-06 | 打包、文档与跨平台CI | 安装包包含remote接口；原本机功能及新测试通过 | 进行中 |
+| OBS-06 | 打包、文档与跨平台CI | 安装包包含remote接口；原本机功能及新测试通过 | 已完成 |
 | OBS-07 | 第二台真实机器观察验收 | 明确允许节点/room且SSH可达后，验证实际身份、范围与断连恢复 | 待验证 |
 
 ## 测试矩阵
@@ -48,3 +48,11 @@ SSH仅执行固定`view-export --state-dir PATH`，请求通过stdin发送，禁
 本机fake-SSH已经执行真实`view-export`，覆盖混合来源投影、问答与副本关联、断连保留旧数据、恢复、晚到回执、源替换/事件改写及DB/WAL/SHM和控制文件内容不变。这里只验证了本机受控网络替身，没有联系真实远端或调用新模型。完整测试数和最终安装/CI结果以本轮最终验收记录为准，不把后续通过预写成事实。
 
 事件额度按裁剪后的所选输出计数，避免大量其他room历史阻止观察小范围；接收端仍拒绝超过20,000条事件或16MiB的响应。配置与CLI合计最多16个来源，每个SSH来源选择1～16个唯一sealed room。SSH使用现有known_hosts的严格校验，绝对Node/CLI/state路径，固定命令与stdin请求；room scope不是新的SSH权限隔离。配置的本机相对路径以配置目录为基准，SSH路径均为远端绝对POSIX路径。安装与操作示例见[VIEWER.md](VIEWER.md)。
+
+## 最终本机与交付验收（2026-10-18）
+
+测试先行提交4603c22之后的实现c367e8e已推公开开发分支。最终全量252/252、SSH四文件58/58、指南9/9；独立prefix安装42个包文件，未setup静态指南、SSH入口与配置、网页/API均通过。指标保存在verification/onboarding-20261018-v2与verification/ssh-observer-20261018-v4，运行前后源码SHA一致。[跨平台CI](https://github.com/IDLE-Cloud/agent-dialogue/actions/runs/39108558735)的Linux Node22/24/26、macOS Node24四组测试、安装及真实pinned hcom setup/doctor均success。OBS-06完成，OBS-07未提前记为通过。
+
+并发验收曾因测试要求2.5秒内首次同步而失败，记录未覆盖。增加真实请求分类与耗时诊断后观测首次成功3022/3577ms且0拒绝；集成测试改为与生产12秒deadline相容的15秒eventual同步窗口，并在初始请求拒绝时立即失败。未修改生产超时、权限、scope、关联或只读断言。失败原因与更正见对应旧run的diagnosis.json。
+
+新增[使用指南](USAGE.md)、[Agent协议](AGENT-GUIDE.md)、[项目规则片段](../config/AGENTS.snippet.md)和agent-guide命令，支持操作者向每个已有原生聊天分配准确通信上下文。生成器只读验证既有owning node和绑定，不初始化、不启动worker、不发送消息；同项目不同聊天不共用from身份。本轮没有连接真实远端或调用新的原生模型会话，稳定Release仍为v0.2.0。

@@ -185,3 +185,7 @@ VIEW-01～10完成；实现提交d996db0已推公开PR #1，CI39089715479的Linu
 VIEW-11的只读导出协议、双端room/node/nonce校验、固定SSH采集、local+ssh配置、后台非阻塞刷新和本机fake-SSH全链路已实现。OBS-01～05已完成，OBS-06安装/文档/跨平台CI交付验收进行中；OBS-07保持真实远端待验证。fake-SSH执行实际导出CLI并核对作用域、问答关联、断连恢复、晚到回执、源替换与源文件内容不变，没有连接第二台机器或启动新模型。
 
 使用入口为`agent-dialogue view --config FILE`，配置schema与路径规则见[VIEWER.md](VIEWER.md)。SSH仍使用操作者原有账号和严格known_hosts；限定room的导出不是新的OS/SSH权限。每个来源采用最多16MiB、20,000条所选事件的完整快照，全部来源最多16个；未sealed旧room、raw hcom、原生完整聊天和内部Codex子agent仍不跨SSH采集。详细任务状态及后续真机退出条件见[SSH-OBSERVATION-PLAN.md](SSH-OBSERVATION-PLAN.md)。
+
+### SSH观察最终交付补记（2026-10-18）
+
+实现c367e8e已推公开开发分支；252项全量、58项SSH契约/本机fake-SSH集成、9项Agent指南和独立prefix安装通过，Linux Node22/24/26与macOS Node24的[CI39108558735](https://github.com/IDLE-Cloud/agent-dialogue/actions/runs/39108558735)四组success。SSH观察计划OBS-01～06完成，OBS-07真实远端保持待验证；详见[实施与失败记录](SSH-OBSERVATION-PLAN.md)。
