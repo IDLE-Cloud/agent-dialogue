@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "runId": "vps-integration-20990101-v1",
+  "timeoutSeconds": 240,
+  "outputDir": "/absolute/local/repository/verification/vps-integration-20990101-v1",
+  "privateDir": "/absolute/local/repository/.state/vps-integration-20990101-v1",
+  "local": {
+    "executable": "/absolute/local/node",
+    "cli": "/absolute/local/agent-dialogue/bin/agent-dialogue.mjs",
+    "stateDir": "/absolute/local/owned-codex-workspace/.agent-dialogue-test",
+    "cacheDir": "/absolute/local/cache/agent-dialogue",
+    "codexThread": "00000000-0000-0000-0000-000000000000",
+    "codexCwd": "/absolute/local/owned-codex-workspace",
+    "codexSocket": "/absolute/local/codex-control.sock",
+    "codexHome": "/absolute/local/codex-home",
+    "path": "/absolute/local/private-ssh-shim:/usr/bin:/bin",
+    "peerSshDestination": "owned-vps-test"
+  },
+  "remote": {
+    "sshDestination": "owned-vps-test",
+    "sshConfig": "/absolute/local/private-ssh-config",
+    "helper": "/absolute/remote/vps-remote-helper.mjs",
+    "executable": "/absolute/remote/node",
+    "cli": "/absolute/remote/agent-dialogue/bin/agent-dialogue.mjs",
+    "stateDir": "/absolute/remote/owned-test/state",
+    "cacheDir": "/absolute/remote/cache/agent-dialogue",
+    "serviceFile": "/absolute/remote/opencode/service.json",
+    "workspace": "/absolute/remote/owned-test/workspace",
+    "path": "/absolute/remote/private-ssh-shim:/usr/local/bin:/usr/bin:/bin",
+    "peerSshDestination": "owned-mac-reverse-test"
+  },
+  "model": {
+    "providerID": "opencode",
+    "id": "REPLACE_WITH_ENABLED_MODEL_ADVERTISING_ZERO_COST_TIERS"
+  }
+}

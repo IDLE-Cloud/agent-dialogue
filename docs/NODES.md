@@ -173,3 +173,5 @@ agent-dialogue node flush --message m_ACTUAL_MESSAGE_UUID
 2026-10-17 已完成[两独立本机节点的真实模型验证](../verification/node-integration-20261017-v1/metrics.json)：OpenCode 2.0.20、显式零价格模型 `opencode/deepseek-v4.1-flash-free`，9 项断言通过。两个已有聊天在接入前各自保存项目约束；模型发出请求和关联回复，综合双方上下文，双方获得 `remote-stored` 并正确关联全局消息 ID，所有测试 binding 最后已 detach。项目问答阶段用时约 18.7 秒。该验证使用 `local-process`，SSH 双机网络和远端平台仍需单独验收。
 
 同日完成[带真实入口故障负例的第二轮验证](../verification/node-integration-20261017-v2/metrics.json)，17 项断言全部通过，项目问答阶段约 14.6 秒。对已确认的原消息再次 `node flush --message`，返回原远端事件；同 ID 改正文重新签名、篡改签名、已签名但未接受的 room 均被实际 `node receive` 拒绝。两端 inbox 的 event/input 映射、原生 user input 和 hcom 消息条数保持不变，双方原稳定输入 ID 的出现次数在前后均为 1。该轮的两个测试 binding 已 detach，第一轮记录保留。
+
+在新 VPS 上部署 OpenCode V2、hcom、独立账号和双向 SSH 的前置步骤，见 [VPS 部署指南](VPS-DEPLOYMENT.md)。文中的安装模板与具体实机验收结果分别记录。

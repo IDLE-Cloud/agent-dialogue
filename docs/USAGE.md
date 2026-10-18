@@ -175,3 +175,5 @@ agent-dialogue history --last 50 --thread r_ACTUAL_ROOM
 | 多机配对与恢复 | [NODES.md](NODES.md) |
 | 迁移、版本升级 | [MIGRATION.md](MIGRATION.md) |
 | 支持与已验证的边界 | [COMPATIBILITY.md](COMPATIBILITY.md) |
+
+准备新的 VPS 和反向 SSH 路由时，可先按 [VPS 部署前置指南](VPS-DEPLOYMENT.md)核对版本、账号、loopback 服务和固定接收入口，再执行本指南中的已有聊天接入与逐 agent 引导。

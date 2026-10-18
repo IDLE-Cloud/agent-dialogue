@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "runId": "vps-observer-20990101-v1",
+  "outputDir": "/absolute/local/repository/verification/vps-observer-20990101-v1",
+  "privateDir": "/absolute/local/repository/.state/vps-observer-20990101-v1",
+  "localStateDir": "/absolute/local/owned-test/state",
+  "sshExecutable": "/usr/bin/ssh",
+  "sshConfig": "/absolute/local/private-ssh.conf",
+  "remote": {
+    "destination": "owned-vps-test",
+    "executable": "/absolute/remote/node",
+    "cli": "/absolute/remote/tool/bin/agent-dialogue.mjs",
+    "stateDir": "/absolute/remote/owned-test/state",
+    "expectedNodeId": "n_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "rooms": [
+      {
+        "id": "r_11111111-1111-4111-8111-111111111111",
+        "revision": 1,
+        "manifestHash": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+      }
+    ]
+  }
+}

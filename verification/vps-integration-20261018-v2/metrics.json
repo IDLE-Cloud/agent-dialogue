@@ -1,0 +1,88 @@
+{
+  "version": 1,
+  "run_id": "vps-integration-20261018-v2",
+  "started_at": "2026-10-18T12:26:43.909Z",
+  "status": "cleanup_failed",
+  "scope": "one explicit owned local Codex thread and one owned VPS OpenCode chat; two independent signed nodes; actual SSH stdio",
+  "model": {
+    "providerID": "opencode",
+    "id": "deepseek-v4.1-flash-free",
+    "zero_cost_verified": true,
+    "catalogCheckMs": 5938
+  },
+  "transport": "ssh",
+  "realSsh": true,
+  "stages": [
+    {
+      "name": "checking_explicit_owned_environment",
+      "at": "2026-10-18T12:26:43.909Z"
+    },
+    {
+      "name": "free_model_and_existing_codex_verified",
+      "at": "2026-10-18T12:26:58.680Z"
+    }
+  ],
+  "assertions": {
+    "matching_deployed_communication_source": true,
+    "matching_deployed_acceptance_helper": true,
+    "explicit_codex_workspace_matches": true,
+    "only_owned_codex_seed_queue_started": false
+  },
+  "permissions": {
+    "codexApprovalsGranted": 0,
+    "opencodeOnce": 0,
+    "opencodeRejected": 0
+  },
+  "cleanup": [
+    {
+      "target": "owned-codex-turn",
+      "interrupted": false,
+      "checked": false,
+      "reason": "active-turn-ownership-not-confirmed"
+    },
+    {
+      "target": "owned-vps-session",
+      "aborted": true,
+      "nativeChatPreserved": true
+    }
+  ],
+  "sshHelperCalls": 8,
+  "source": {
+    "localNode": "v26.10.0",
+    "localPlatform": "darwin",
+    "localArch": "arm64",
+    "remoteNode": "v24.22.0",
+    "remotePlatform": "linux",
+    "remoteArch": "x64",
+    "remoteOpenCode": "2.0.20",
+    "implementationFiles": {
+      "bin/agent-dialogue.mjs": "c20963ed4565476e47c6156d766474544628584f59cb7beef05f6692e25aa529",
+      "lib/bridge.mjs": "b9ff29cab255cb59fcd7a856c3afac832e7752d751f578dd7913ebe55ed964bf",
+      "lib/bridge-store.mjs": "cace38a83253d9752d702912324c41e49da125fe7d964fff13508c2f9b6bd2a4",
+      "lib/codex.mjs": "7eeb2673662184d2d900975b941638c8480aa75472dd6cd7f77cbc721d50aba6",
+      "lib/opencode.mjs": "cf61e5412f9b119f8347573eb889cc669e1340bba66ea7cff571ef9fbc7be010",
+      "lib/nodes.mjs": "56f74404273ab2bec7ba8b30c3b1d890c3b5c2f9fa873686d7010566bd4da0e3",
+      "lib/node-identity.mjs": "e9c077f28db095ab3083b5e06617712a512b09f32acc55c8d8e1fd5957b63ee7",
+      "lib/node-transport.mjs": "ee0e92416540d7887a82b9ca82d515b41c77f9c53f067186e3fafcfe75773f8f",
+      "lib/submissions.mjs": "c0447008acfcf907eebb426fe66de12ecd53e9988b08e10e038da4fe81f5cc29",
+      "lib/viewer/observation.mjs": "fb6cddbae5a0ef7e20c59a2beb9e353583cb37660301d9f91a53ccaf0764a2cb"
+    },
+    "verifierFiles": {
+      "vps-integration.mjs": "80cbf4f84440bbe17b7bfbd431b21e2e260d9e651863d2573f7feea185664915",
+      "vps-integration-contract.mjs": "fe0c13ae99573ee89e3f60077c5a0e66ad1582693ef0fbd1ed86a621293f725e",
+      "vps-cleanup.mjs": "f0488de741967a1d91f05ae28cd7bddaaa8a64209c04a26fa16a1e6dbd41894e",
+      "vps-remote-helper.mjs": "6b4320bd5bb29c234221e511b6892465d4bf07d3563939abfab765ebe864e1e8"
+    }
+  },
+  "codexComparedSettingFields": [
+    "model",
+    "modelProvider",
+    "cwd"
+  ],
+  "failure": {
+    "phase": "free_model_and_existing_codex_verified",
+    "category": "owned-vps-acceptance-failed",
+    "privateDiagnosisRetained": true
+  },
+  "finished_at": "2026-10-18T12:27:10.479Z"
+}
