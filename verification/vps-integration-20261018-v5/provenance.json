@@ -1,0 +1,8 @@
+{
+  "runId": "vps-integration-20261018-v5",
+  "controllerCommit": "074603e6d38d60e438fb3fc18e9be40953980a2f",
+  "communicationSourceCommit": "fbf5e11b3137aea73956c8fef67de4d5efd80ede",
+  "controllerArchiveSha256": "2db8bbb2c22ffbd1275e9bedd9f613de3a33561c0b01139dc51bb413046bd7d5",
+  "recordedAt": "2026-10-18T13:14:44.593Z",
+  "runtimeCriticalFileHashesMatchOnBothHosts": true
+}

@@ -175,3 +175,7 @@ agent-dialogue node flush --message m_ACTUAL_MESSAGE_UUID
 同日完成[带真实入口故障负例的第二轮验证](../verification/node-integration-20261017-v2/metrics.json)，17 项断言全部通过，项目问答阶段约 14.6 秒。对已确认的原消息再次 `node flush --message`，返回原远端事件；同 ID 改正文重新签名、篡改签名、已签名但未接受的 room 均被实际 `node receive` 拒绝。两端 inbox 的 event/input 映射、原生 user input 和 hcom 消息条数保持不变，双方原稳定输入 ID 的出现次数在前后均为 1。该轮的两个测试 binding 已 detach，第一轮记录保留。
 
 在新 VPS 上部署 OpenCode V2、hcom、独立账号和双向 SSH 的前置步骤，见 [VPS 部署指南](VPS-DEPLOYMENT.md)。文中的安装模板与具体实机验收结果分别记录。
+
+2026-10-18 已完成[真实双机 Codex ↔ VPS OpenCode 验收](../verification/vps-integration-20261018-v5/metrics.json)，40/40 项断言通过。macOS arm64 上的 Codex CLI 0.162.1 使用独立 owned 验证 server 和明确选择的原测试 thread；另一端为 Debian 13 x64 VPS 上的 OpenCode 2.0.20，核验模型 `opencode/deepseek-v4.1-flash-free` 的全部价格层为零。两端先保存各自非秘密的合成项目约束，再接入并完成双向模型问答、4 条全局签名消息和真实 JSON 产物；同 ID SSH 重放、改正文、坏签名、未接受 room 和错误 expected-session 的拒收均通过，既有原生会话保持不变。该结果不证明可接入当前活跃 Codex Desktop 聊天；验收 helper 的持久 lease 不改变生产 adapter 的显式加载要求，也不提供自动恢复退出进程。
+
+同日[独立 SSH 观察验收](../verification/vps-observer-20261018-v1/metrics.json) 11/11 项通过：两次放行真实 SSH 采集、两次只阻断观察客户端的测试 gate，保持 5 个逻辑消息的身份集合，验证 last-good 保留和新 nonce 恢复。两端静止 state 的 11 / 13 个文件在前后哈希中均未变化，且没有模型或原生 harness API 调用。这是受控客户端传输故障，不是 VPS 或公网真实断网。源码对应 `074603e6d38d60e438fb3fc18e9be40953980a2f`；公开稳定版仍是 v0.2.0。

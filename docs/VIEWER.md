@@ -31,7 +31,7 @@ agent-dialogue view --port 9137
 
 ## 汇总本机与 SSH 来源
 
-开发分支现在支持显式登记的 SSH 只读来源，浏览器仍运行在当前电脑的 `127.0.0.1`。远端需要安装同一开发分支和 Node.js 22.13+，不需要启动 viewer、模型或新的网络服务。当前已完成本机 fake-SSH 全链路验收；第二台真实机器的身份、网络与权限仍须单独验证。
+开发分支现在支持显式登记的 SSH 只读来源，浏览器仍运行在当前电脑的 `127.0.0.1`。远端需要安装同一开发分支和 Node.js 22.13+，不需要启动 viewer、模型或新的网络服务。已完成本机 fake-SSH 全链路和 macOS→Debian VPS 的[真实 SSH 采集验收](../verification/vps-integration-20261018-v5/metrics.json)，以及[专用 observer transport gate 的恢复验收](../verification/vps-observer-20261018-v1/metrics.json)。部署到其它机器仍需明确核对它的 node、room pins、SSH 身份与文件权限。
 
 先在**已有通信节点**上确认该空间的 node 和 sealed room。以下命令的 `AGENT_DIALOGUE_STATE_DIR` 应指向同一份现有 state：
 
@@ -155,6 +155,10 @@ node scripts/ssh-observer-verify.mjs ssh-observer-20261018-v99
 
 `tests/viewer-*` 覆盖只读、关联、冲突、错误来源、查询边界、续读、分页和导出。`verification/viewer-*` 保存脱敏性能/回放结果；真实模型旧账本回放与新模型运行明确区分。代码索引为 `lib/viewer/readers/`、`projection.mjs`、`stream.mjs`、`server.mjs`、`cli.mjs` 和 `web/viewer/`。
 
-当前开发分支可聚合显式登记的**本机目录和限定 room 的 SSH 来源**。SSH 观察的本机 fake-SSH 验收已覆盖真实导出 CLI、混合来源、身份与作用域拒绝、断连恢复、晚到回执、源替换和源文件内容不变；没有连接第二台真实机器，不替代真实双机通信或真实远端观察验收。后续再处理明确允许节点/room 的真机验收和可选 VPS 的认证与持久在线入口。Codex 内部 sub-agent 工具对话、原 harness 未交换到 room 的总结和任意桌面窗口都不会自动出现在本页面。
+当前开发分支可聚合显式登记的**本机目录和限定 room 的 SSH 来源**。本机 fake-SSH 验收覆盖真实导出 CLI、混合来源、身份与作用域拒绝、断连恢复、晚到回执、源替换和源文件内容不变；真实双机 SSH 采集及受控 observer transport gate 的恢复验收现已另行通过，见下方记录。可选 VPS 的多用户认证与持久在线入口仍在后续范围。Codex 内部 sub-agent 工具对话、原 harness 未交换到 room 的总结和任意桌面窗口都不会自动出现在本页面。
 
 首版交付验证：实现提交 `d996db0` 的 [四平台组合 CI](https://github.com/IDLE-Cloud/agent-dialogue/actions/runs/39089715479) 全部通过，包括185项测试、独立全局prefix安装、网页资源/API和pinned hcom安装校验。合成性能与浏览器截图见仓库 `verification/viewer-20261018-v4/`、`verification/viewer-browser-20261018/`；旧真实模型账本的只读回放见 `verification/viewer-owned-20261018-v3/`，不是本轮新模型实验。
+
+2026-10-18 追加：冻结源码提交 `074603e6d38d60e438fb3fc18e9be40953980a2f` 的[真实双机验收](../verification/vps-integration-20261018-v5/metrics.json)共 **40/40** 项通过，其中观察阶段通过真实 SSH 采集两端已有 room，将四条正式全局消息去重并关联回复及原生受理证据。采集在两个 owned worker 均停止后执行，静止来源本机11个、VPS13个文件的前后字节哈希一致。此前真实模型交流使用 macOS arm64 上 Codex CLI 0.162.1 专用验证 server 的同一个 owned 原测试 thread，以及 Debian 13 x64 上 OpenCode 2.0.20；它不代表接入当前活跃 Codex Desktop 窗口。
+
+同日[独立观察恢复验收](../verification/vps-observer-20261018-v1/metrics.json) **11/11** 项通过，模型调用和原生 harness API 调用均为零。初始及恢复后的两次允许采集实际经过 SSH；专用进程内 gate 只阻断准确的 observer export 调用，两次被阻断的请求不运行 SSH。来源因此显示不可用，保留最后成功的五条逻辑消息与采集时间；恢复后时间更新、消息不重复，本机11个和远端13个文件字节哈希仍一致。这个故障模型没有中断 VPS 或公网、没有改变 bridge route，也没有验证生产 adapter 自动恢复聊天或重启进程。完整公网故障与长期运行仍需单独验证。

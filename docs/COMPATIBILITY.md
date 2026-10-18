@@ -1,6 +1,6 @@
 # 兼容性与验证边界
 
-Node.js 要求为 22 或更新版本，无 npm 运行依赖。`setup` 显式下载固定的 hcom 0.7.30 发布包并核对 SHA-256；安装全局命令本身不启动 agent、后台服务或模型调用。
+Node.js 要求为 22.13 或更新的受支持版本，无 npm 运行依赖。`setup` 显式下载固定的 hcom 0.7.30 发布包并核对 SHA-256；安装全局命令本身不启动 agent、后台服务或模型调用。
 
 公开的 v0.2.0 Release 资产为 `idle-cloud-agent-dialogue-0.2.0.tgz`，npm 包名为 `@idle-cloud/agent-dialogue`。可直接安装 [Release 包](https://github.com/IDLE-Cloud/agent-dialogue/releases/download/v0.2.0/idle-cloud-agent-dialogue-0.2.0.tgz)，无需 GitHub 登录。这个 JavaScript 包相同，`setup` 再按所在机器选择对应 hcom 二进制；Release 下载不代表已完成所有平台的模型验收。
 
@@ -10,7 +10,7 @@ Node.js 要求为 22 或更新版本，无 npm 运行依赖。`setup` 显式下�
 |---|---|---|
 | macOS arm64 | 固定发布包安装入口 | 原项目已完成本机 Codex/OpenCode 双向交流与 OpenCode 三个已有聊天协作；独立版70项测试、npm全局安装、固定依赖安装与幂等setup通过 |
 | macOS x64 | 固定发布包安装入口 | 尚未完成该硬件上的真实模型验收 |
-| Linux GNU x64 | 固定发布包安装入口 | Ubuntu CI已通过Node22/24/26测试、全局包安装、真实hcom setup和doctor；真实模型联调仍待该平台验收 |
+| Linux GNU x64 | 固定发布包安装入口 | Ubuntu CI已通过Node22/24/26测试、全局包安装、真实hcom setup和doctor；Debian 13 x64 VPS 上 OpenCode 2.0.20 与 macOS Codex 的真实双机 SSH 模型验收已通过，见下方2026-10-18记录 |
 | Linux GNU arm64 | 固定发布包安装入口 | 需要 CI 包校验与真实 harness 联调 |
 | Windows 原生 | 当前不支持 `setup` | 尚未适配本机进程、路径与安装行为 |
 | Windows WSL2 | 可选择 Linux 环境尝试部署 | 使用 WSL 内的 Node、harness 和服务；真实 WSL 端到端尚未验收，不等于连接 Windows 原生已有聊天 |
@@ -23,8 +23,9 @@ Linux GNU 发布包支持不包含 Alpine/musl。平台安装检查与真实模�
 |---|---|---|
 | Codex CLI | `launch codex`，hcom 原生收发 | macOS arm64 原型已验证与 OpenCode 双向问答及连续追问；与下方原生队列adapter分别验收 |
 | Codex 0.163.0 共享 daemon | `sessions codex`、`attach codex`、`room`、`collab send` | 使用既有WebSocket-over-UDS；精确thread UUID/服务/CWD校验、稳定client输入ID、队列归属与显式resume已实现；真实模型验证另记 |
+| Codex CLI 0.162.1 专用验证 server | `attach codex`、本地 submission、SSH room 通信 | macOS arm64 上显式选择并恢复同一个 owned 测试 thread，与 Debian VPS OpenCode 双向交流及项目 JSON 产物验收通过；不等于接入当前活跃 Desktop 聊天 |
 | OpenCode CLI | `launch opencode`，hcom 原生收发 | macOS arm64 原型已验证与 Codex 互通 |
-| OpenCode 2.0.20 已有聊天 | `sessions opencode`、`attach`、`room`、`collab send` | 已验证精确原生 session、三个已有聊天项目问答、错误绑定拒收与 worker 重启检查；当前仅现有本机 loopback 服务 |
+| OpenCode 2.0.20 已有聊天 | `sessions opencode`、`attach`、`room`、`collab send` | 已验证精确原生 session、三个已有聊天项目问答、错误绑定拒收与 worker 重启检查；Debian VPS 双机验收已通过。每个节点的 adapter 仍连接该节点本机 loopback 服务，节点之间使用 SSH |
 | Kimi Code CLI | `launch kimi` | 提供启动入口，尚未完成该版本真实双向模型验收 |
 | Pi | `launch pi` | 原型已观察启动、绑定与消息交入；配置供应商额度错误使模型回复未通过 |
 | 任意桌面前端当前活跃聊天、ZCode | 后续集成 | 列表/绑定精确原生thread不代表已经连接该前端；不能把原thread恢复启动描述为已接入当前活跃桌面实例 |
@@ -40,8 +41,9 @@ OpenCode 原生 adapter 按本机 2.0.20 接口实现：`/api/session`、`/api/s
 - room 是讨论路由，不隔离已有聊天的模型上下文；两个 room 使用同一聊天就共享其历史。
 - `admitted` 是原生接口受理回执；模型回复和项目产物需要另查证据。
 - 当前没有自动拉起退出进程、任意远端控制、自动破锁或可承诺的完整离线 exactly-once。
-- v0.3已有独立节点卡片、共同room、SSH stdio和全局消息ID；两个独立本机节点的真实免费OpenCode模型项目协作已验证。真实双机SSH仍待远端可达，不把local-process验证当成双机通过。详见[NODES.md](NODES.md)。
-- 当前面向同一用户的可信本机进程；alias、通信空间和 room 不是多用户认证或沙箱边界。
+- v0.3已有独立节点卡片、共同room、SSH stdio和全局消息ID；同机双节点与2026-10-18真实双机 SSH 场景分别保留验收结果。后者明确使用 macOS Codex 与 Debian VPS OpenCode，不能外推到未验收的 harness 或平台。详见[NODES.md](NODES.md)。
+- 当前面向同一用户授权的可信节点与本机进程；alias、通信空间和 room 不是多用户认证或沙箱边界。
+- 真实验收使用的持久 Codex subscription lease 属于验收 helper。生产 adapter 不会因此自动 resume 聊天或重启退出的进程；这些动作仍需显式授权与对应实现。
 
 ## v0.3 开发验证
 
@@ -65,3 +67,9 @@ Codex原生测试首轮`verification/codex-integration-20261017-v1/metrics.json`
 
 
 首次独立发行CI：[run 39027853400](https://github.com/IDLE-Cloud/agent-dialogue/actions/runs/39027853400)。Ubuntu Node22/24/26与macOS Node24四个job均通过70项测试、独立全局安装、真实依赖下载校验及doctor；它们不包含远程模型调用。
+
+## 2026-10-18 真实双机与观察恢复验收
+
+冻结源码提交 `074603e6d38d60e438fb3fc18e9be40953980a2f` 的[真实双机验收](../verification/vps-integration-20261018-v5/metrics.json)通过 **40/40** 项断言：macOS arm64、Codex CLI 0.162.1 专用验证 server 中同一个 owned 原测试 thread，与 Debian 13 x64 VPS 上 OpenCode 2.0.20、`opencode/deepseek-v4.1-flash-free` 完成双向真实模型交流。双方独立节点通过真实 SSH stdio 交换四条全局消息，保留原生上下文，读取并验证实际生成的 nonce JSON 项目产物；重放、同 ID 改正文、坏签名、未接受 room 和错误目标 session 的负例均有证据。Codex 未获额外批准，OpenCode 仅为两条准确通信命令各获一次批准。两个 owned worker 已停止，原生聊天保留。这不是对当前活跃 Desktop 实例的接入验收。
+
+[独立 SSH 观察恢复验收](../verification/vps-observer-20261018-v1/metrics.json)通过 **11/11** 项断言：初始及恢复后的两次采集实际经过 SSH，两个中间采集由专用 observer 客户端 transport gate 拒绝，随后恢复为新采集时间且五条逻辑消息不重复。它没有断开 VPS、网卡或公网，也没有修改 bridge route、SSH daemon 或全局 SSH 配置。观察阶段调用模型与原生 harness API 均为零；静止来源的本机11个、远端13个文件前后字节哈希一致。单元测试 **344/344** 和包含46个文件的安装包检查另行通过。上述结果属于 v0.3 开发分支，稳定 Release 仍为 v0.2.0。

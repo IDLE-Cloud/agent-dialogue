@@ -1,0 +1,90 @@
+{
+  "version": 1,
+  "run_id": "vps-observer-20261018-v1",
+  "started_at": "2026-10-18T13:01:46.855Z",
+  "status": "passed",
+  "scenario": "real-ssh-observation-controlled-transport-gate",
+  "actualSshSelected": true,
+  "modelCalls": 0,
+  "nativeHarnessApiCalls": 0,
+  "faultModel": "A dedicated process-local observer SSH shim denies only the exact selected export invocation while closed. Allowed and recovered collections use the explicitly selected SSH executable. No network interface, firewall, SSH daemon, bridge route or global SSH configuration is changed.",
+  "sourceFiles": {
+    "scripts/vps-observer-integration.mjs": "8570030b12443e510d590167e359dd95b8e2b14e01ed19625c6b4edb103b32e1",
+    "scripts/vps-observer-contract.mjs": "5c8527e19dadbd34f3098b87eb42d8d54e16bf665273ba0439557403a404ed69",
+    "lib/viewer/readers/ssh.mjs": "7aafc91ec2d2cc182f3ea999427239c63f0cbd7f93ba61ad3ecc239bdd0138ab",
+    "lib/viewer/observation.mjs": "fb6cddbae5a0ef7e20c59a2beb9e353583cb37660301d9f91a53ccaf0764a2cb",
+    "lib/viewer/readers/local.mjs": "33888d7d4301df8bebfb96902ca25e8a9c7daea7864badfbf69deba15972e8f9",
+    "lib/viewer/stream.mjs": "9dc10542031dcc870ac9f6b1f988db043ecd57e2b3c8e8a88b51a67b4f8bbffa"
+  },
+  "stages": [
+    {
+      "name": "hashing_quiescent_sources_before_observation",
+      "at": "2026-10-18T13:01:46.855Z"
+    },
+    {
+      "name": "observer_live",
+      "at": "2026-10-18T13:01:54.612Z"
+    },
+    {
+      "name": "observer_stale",
+      "at": "2026-10-18T13:01:54.719Z"
+    },
+    {
+      "name": "observer_stale-confirmed",
+      "at": "2026-10-18T13:01:58.329Z"
+    },
+    {
+      "name": "observer_recovered",
+      "at": "2026-10-18T13:02:04.153Z"
+    },
+    {
+      "name": "hashing_quiescent_sources_after_recovery",
+      "at": "2026-10-18T13:02:04.156Z"
+    },
+    {
+      "name": "controlled_real_ssh_observer_recovery_completed",
+      "at": "2026-10-18T13:02:07.389Z"
+    }
+  ],
+  "assertions": {
+    "both_explicit_sources_contain_existing_state": true,
+    "real_ssh_initial_and_recovered_snapshots_match_node_and_room_pins": true,
+    "selected_remote_history_is_nonempty": true,
+    "closed_gate_marks_remote_unavailable_and_retains_last_good_history": true,
+    "recovery_returns_live_fresh_snapshot_without_message_duplication": true,
+    "gate_blocked_at_least_two_export_attempts_without_running_ssh": true,
+    "initial_and_recovered_exports_used_the_allowed_ssh_route": true,
+    "every_collection_attempt_has_a_fresh_protocol_nonce": true,
+    "local_state_bytes_unchanged_through_disconnect_and_recovery": true,
+    "remote_state_bytes_unchanged_through_disconnect_and_recovery": true,
+    "implementation_source_stable_during_acceptance": true
+  },
+  "cleanup": [
+    {
+      "target": "observer-gate",
+      "closed": true
+    },
+    {
+      "target": "owned-viewer-and-collector",
+      "closed": true
+    }
+  ],
+  "sourceCount": 2,
+  "selectedRoomCount": 1,
+  "observation": {
+    "initialAcceptedSnapshot": true,
+    "staleConfirmed": true,
+    "recoveredAcceptedSnapshot": true,
+    "logicalMessageCount": 5,
+    "selectedRemoteEvents": 4,
+    "allowedShimCalls": 2,
+    "blockedShimCalls": 2,
+    "auditSha256": "85b172242ab647a6f72a61caee34ef06deffed0ca25de6d4c5a29d13c2de0be7"
+  },
+  "hashedFiles": {
+    "local": 11,
+    "remote": 13
+  },
+  "finished_at": "2026-10-18T13:02:07.391Z",
+  "elapsed_ms": 20536
+}

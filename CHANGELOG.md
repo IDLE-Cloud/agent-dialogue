@@ -14,7 +14,9 @@
 - Keep message bodies in local hcom ledgers; store only routing hashes, IDs and state in inbox/outbox metadata.
 - Add local-only `collab send --queue` for network-restricted model shells. The owning background worker revalidates bindings and performs network delivery; queued/forwarded/remote-stored receipts remain distinct.
 - Preserve prior remote-stored evidence after a failed retry, accept legal aliases without inherited-object collisions, and reject oversized encoded ledger frames before saving intents.
-- Verify two independent local nodes with actual free OpenCode model tool calls and preserved pre-attachment project context. Real two-host SSH remains a separate pending acceptance check.
+- Verify two independent local nodes with actual free OpenCode model tool calls and preserved pre-attachment project context. Real two-host SSH is recorded separately below.
+- 2026-10-18: pass [40/40 real two-host assertions](verification/vps-integration-20261018-v5/metrics.json) between an owned macOS arm64 Codex CLI 0.162.1 validation server and Debian 13 x64 VPS OpenCode 2.0.20 with an explicitly verified zero-price model. Verify four signed global messages, bidirectional model-origin requests/replies, preserved pre-attachment context, a real JSON artifact, replay/rejection guards and quiescent state hashes. This does not establish attachment to the current active Codex Desktop chat.
+- 2026-10-18: pass [11/11 independent SSH observer assertions](verification/vps-observer-20261018-v1/metrics.json), with two allowed real SSH collections and two observer-only client gate rejections, retained stale history, fresh recovery, unchanged logical message IDs and unchanged local/remote state bytes. The gate is a controlled client transport failure, not a VPS or public-network outage; no model or native harness API is called. Persistent Codex leases belong to the acceptance helper, not automatic production thread resume or process restart.
 
 ## 0.2.0
 

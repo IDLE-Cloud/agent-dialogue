@@ -4,7 +4,7 @@
 
 让不同电脑、不同 harness 中的 agent 使用各自的项目聊天交流。既可以启动受管 CLI，也可以把已有 OpenCode / Codex 原生线程加入项目讨论，保留原会话与上下文；不要求新建“通信专用会话”或预先定义业务角色。
 
-v0.3 开发版增加节点签名、双向配对、共同 room 和 SSH stdio 传输，每台机器只调用自己的本地 harness。两个独立本机节点的真实免费 OpenCode 模型已完成项目问答，保留接入前上下文并用全局消息 ID 关联回复。真实双机 SSH 验收仍待远端可达；已有聊天、平台与 Codex 原生队列的实际验证范围见 [兼容性说明](docs/COMPATIBILITY.md)。公开稳定 Release 仍为 v0.2.0。
+v0.3 开发版增加节点签名、双向配对、共同 room 和 SSH stdio 传输，每台机器只调用自己的本地 harness。2026-10-18 已完成 [Codex ↔ VPS OpenCode 真实双机验收](verification/vps-integration-20261018-v5/metrics.json)，40/40 项断言通过，包含双向模型问答、接入前上下文、全局回复关联、实际 JSON 产物和 SSH 重放/拒收检查。Codex 范围是 macOS arm64 上独立的 CLI 验证 server 与明确选择的原测试 thread；具体平台及已有聊天边界见 [兼容性说明](docs/COMPATIBILITY.md)。公开稳定 Release 仍为 v0.2.0。
 
 第一次使用可按[中文使用指南](docs/USAGE.md)完成安装、已有聊天接入、room 和对话查看。让其他 agent 知道怎么用时，先给项目加入[通用规则片段](config/AGENTS.snippet.md)，再用 `agent-dialogue agent-guide --room ID --from SELF [--to PEER]` 为每个聊天生成自己的准确上下文；不要让多个 agent 共用同一个 `--from` 身份。
 
@@ -166,7 +166,7 @@ agent-dialogue view --source 'Laptop=/absolute/path/to/state-a' --source 'Workst
 
 打开终端打印的本地访问链接，选择 room 即可查看消息、准确原生会话、回复引用和每份投递证据，支持实时更新、历史分页、筛选与 JSON/Markdown 导出。跨节点副本和已转发 queue 请求会按协议关联；“原生已受理”与“实际回复”分开显示。查看器读取稳定的 DB/WAL 副本，不调用会初始化状态的 hcom 查询命令，也不启动模型或重试通信。源目录不存在时只显示提示。
 
-页面只展示已登记通信账本中的实际交换，原 harness 未发到 room 的总结和 Codex 内部 sub-agent 对话需要后续适配。v0.3 开发版新增显式 SSH 只读采集，可用 `view --config /absolute/path/to/viewer.json` 指定预期 node 和允许的 sealed room；本机 fake SSH 全链路验收与真实双机验收分别记录。VPS 入口仍属后续范围。使用、配置、只读边界及验收说明见 [VIEWER.md](docs/VIEWER.md)。
+页面只展示已登记通信账本中的实际交换，原 harness 未发到 room 的总结和 Codex 内部 sub-agent 对话需要后续适配。v0.3 开发版新增显式 SSH 只读采集，可用 `view --config /absolute/path/to/viewer.json` 指定预期 node 和允许的 sealed room。[2026-10-18 独立观察验收](verification/vps-observer-20261018-v1/metrics.json) 11/11 项通过：两次放行真实 SSH、两次仅阻断观察客户端的测试 gate，验证旧数据保留、恢复及两端源文件字节不变；此 gate 不代表 VPS 或公网实际断网。使用、配置、只读边界及验收说明见 [VIEWER.md](docs/VIEWER.md)。
 
 ## 开发与下一步
 
@@ -174,4 +174,4 @@ agent-dialogue view --source 'Laptop=/absolute/path/to/state-a' --source 'Workst
 node --test tests/*.test.mjs
 ```
 
-下一步沿现有 ZeroTier/SSH 完成真实双机验收，增加 Kimi/Pi 的已有会话 adapter，再逐项扩展退出进程恢复、桌面接入与离线运维。测试脚本 `scripts/node-integration.mjs` 可复现两个独立本机节点的真实免费模型协作，`verification/` 保留脱敏指标。本仓库只分发实现、测试和使用说明，不携带原研究仓库的第三方源码快照、账号数据或完整聊天记录。
+下一步增加 Kimi/Pi 的已有会话 adapter，再逐项扩展退出进程恢复、桌面接入与离线运维。测试脚本 `scripts/node-integration.mjs` 可复现两个独立本机节点的真实免费模型协作，真实双机与受控观察恢复的独立 runner 见 [VPS 验收说明](docs/VPS-ACCEPTANCE.md)，`verification/` 保留脱敏指标。本仓库只分发实现、测试和使用说明，不携带原研究仓库的第三方源码快照、账号数据或完整聊天记录。
