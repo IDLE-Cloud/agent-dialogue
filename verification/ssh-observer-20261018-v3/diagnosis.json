@@ -1,0 +1,31 @@
+{
+  "version": 1,
+  "recordedAt": "2026-10-18T07:39:02.607Z",
+  "status": "test-synchronization-budget-corrected",
+  "failedRuns": [
+    "verification/onboarding-20261018-v1/metrics.json",
+    "verification/ssh-observer-20261018-v3/metrics.json"
+  ],
+  "failure": "An integration assertion required the first local fake-SSH snapshot within 2500 ms. Parallel process load exceeded that budget.",
+  "evidence": {
+    "parallelFullSuite": {
+      "tests": 252,
+      "passed": 252,
+      "failed": 0,
+      "firstAcceptedRequestMs": 3577,
+      "rejectedAttempts": 0
+    },
+    "parallelSshSuite": {
+      "tests": 58,
+      "passed": 58,
+      "failed": 0,
+      "firstAcceptedRequestMs": 3022,
+      "rejectedAttempts": 0
+    }
+  },
+  "change": "Add safe request lifecycle timing and classify rejection; wait up to 15 seconds for eventual synchronization, aligned with the production 12-second request deadline and bounded termination. Reject any initial transport/protocol failure immediately. Routing, scope, secrets, hash and message-count assertions are retained.",
+  "productionTimeoutChanged": false,
+  "modelCalls": 0,
+  "actualSshConnections": 0,
+  "finalAcceptance": "Separate fresh verifier runs required after the test edit; earlier failures remain preserved."
+}

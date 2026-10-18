@@ -2,6 +2,8 @@
 
 ## 0.3.0 (development)
 
+- Add packaged operator and agent guides, a portable project rules snippet, and read-only `agent-guide --room ID --from ALIAS [--to ALIAS]` contexts with owning-node checks, exact peer sessions and quoted queue commands.
+- Add explicit SSH observer configuration and a fixed read-only export entry. Verify node and sealed-room pins, nonce and wire signatures at both ends; collect bounded room snapshots asynchronously and retain stale history across disconnects.
 - Add a loopback-only read-only browser viewer for explicit local sources, exact session identities, protocol-linked replies, queue/result folding, signed wire-copy deduplication and delivery evidence.
 - Read stable DB/WAL byte snapshots through SQLite only in private temporary copies; leave communication DB/WAL/SHM, stores, worker cursors and lifecycle untouched. Observe late receipts separately from new events.
 - Add filtered history paging, bounded SSE replay/reset, selected-room JSON/Markdown export and source availability diagnostics. Serve plain message text with local access tokens, Host/Origin checks and restrictive CSP.

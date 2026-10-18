@@ -23,7 +23,7 @@ try {
   for (const path of paths) assert.ok(!/(^|\/)(\.state|\.runtime|research|verification|node_modules|tests)(\/|$)/.test(path), path);
   assert.ok(paths.includes('bin/agent-dialogue.mjs')); assert.ok(paths.includes('config/hcom.lock.json'));
   assert.ok(paths.includes('lib/paths.mjs')); assert.ok(!paths.includes('docs/NEXT_STEPS.source.md'));
-  for (const path of ['lib/adapters.mjs', 'lib/codex.mjs', 'lib/nodes.mjs', 'lib/node-identity.mjs', 'lib/node-transport.mjs', 'lib/submissions.mjs', 'docs/NODES.md', 'lib/viewer/server.mjs', 'lib/viewer/readers/local.mjs', 'web/viewer/index.html', 'web/viewer/app.js', 'web/viewer/style.css', 'docs/VIEWER.md']) assert.ok(paths.includes(path), path);
+  for (const path of ['lib/adapters.mjs', 'lib/codex.mjs', 'lib/nodes.mjs', 'lib/node-identity.mjs', 'lib/node-transport.mjs', 'lib/submissions.mjs', 'docs/NODES.md', 'lib/viewer/server.mjs', 'lib/viewer/readers/local.mjs', 'lib/viewer/readers/ssh.mjs', 'lib/viewer/observation.mjs', 'lib/viewer/export-cli.mjs', 'lib/viewer/config.mjs', 'lib/agent-guide.mjs', 'web/viewer/index.html', 'web/viewer/app.js', 'web/viewer/style.css', 'docs/VIEWER.md', 'docs/USAGE.md', 'docs/AGENT-GUIDE.md', 'config/AGENTS.snippet.md']) assert.ok(paths.includes(path), path);
   const prefix = join(temp, 'prefix'), cwd = join(temp, 'unrelated cwd'), state = join(temp, 'state'), cache = join(temp, 'cache');
   await mkdir(cwd); await mkdir(state);
   await call('npm', ['install', '--global', '--prefix', prefix, '--ignore-scripts', '--no-audit', '--no-fund', join(temp, packed.filename)]);
@@ -34,6 +34,7 @@ try {
   const pkg = join(prefix, 'lib/node_modules/@idle-cloud/agent-dialogue');
   const before = await readdir(pkg);
   assert.match(await call(command, ['--help'], { cwd, env }), /attach <opencode\|codex>/);
+  assert.match(await call(command, ['agent-guide'], { cwd, env: { ...env, AGENT_DIALOGUE_STATE_DIR: '' } }), /Establish your identity once/);
   assert.deepEqual(JSON.parse(await call(command, ['bindings'], { cwd, env })), { bindings: [], rooms: [] });
   const node = JSON.parse(await call(command, ['node', 'init', '--name', 'package-test'], { cwd, env }));
   const exported = JSON.parse(await call(command, ['node', 'export'], { cwd, env }));
@@ -42,7 +43,9 @@ try {
   const doctor = JSON.parse(await call(command, ['doctor', '--json'], { cwd, env }));
   assert.equal(doctor.stateDir, state); assert.equal(doctor.cacheDir, cache); assert.equal(doctor.hcom.version, 'hcom 0.7.30');
   const sourceBefore = await readdir(state);
-  const viewer = spawn(command, ['view'], { cwd, env, shell: false, stdio: ['ignore', 'pipe', 'pipe'] });
+  const viewerConfig = join(temp, 'observer.json');
+  await writeFile(viewerConfig, JSON.stringify({ version: 1, sources: [{ kind: 'local', label: 'Installed package', path: './state' }] }));
+  const viewer = spawn(command, ['view', '--config', viewerConfig], { cwd, env, shell: false, stdio: ['ignore', 'pipe', 'pipe'] });
   let viewerClosed = false;
   const viewerClose = new Promise(resolveClosed => viewer.once('close', () => { viewerClosed = true; resolveClosed(); }));
   try {
@@ -83,5 +86,5 @@ try {
   assert.deepEqual(await readdir(pkg), before, 'Running installed CLI must not create state/cache inside package');
   const installed = JSON.parse(await readFile(join(pkg, 'package.json'), 'utf8'));
   assert.equal(installed.version, JSON.parse(await readFile(join(root, 'package.json'), 'utf8')).version);
-  console.log(JSON.stringify({ status: 'passed', name: installed.name, version: installed.version, packedFiles: paths.length, packedBytes: packed.size, checks: ['package allowlist', 'isolated prefix install', 'global executable', 'arbitrary working directory', 'external state/cache', 'signed public node export', 'installed viewer assets/API', 'viewer leaves missing ledger absent', 'no package mutation'] }, null, 2));
+  console.log(JSON.stringify({ status: 'passed', name: installed.name, version: installed.version, packedFiles: paths.length, packedBytes: packed.size, checks: ['package allowlist including SSH reader/export entry and onboarding guides', 'isolated prefix install', 'global executable', 'agent guide before setup', 'arbitrary working directory', 'external state/cache', 'signed public node export', 'installed viewer assets/API with config-relative source', 'viewer leaves missing ledger absent', 'no package mutation'] }, null, 2));
 } finally { await rm(temp, { recursive: true, force: true }); }

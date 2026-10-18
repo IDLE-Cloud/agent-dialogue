@@ -160,6 +160,15 @@ test('SSH rejects oversized, malformed, extra-output, nonce, node and room-misma
   for (const stdout of outputs) await assert.rejects(fetchSshObservation(spec, { requestId: nonce, runner: async () => ({ code: 0, stdout }) }), /SSH|observation/i);
 });
 
+test('SSH rejects invalid UTF-8 bytes instead of silently substituting a node display name', async () => {
+  const { spec, source } = fixture();
+  const stdout = Buffer.from(JSON.stringify(responseFor(source, spec)));
+  const nameOffset = stdout.indexOf(source.node.name);
+  assert.ok(nameOffset >= 0);
+  stdout[nameOffset] = 0xff;
+  await assert.rejects(fetchSshObservation(spec, { requestId: nonce, runner: async () => ({ code: 0, stdout }) }), /UTF-8/);
+});
+
 test('the actual SSH runner enforces its deadline and suppresses private child diagnostics', { timeout: 20_000 }, async t => {
   const { spec } = fixture();
   const directory = await mkdtemp(join(tmpdir(), 'agent-dialogue-view-ssh-timeout-'));
@@ -233,6 +242,27 @@ test('remote failures preserve the last successful observation clock, recover fu
   assert.equal(recovered.observedAt, source.observedAt);
   assert.equal(recovered.events.length, source.events.length);
   await reader.close();
+});
+
+test('a synchronous remote reader failure clears its pending request and permits the next scheduled retry', async () => {
+  const { spec, source } = fixture();
+  let now = 0, calls = 0;
+  const reader = createSourceReader({ clock: () => now, remoteReader: () => {
+    calls++;
+    if (calls === 1) throw new Error('PRIVATE_SYNCHRONOUS_READER_ERROR');
+    return Promise.resolve({ ...source, id: spec.id, label: spec.label });
+  } });
+  try {
+    await reader(spec); await turn();
+    const failed = await reader(spec);
+    assert.equal(failed.available, false);
+    assert.equal(JSON.stringify(failed).includes('PRIVATE_SYNCHRONOUS_READER_ERROR'), false);
+    now = 3000;
+    await reader(spec); await turn();
+    const recovered = await reader(spec);
+    assert.equal(calls, 2);
+    assert.equal(recovered.available, true);
+  } finally { await reader.close(); }
 });
 
 test('late remote receipts update evidence without creating duplicate logical messages or changing the source generation', async () => {

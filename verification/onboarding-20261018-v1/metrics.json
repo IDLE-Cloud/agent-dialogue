@@ -1,0 +1,41 @@
+{
+  "version": 1,
+  "recordedAt": "2026-10-18T07:35:30.660Z",
+  "baseCommit": "4603c22b1ec76433d212641109658e05a62a394e",
+  "implementationSha256": "4fe6f5f3d68000d94720cd867c50508d6aa4e0b34b96ef9b1974c5c2ed689cc7",
+  "sourceStableDuringRun": true,
+  "unit": {
+    "exitCode": 1,
+    "tests": 251,
+    "pass": 250,
+    "fail": 1,
+    "cancelled": 0,
+    "skipped": 0,
+    "todo": 0,
+    "elapsedMs": 12985.6
+  },
+  "package": {
+    "exitCode": 0,
+    "elapsedMs": 6600.9,
+    "status": "passed",
+    "name": "@idle-cloud/agent-dialogue",
+    "version": "0.3.0",
+    "packedFiles": 42,
+    "packedBytes": 121940,
+    "checks": [
+      "package allowlist including SSH reader/export entry and onboarding guides",
+      "isolated prefix install",
+      "global executable",
+      "agent guide before setup",
+      "arbitrary working directory",
+      "external state/cache",
+      "signed public node export",
+      "installed viewer assets/API with config-relative source",
+      "viewer leaves missing ledger absent",
+      "no package mutation"
+    ]
+  },
+  "modelCalls": 0,
+  "actualSshConnections": 0,
+  "completed": false
+}

@@ -29,6 +29,75 @@ agent-dialogue view --port 9137
 
 缺失的空间会显示“来源或账本不存在”，不会自动创建 state、hcom 数据库、节点身份或绑定。不接受 `--host 0.0.0.0`。同一真实目录不能用不同标签重复登记。网页无法增加来源、提供任意路径或执行 SQL。
 
+## 汇总本机与 SSH 来源
+
+开发分支现在支持显式登记的 SSH 只读来源，浏览器仍运行在当前电脑的 `127.0.0.1`。远端需要安装同一开发分支和 Node.js 22.13+，不需要启动 viewer、模型或新的网络服务。当前已完成本机 fake-SSH 全链路验收；第二台真实机器的身份、网络与权限仍须单独验证。
+
+先在**已有通信节点**上确认该空间的 node 和 sealed room。以下命令的 `AGENT_DIALOGUE_STATE_DIR` 应指向同一份现有 state：
+
+```bash
+# 在远端交互终端执行：得到真实 Node 二进制和安装后的 CLI 文件路径。
+node -p 'process.execPath'
+node -e 'console.log(require("node:fs").realpathSync(process.argv[1]))' "$(command -v agent-dialogue)"
+
+# 已有节点的公开身份，以及当前 room 的完整身份。
+AGENT_DIALOGUE_STATE_DIR='/absolute/path/to/remote-state' agent-dialogue node status
+AGENT_DIALOGUE_STATE_DIR='/absolute/path/to/remote-state' agent-dialogue bindings
+```
+
+配置的 `expectedNodeId` 取自 `node status` 的 `node.nodeId`；`rooms` 每项复制 `bindings` 中所选 `rooms[]` 的 `id`、`revision`、`manifestHash`，不能用名称或截短 ID。只需把这些字段放进配置，不必把完整的 bindings/worker 输出复制到别的电脑。当前 `room create` 会生成 sealed room；旧 room 缺少 revision/hash 时，不要自行填写或只修改旧 room，先按 [节点通信说明](NODES.md) 建立并接受明确的 collaboration room。远端观察要求所选 room 在该节点有本地参与者。
+
+在观看的电脑保存例如 `viewer-sources.json`，替换其中路径、node ID 和 room pins：
+
+```json
+{
+  "version": 1,
+  "sources": [
+    {
+      "kind": "local",
+      "label": "Laptop",
+      "path": "./local-state"
+    },
+    {
+      "kind": "ssh",
+      "label": "Research server",
+      "destination": "research-server",
+      "executable": "/absolute/path/to/node",
+      "cli": "/absolute/path/to/agent-dialogue/bin/agent-dialogue.mjs",
+      "stateDir": "/absolute/path/to/remote-state",
+      "expectedNodeId": "n_<node status 的完整 64 位小写十六进制 hash>",
+      "rooms": [
+        {
+          "id": "r_<完整 room UUID>",
+          "revision": 1,
+          "manifestHash": "<该 room 的完整 64 位小写十六进制 hash>"
+        }
+      ]
+    }
+  ]
+}
+```
+
+```bash
+agent-dialogue view --config ./viewer-sources.json
+
+# 可同时添加本机来源；配置与 CLI 合计最多 16 个来源。
+agent-dialogue view --config ./viewer-sources.json \
+  --source 'Additional local=/absolute/path/to/another-state'
+```
+
+配置是 version 1 的严格 JSON：顶层只有 `version`、`sources`，每个来源只接受示例中的字段，不接受任意 SSH 参数或执行命令。文件最大 64 KiB；label 为 1–64 个可显示字符。`local.path` 相对**配置文件所在目录**解析；CLI `--source` 的相对路径相对当前工作目录解析。SSH 的 `executable`、`cli`、`stateDir` 必须是远端绝对 POSIX 路径，`~`、`$HOME` 和远端 PATH 查找不会代为展开。`executable` 是 Node 二进制，`cli` 是 JavaScript 入口文件，不是 shell 包装器。同一本机真实目录或相同 SSH destination/stateDir 不能登记两次；同一远端的多个 room 放进同一个 `rooms` 数组。
+
+`destination` 使用现有 `~/.ssh/config` 的主机别名或 `user@host`。非默认端口、密钥等继续由该 SSH 配置指定。采集固定使用 `BatchMode=yes`、`StrictHostKeyChecking=yes` 和 `ClearAllForwardings=yes`，不弹密码、不自动接受新 host key、不新建转发。首次连接所需的 host key 应由操作者先通过可信渠道核实并登记到现有 known_hosts；未知或变更的 key 会令来源不可用。
+
+SSH 仅执行绝对 Node 路径加绝对 CLI 路径的固定 `view-export --state-dir PATH`，请求通过 stdin 发送。导出端和接收端都校验本轮 nonce、node 公钥对应的 ID、room revision/hash、重算 manifest 后的成员，以及消息签名和事件归属。node 私钥、服务配置、SSH transport、worker token、全局 cursor、未选择的 room/绑定/回执均不传输。raw hcom 和未 sealed 的旧 room 仍可在该机器的本地 viewer 查看，本轮不跨 SSH 导出。所选 room 的协议记录损坏或 pins 不一致时，整次采集失败，不返回部分成功快照。
+
+这里的 room scope 是**查看器的采集约束**。它复用当前操作者 SSH 账号的文件权限，不会把该账号变成只能读取所选 room 的新权限账户；需要面向其他人的隔离访问时，应另行配置专用 OS/SSH 账号和服务端权限。
+
+远端默认每 3 秒尝试一次，每个来源最多一个在途 SSH 进程，执行时限 12 秒。慢远端不会阻塞本机 750 毫秒的刷新。断网或校验失败后保留最后成功的数据，并标记来源不可用；页面采集时间为本机最后成功接收时间，旧正文仍可读不代表远端当前在线。恢复后重新校验并更新已有消息/回执；源替换、已采集事件删除或同 ID 内容改写会使页面重新同步。关闭 viewer 会终止它自己的在途采集，不终止通信 agent。
+
+每个 SSH 来源每次发送完整的有界快照：请求最多 16 KiB，每次 1–16 个唯一 room，响应最多 16 MiB、20,000 条**所选事件**，每条协议记录最多 120,000 UTF-8 字节。超过限额明确报不可用，不静默截断；未选择的历史不占用事件数量额度。本轮尚无远端增量分页或远端缓存数据库。配置变更后重启 viewer，使用新打印的访问链接。
+
 ## 阅读与导出
 
 - 左侧选择 room。同名 room 仍按实际身份分别显示；旧版 room 保留来源范围。
@@ -79,10 +148,13 @@ npm run test:package
 # 新建独立合成来源，复现 10k 消息、WAL、回执更新与只读验收。
 # 每次使用新的目录名，保留先前结果。
 node scripts/viewer-verify.mjs viewer-20261018-v99
+
+# 在本机使用合成 state 和 fake SSH 执行真实 export CLI；不联系真实服务器。
+node scripts/ssh-observer-verify.mjs ssh-observer-20261018-v99
 ```
 
 `tests/viewer-*` 覆盖只读、关联、冲突、错误来源、查询边界、续读、分页和导出。`verification/viewer-*` 保存脱敏性能/回放结果；真实模型旧账本回放与新模型运行明确区分。代码索引为 `lib/viewer/readers/`、`projection.mjs`、`stream.mjs`、`server.mjs`、`cli.mjs` 和 `web/viewer/`。
 
-当前首版只聚合显式登记的**本机目录**。已有跨机消息传输仍使用各节点本地 adapter 和签名 SSH stdio；真实两台机器的通信验收另行进行。后续可增加限定 room 的 SSH 只读采集，再考虑 VPS 的认证与持久在线入口。Codex 内部 sub-agent 工具对话、原 harness 未交换到 room 的总结和任意桌面窗口都不会自动出现在本页面。
+当前开发分支可聚合显式登记的**本机目录和限定 room 的 SSH 来源**。SSH 观察的本机 fake-SSH 验收已覆盖真实导出 CLI、混合来源、身份与作用域拒绝、断连恢复、晚到回执、源替换和源文件内容不变；没有连接第二台真实机器，不替代真实双机通信或真实远端观察验收。后续再处理明确允许节点/room 的真机验收和可选 VPS 的认证与持久在线入口。Codex 内部 sub-agent 工具对话、原 harness 未交换到 room 的总结和任意桌面窗口都不会自动出现在本页面。
 
 首版交付验证：实现提交 `d996db0` 的 [四平台组合 CI](https://github.com/IDLE-Cloud/agent-dialogue/actions/runs/39089715479) 全部通过，包括185项测试、独立全局prefix安装、网页资源/API和pinned hcom安装校验。合成性能与浏览器截图见仓库 `verification/viewer-20261018-v4/`、`verification/viewer-browser-20261018/`；旧真实模型账本的只读回放见 `verification/viewer-owned-20261018-v3/`，不是本轮新模型实验。

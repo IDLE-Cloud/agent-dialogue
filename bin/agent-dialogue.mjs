@@ -23,8 +23,11 @@ const HELP = `agent-dialogue — cross-node, cross-harness agent communication
   send TARGET --message TEXT [--reply-to ID] [--thread NAME]
        [--intent request|inform|ack]        Send as the external operator (bigboss)
   history [--last N] [--thread NAME]       Read full message events as JSON Lines
-  view [--source LABEL=PATH ...] [--port N]
+  view [--source LABEL=PATH ...] [--config PATH] [--port N]
                                            Open a local read-only dialogue observer
+  view-export --state-dir PATH             Fixed stdin/stdout SSH observation entry
+  agent-guide [--room ID --from ALIAS [--to ALIAS]]
+                                           Read protocol / generate one agent's exact context
   stop NAME                               Stop one existing local endpoint
   sessions <opencode|codex> [--cwd PATH]    List exact native chats and capabilities
   attach <opencode|codex> --session ID --alias NAME [--resume]
@@ -202,9 +205,24 @@ async function doctor(context, json) {
 export async function main(args = process.argv.slice(2), sourceEnv = process.env) {
   const [command, ...input] = args;
   if (!command || command === '--help' || command === 'help') { console.log(HELP); return 0; }
+  if (command === 'view-export') {
+    const { runObservationExport } = await import('../lib/viewer/export-cli.mjs');
+    return await runObservationExport(input);
+  }
+  if (command === 'agent-guide' && input.length === 0) {
+    console.log(await (await import('../lib/agent-guide.mjs')).readAgentGuide());
+    return 0;
+  }
   const context = runtimeEnvironment(sourceEnv);
   await protectPersonalState(context.stateDir);
   await protectPersonalState(context.cacheDir);
+  if (command === 'agent-guide') {
+    const { options, rest } = parseOptions(input, { '--room': 'value', '--from': 'value', '--to': 'value' }); noRest(rest);
+    console.log(await (await import('../lib/agent-guide.mjs')).generateAgentContext(context, {
+      room: options['--room'], from: options['--from'], to: options['--to'],
+    }));
+    return 0;
+  }
   if (command === 'view') {
     const { runViewer } = await import('../lib/viewer/cli.mjs');
     return await runViewer(input, context);

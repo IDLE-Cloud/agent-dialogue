@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { createHash } from 'node:crypto';
 import { DatabaseSync } from 'node:sqlite';
-import { createSourceReader } from '../lib/viewer/readers/ssh.mjs';
+import { createSourceReader, fetchSshObservation } from '../lib/viewer/readers/ssh.mjs';
 import { createViewer } from '../lib/viewer/server.mjs';
 import { makeSources, fixtureIDs } from './fixtures/viewer-fixture.mjs';
 
@@ -64,6 +64,13 @@ child.once('close', code => process.exit(code ?? 253));
   process.env.PATH = `${bin}:${process.env.PATH}`;
   process.env.AGENT_DIALOGUE_HCOM = '/does-not-exist-hcom';
   process.env.AGENT_DIALOGUE_OPENCODE_SERVICE_FILE = '/does-not-exist-native-service';
+  let remoteDb, localDb, viewer, closed = false;
+  const close = async () => { if (viewer && !closed) { closed = true; await viewer.close(); } };
+  t.after(async () => {
+    await close(); remoteDb?.close(); localDb?.close();
+    for (const [key, value] of Object.entries(original)) { if (value === undefined) delete process.env[key]; else process.env[key] = value; }
+    await rm(directory, { recursive: true, force: true });
+  });
   const [remote, local] = makeSources({ sealedManifest: true });
   remote.events.push({ id: 99, type: 'message', timestamp: '2026-10-18T00:00:09.000Z', data: { text: SECRET, thread: fixtureIDs.room } });
   remote.events.find(event => event.id === 50).data.text = remote.events.find(event => event.id === 50).data.text.replace('Can we inspect a detached conversation?', SECRET);
@@ -71,41 +78,58 @@ child.once('close', code => process.exit(code ?? 253));
   remote.store.peers[local.node.nodeId].transport = { privateKey: SECRET, destination: 'private-unselected-host' };
   remote.workers[0].receipts[99] = { status: 'admitted', inputId: SECRET, sessionId: SECRET };
   const remoteDir = join(directory, "remote state with apostrophe's"), localDir = join(directory, 'local state');
-  const remoteDb = await persist(remoteDir, remote), localDb = await persist(localDir, local);
+  remoteDb = await persist(remoteDir, remote); localDb = await persist(localDir, local);
   const room = remote.store.rooms[fixtureIDs.room];
   const specs = [
     { kind: 'ssh', id: 'remote-alpha', label: 'Selected remote laptop', destination: 'synthetic-host', executable: process.execPath, cli: CLI, stateDir: remoteDir, expectedNodeId: remote.node.nodeId, rooms: [{ id: room.id, revision: room.revision, manifestHash: room.manifestHash }] },
     { kind: 'local', id: 'local-beta', label: 'Local workstation', path: localDir },
   ];
-  const reader = createSourceReader({ intervalMs: 0 });
-  const viewer = await createViewer({ sources: specs, reader, pollMs: 60000 });
-  let closed = false;
-  const close = async () => { if (!closed) { closed = true; await viewer.close(); } };
-  t.after(async () => {
-    await close(); remoteDb.close(); localDb.close();
-    for (const [key, value] of Object.entries(original)) { if (value === undefined) delete process.env[key]; else process.env[key] = value; }
-    await rm(directory, { recursive: true, force: true });
-  });
+  const attempts = [];
+  const reader = createSourceReader({ intervalMs: 0, remoteReader: async (spec, options) => {
+    const attempt = { startedAt: Date.now(), status: 'pending', elapsedMs: null };
+    attempts.push(attempt);
+    try {
+      const result = await fetchSshObservation(spec, options);
+      attempt.status = 'accepted'; return result;
+    } catch (error) {
+      attempt.status = options.signal.aborted ? 'cancelled' : 'rejected'; throw error;
+    } finally { attempt.elapsedMs = Date.now() - attempt.startedAt; }
+  } });
+  viewer = await createViewer({ sources: specs, reader, pollMs: 60000 });
   const auth = await fetch(viewer.url, { redirect: 'manual' });
   assert.equal(auth.status, 303);
   const cookie = auth.headers.get('set-cookie').split(';')[0];
   const get = path => fetch(`${viewer.origin}${path}`, { headers: { Cookie: cookie } });
-  return { viewer, remote, remoteDb, remoteDir, localDir, offline, requests, get, close };
+  return { viewer, remote, remoteDb, remoteDir, localDir, offline, requests, attempts, get, close, diagnostic: value => t.diagnostic(JSON.stringify(value)) };
 }
 
-async function until(viewer, predicate, message) {
-  const deadline = Date.now() + 2500;
+async function until(fixture, predicate, message, { initial = false } = {}) {
+  const startedAt = Date.now();
+  // The actual transport permits a 12-second request plus bounded termination. This
+  // assertion tests eventual synchronization, not a 2.5-second spawn benchmark.
+  const deadline = startedAt + 15_000;
   while (Date.now() < deadline) {
-    await viewer.model.refresh();
-    if (predicate()) return;
+    await fixture.viewer.model.refresh();
+    // A malformed scope/response or export failure must fail the initial check;
+    // extra wall-clock budget must not hide a rejection by silently retrying it.
+    if (initial && fixture.attempts.some(attempt => attempt.status === 'rejected')) break;
+    if (predicate()) {
+      const elapsedMs = Date.now() - startedAt;
+      if (initial) fixture.diagnostic({ scenario: 'initial-fake-ssh-observation', elapsedMs, exceededFormer2500msBudget: elapsedMs > 2500,
+        acceptedAttemptMs: fixture.attempts.find(attempt => attempt.status === 'accepted')?.elapsedMs ?? null,
+        rejectedAttempts: fixture.attempts.filter(attempt => attempt.status === 'rejected').length });
+      return;
+    }
     await new Promise(done => setTimeout(done, 15));
   }
-  assert.fail(message);
+  const attempts = fixture.attempts.map(({ status, elapsedMs }) => ({ status, elapsedMs }));
+  const remote = fixture.viewer.model.sources.find(source => source.id === 'remote-alpha');
+  assert.fail(`${message}; ${JSON.stringify({ elapsedMs: Date.now() - startedAt, remoteAvailable: remote?.available ?? false, attempts })}`);
 }
 
 test('fake SSH runs the real readonly export CLI and merges only the pinned room with a local source', async t => {
   const f = await fixture(t), remoteBefore = await hashes(f.remoteDir), localBefore = await hashes(f.localDir);
-  await until(f.viewer, () => f.viewer.model.sources.find(source => source.id === 'remote-alpha')?.available, 'real export CLI did not produce a remote observation');
+  await until(f, () => f.viewer.model.sources.find(source => source.id === 'remote-alpha')?.available, 'real export CLI did not produce a remote observation', { initial: true });
   const projection = f.viewer.model.projection;
   assert.equal(projection.rooms.length, 1, 'raw hcom and legacy rooms must stay outside remote export');
   assert.equal(projection.messages.length, 2, 'queued request folds into its actual message and two-node copies deduplicate');
@@ -135,26 +159,30 @@ test('fake SSH runs the real readonly export CLI and merges only the pinned room
 test('fake SSH disconnect retains history, reconnect uses fresh requests, late receipts update in place and rewrites reset generation', async t => {
   const f = await fixture(t);
   const remote = () => f.viewer.model.sources.find(source => source.id === 'remote-alpha');
-  await until(f.viewer, () => remote()?.available, 'initial remote observation did not arrive');
+  await until(f, () => remote()?.available, 'initial remote observation did not arrive', { initial: true });
   const count = f.viewer.model.projection.messages.length, previousAt = remote().observedAt;
   await writeFile(f.offline, 'offline');
-  await until(f.viewer, () => remote() && !remote().available, 'offline source was not marked stale');
-  assert.equal(f.viewer.model.projection.messages.length, count); assert.equal(remote().observedAt, previousAt);
+  await until(f, () => remote() && !remote().available, 'offline source was not marked stale');
+  assert.equal(f.viewer.model.projection.messages.length, count);
+  assert.ok(Date.parse(remote().observedAt) >= Date.parse(previousAt), 'the last successful in-flight snapshot may finish before the disconnect is observed');
+  const staleAt = remote().observedAt;
+  await f.viewer.model.refresh();
+  assert.equal(remote().observedAt, staleAt, 'failed collection does not refresh the last successful observation time');
   assert.ok(!JSON.stringify(await (await f.get('/api/snapshot')).json()).includes(SECRET), 'stderr is never returned by the API');
   f.remote.workers[0].receipts[44] = { status: 'admitted', inputId: 'late-synthetic-admission', sessionId: 'synthetic-session-alice', at: '2026-10-18T00:00:12.000Z' };
   await writeWorker(f.remoteDir, f.remote.workers[0]);
   await rm(f.offline);
-  await until(f.viewer, () => remote()?.available && f.viewer.model.projection.messages.some(message => message.evidence.some(evidence => evidence.inputId === 'late-synthetic-admission')), 'recovery or late receipt observation did not arrive');
+  await until(f, () => remote()?.available && f.viewer.model.projection.messages.some(message => message.evidence.some(evidence => evidence.inputId === 'late-synthetic-admission')), 'recovery or late receipt observation did not arrive');
   assert.equal(f.viewer.model.projection.messages.length, count, 'receipt updates and reconnect do not duplicate messages');
   const calls = (await readFile(f.requests, 'utf8')).trim().split('\n').map(line => JSON.parse(line));
   assert.equal(new Set(calls.map(call => call.request.requestId)).size, calls.length, 'each full request has a fresh nonce');
   const beforeGeneration = remote().generation, beforeEpoch = f.viewer.model.epoch;
   f.remoteDb.prepare('UPDATE events SET timestamp=? WHERE id=42').run('2026-10-18T00:00:01.500Z');
-  await until(f.viewer, () => remote()?.generation !== beforeGeneration, 'same-inode existing event rewrite did not reset the observation generation');
+  await until(f, () => remote()?.generation !== beforeGeneration, 'same-inode existing event rewrite did not reset the observation generation');
   assert.ok(f.viewer.model.epoch > beforeEpoch); assert.equal(f.viewer.model.ring.at(-1).type, 'reset');
   assert.equal(f.viewer.model.projection.messages.length, count);
-  const beforeClose = (await readFile(f.requests, 'utf8')).trim().split('\n').length;
   await f.close();
+  const afterClose = (await readFile(f.requests, 'utf8')).trim().split('\n').length;
   await new Promise(done => setTimeout(done, 50));
-  assert.equal((await readFile(f.requests, 'utf8')).trim().split('\n').length, beforeClose, 'closed observer launches no further SSH processes');
+  assert.equal((await readFile(f.requests, 'utf8')).trim().split('\n').length, afterClose, 'closed observer launches no further SSH processes');
 });

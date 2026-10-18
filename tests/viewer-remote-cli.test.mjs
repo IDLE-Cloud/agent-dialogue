@@ -68,6 +68,23 @@ test('remote export rejects missing state, bad request, wildcard and oversized s
   const bad = await call(['view-export', '--state-dir', 'relative'], JSON.stringify(valid));
   assert.notEqual(bad.code, 0);
 });
+test('remote export rejects invalid UTF-8 request bytes with no response or source changes', async t => {
+  const dir = await directory(t), source = makeSources({ sealedManifest: true })[0], db = await persist(dir, source);
+  t.after(() => db.close());
+  const input = Buffer.from(JSON.stringify(request(source)));
+  const valid = await call(['view-export', '--state-dir', dir], input);
+  assert.equal(valid.code, 0, valid.stderr);
+  const before = await hashes(dir);
+  const invalidNode = Buffer.from(input), nodeOffset = invalidNode.indexOf(source.node.nodeId);
+  assert.ok(nodeOffset >= 0); invalidNode[nodeOffset + 2] = 0xff;
+  for (const invalid of [invalidNode, Buffer.concat([input, Buffer.from([0xff])])]) {
+    const result = await call(['view-export', '--state-dir', dir], invalid);
+    assert.notEqual(result.code, 0);
+    assert.equal(result.stdout, '');
+    assert.equal(result.stderr.includes(dir), false);
+  }
+  assert.deepEqual(await hashes(dir), before);
+});
 test('viewer config supports explicit local and pinned SSH sources, with stable opaque IDs and no implicit default', async t => {
   const dir = await directory(t), config = join(dir, 'viewer.json'), source = makeSources({ sealedManifest: true })[0];
   const remote = { kind: 'ssh', label: 'Workstation', destination: 'research-box', executable: '/usr/bin/node', cli: '/srv/agent-dialogue/bin/agent-dialogue.mjs', stateDir: '/srv/communication', expectedNodeId: source.node.nodeId, rooms: request(source).rooms };
@@ -87,6 +104,18 @@ test('viewer config refuses arbitrary commands, unpinned rooms, duplicate endpoi
   for (const configValue of badConfigs) { await writeFile(config, JSON.stringify(configValue)); await assert.rejects(viewerOptions(['--config', config], '/default')); }
   await writeFile(config, '{bad-json'); await assert.rejects(viewerOptions(['--config', config], '/default'));
   await writeFile(config, 'x'.repeat(70000)); await assert.rejects(viewerOptions(['--config', config], '/default'));
+});
+test('viewer config rejects invalid UTF-8 labels and paths instead of silently replacing their bytes', async t => {
+  const dir = await directory(t), config = join(dir, 'viewer.json');
+  for (const [label, path, marker] of [
+    ['UTF8_LABEL_SENTINEL', './state', 'UTF8_LABEL_SENTINEL'],
+    ['Local', './UTF8_PATH_SENTINEL', 'UTF8_PATH_SENTINEL'],
+  ]) {
+    const bytes = Buffer.from(JSON.stringify({ version: 1, sources: [{ kind: 'local', label, path }] }));
+    const offset = bytes.indexOf(marker); assert.ok(offset >= 0); bytes[offset] = 0xff;
+    await writeFile(config, bytes);
+    await assert.rejects(viewerOptions(['--config', config], '/default'), /configuration/i);
+  }
 });
 test('closing the viewer closes its observation reader so background collectors cannot keep the CLI alive', async () => {
   let closed = 0;

@@ -93,6 +93,16 @@ test('manifest pin is recomputed from room members and owner instead of trusting
   }
 });
 
+test('pinned room owner need not itself host a participant, matching accepted room manifests', () => {
+  const f = makeObservationFixture(), room = f.source.store.rooms[fixtureIDs.room];
+  room.ownerNodeId = observationTestNode(33, 'Synthetic coordinator').nodeId;
+  room.manifestHash = payloadHash({ type: 'room', version: 1, id: room.id, name: room.name, revision: room.revision, ownerNodeId: room.ownerNodeId, members: room.members });
+  f.request.rooms[0].manifestHash = room.manifestHash;
+  for (const event of f.source.events.filter(row => [42, 44].includes(row.id))) resignFrame(event,
+    frame => { frame.wireEnvelope.payload.manifestHash = room.manifestHash; }, event.id === 42 ? observationTestNode() : observationTestNode(22, 'Synthetic workstation'));
+  assert.deepEqual(acceptObservation(exportObservation(f.source, f.request), f.request).events.map(event => event.id), [40, 42, 44]);
+});
+
 test('export excludes unselected sealed rooms, legacy rooms and raw hcom even when thread names match', () => {
   const f = makeObservationFixture(); addOtherSealedRoom(f.source);
   f.source.events.push({ id: 95, type: 'message', timestamp: '2026-10-18T00:00:07.000Z', data: { thread: fixtureIDs.room, from: 'raw-agent', text: 'RAW_HCOM_SECRET' } });
@@ -283,4 +293,55 @@ test('cross-source signed copies still deduplicate, verify signatures and associ
   assert.equal(reply.replyTo.id, question.id);
   assert.ok(question.statuses.includes('forwarded')); assert.ok(question.statuses.includes('native-admitted'));
   assert.equal(payloadHash(readFrame(exports[0].events.find(e => e.id === 42)).wireEnvelope.payload), exports[0].store.outbox[fixtureIDs.question].payloadHash);
+});
+
+test('sealed local messages admit native receipts without inventing an undefined global message ID', () => {
+  const f = makeObservationFixture(), room = f.source.store.rooms[fixtureIDs.room];
+  room.members[1].nodeId = f.source.node.nodeId;
+  f.source.store.bindings.bob.nodeId = f.source.node.nodeId;
+  room.manifestHash = payloadHash({ type: 'room', version: 1, id: room.id, name: room.name, revision: room.revision, ownerNodeId: room.ownerNodeId, members: room.members });
+  f.request.rooms[0].manifestHash = room.manifestHash;
+  const frame = { version: 1, room: room.id, from: 'alice', to: 'bob', fromBindingId: fixtureIDs.alice, toBindingId: fixtureIDs.bob,
+    fromRevision: 1, toRevision: 1, text: 'Local sealed coordination', replyTo: null };
+  f.source.events = [{ id: 80, type: 'message', timestamp: '2026-10-18T00:00:01.000Z', data: { thread: room.id, text: framePrefix + JSON.stringify(frame) } }];
+  f.source.workers = [{ bindingId: fixtureIDs.bob, status: 'ready', receipts: { 80: { status: 'admitted', inputId: 'local-native-input', sessionId: 'synthetic-session-bob' } } }];
+  const envelope = exportObservation(f.source, f.request), snapshot = projectSources([acceptObservation(envelope, f.request)]);
+  assert.ok(snapshot.messages[0].statuses.includes('native-admitted'));
+  assert.equal(Object.hasOwn(envelope.source.workers[0].receipts[80], 'globalMessageId'), false);
+});
+
+test('remote observation emits only protocol text and room thread from ledger metadata', () => {
+  const f = makeObservationFixture();
+  for (const event of f.source.events) if (event.data.thread === fixtureIDs.room) Object.assign(event.data, {
+    from: 'UNNEEDED_FROM_SECRET', scope: 'UNNEEDED_SCOPE_SECRET', mentions: ['UNSELECTED_MENTION_SECRET'],
+    delivered_to: ['UNSELECTED_DESTINATION_SECRET'], reply_to_local: 'UNSELECTED_LOCAL_REFERENCE_SECRET', intent: 'UNNEEDED_INTENT_SECRET',
+  });
+  const envelope = exportObservation(f.source, f.request), json = encoded(envelope);
+  for (const event of envelope.source.events) assert.deepEqual(Object.keys(event.data).sort(), ['text', 'thread']);
+  for (const value of ['UNNEEDED_FROM_SECRET', 'UNNEEDED_SCOPE_SECRET', 'UNSELECTED_MENTION_SECRET', 'UNSELECTED_DESTINATION_SECRET', 'UNSELECTED_LOCAL_REFERENCE_SECRET', 'UNNEEDED_INTENT_SECRET']) assert.ok(!json.includes(value));
+});
+
+test('event cap applies to selected output rather than unrelated history in the local ledger', () => {
+  const f = makeObservationFixture();
+  f.source.events.push(...Array.from({ length: 20001 }, (_, index) => ({ id: 1000 + index, type: 'message', data: { thread: fixtureIDs.legacyRoom, text: 'Unselected history' } })));
+  assert.deepEqual(exportObservation(f.source, f.request).source.events.map(event => event.id), [40, 42, 44]);
+});
+
+test('native admission input and session metadata are omitted together when session belongs to another binding', () => {
+  const f = makeObservationFixture(1), record = f.source.store.inbox[fixtureIDs.question];
+  Object.assign(record, { inputId: 'UNSELECTED_NATIVE_INPUT_SECRET', sessionId: 'UNSELECTED_NATIVE_SESSION_SECRET' });
+  f.source.workers = [];
+  const envelope = exportObservation(f.source, f.request), json = encoded(envelope), snapshot = projectSources([envelope.source]);
+  assert.ok(!json.includes('UNSELECTED_NATIVE_INPUT_SECRET')); assert.ok(!json.includes('UNSELECTED_NATIVE_SESSION_SECRET'));
+  assert.ok(!snapshot.messages.find(message => message.evidence.some(e => e.messageId === fixtureIDs.question)).statuses.includes('native-admitted'));
+});
+
+test('submission forwarding pending state cannot carry native input or session metadata', () => {
+  const f = makeObservationFixture();
+  f.source.workers[0].pending = { eventId: 40, inputId: 'WRONG_NATIVE_PENDING_SECRET', bindingRevision: 1, status: 'submitting' };
+  f.source.workers[0].outgoingPending = { eventId: 40, submissionId: fixtureIDs.queue, status: 'forwarding', inputId: 'WRONG_NATIVE_OUTGOING_SECRET', sessionId: 'UNSELECTED_SESSION_SECRET' };
+  const envelope = exportObservation(f.source, f.request), json = encoded(envelope);
+  for (const value of ['WRONG_NATIVE_PENDING_SECRET', 'WRONG_NATIVE_OUTGOING_SECRET', 'UNSELECTED_SESSION_SECRET']) assert.ok(!json.includes(value));
+  assert.equal(Object.hasOwn(envelope.source.workers[0], 'pending'), false);
+  assert.equal(envelope.source.workers[0].outgoingPending.submissionId, fixtureIDs.queue);
 });

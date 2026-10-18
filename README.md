@@ -6,6 +6,8 @@
 
 v0.3 开发版增加节点签名、双向配对、共同 room 和 SSH stdio 传输，每台机器只调用自己的本地 harness。两个独立本机节点的真实免费 OpenCode 模型已完成项目问答，保留接入前上下文并用全局消息 ID 关联回复。真实双机 SSH 验收仍待远端可达；已有聊天、平台与 Codex 原生队列的实际验证范围见 [兼容性说明](docs/COMPATIBILITY.md)。公开稳定 Release 仍为 v0.2.0。
 
+第一次使用可按[中文使用指南](docs/USAGE.md)完成安装、已有聊天接入、room 和对话查看。让其他 agent 知道怎么用时，先给项目加入[通用规则片段](config/AGENTS.snippet.md)，再用 `agent-dialogue agent-guide --room ID --from SELF [--to PEER]` 为每个聊天生成自己的准确上下文；不要让多个 agent 共用同一个 `--from` 身份。
+
 ## 安装
 
 需要 Node.js 22.13 或更新的受支持版本，以及准备使用的 harness；从 Git 安装还需要 Git。模型账号和权限继续由各 harness 自己管理。本包没有 npm 运行依赖，也没有自动下载或联网的 `postinstall`；hcom 通过显式 `setup` 安装。
@@ -117,6 +119,17 @@ Codex adapter 使用已有共享 daemon 的原生队列，默认要求线程已�
 
 Codex的受限shell可使用`collab send --queue`先写本地hcom账本，由后台worker完成原生API和SSH投递；原生投递说明默认提供此形式。通信state仍需位于该线程允许写入的目录。已用保持`workspaceWrite`、禁用网络及原模型的Codex测试线程完成主动发问、OpenCode关联回复和项目事实返回，7项真实断言通过；这轮明确使用专用本机验证server，不能当作任意活跃桌面窗口附着的证明。
 
+## 让参与 agent 学会使用
+
+`agent-dialogue agent-guide` 输出通用通信协议；接入并建立 room 后，按当前聊天的 alias 生成精确上下文：
+
+```bash
+agent-dialogue agent-guide --room r_ACTUAL_ROOM --from codex-a --to opencode-b
+agent-dialogue agent-guide --room r_ACTUAL_ROOM --from opencode-b --to codex-a
+```
+
+生成结果包含准确身份、绝对命令、state 环境前缀、queue 和 expected-session 示例，只读本地元数据，不会发消息。分别交给对应聊天，并明确要求它读取。通用规则可以追加到项目已有的 `AGENTS.md` 或 harness 本来使用的规则文件，保留原规则；已有会话不保证自动重新加载。每个聊天使用自己的 `--from` 上下文，具体步骤及各 harness 规则入口见[使用指南](docs/USAGE.md#4-把用法交给每个-agent)，完整静态协议见[AGENT-GUIDE.md](docs/AGENT-GUIDE.md)。规则发现解决“知道如何调用”；其他 harness 的已有会话投递仍需要对应 adapter。
+
 ## 启动 Codex、OpenCode 等 CLI
 
 这条路径复用 hcom 的原生集成，和上面的已有聊天 room 路径分别使用：
@@ -153,7 +166,7 @@ agent-dialogue view --source 'Laptop=/absolute/path/to/state-a' --source 'Workst
 
 打开终端打印的本地访问链接，选择 room 即可查看消息、准确原生会话、回复引用和每份投递证据，支持实时更新、历史分页、筛选与 JSON/Markdown 导出。跨节点副本和已转发 queue 请求会按协议关联；“原生已受理”与“实际回复”分开显示。查看器读取稳定的 DB/WAL 副本，不调用会初始化状态的 hcom 查询命令，也不启动模型或重试通信。源目录不存在时只显示提示。
 
-页面只展示已登记通信账本中的实际交换，原 harness 未发到 room 的总结和 Codex 内部 sub-agent 对话需要后续适配。远端只读采集与 VPS 入口也属于后续范围。使用、只读边界及验收说明见 [VIEWER.md](docs/VIEWER.md)。
+页面只展示已登记通信账本中的实际交换，原 harness 未发到 room 的总结和 Codex 内部 sub-agent 对话需要后续适配。v0.3 开发版新增显式 SSH 只读采集，可用 `view --config /absolute/path/to/viewer.json` 指定预期 node 和允许的 sealed room；本机 fake SSH 全链路验收与真实双机验收分别记录。VPS 入口仍属后续范围。使用、配置、只读边界及验收说明见 [VIEWER.md](docs/VIEWER.md)。
 
 ## 开发与下一步
 
