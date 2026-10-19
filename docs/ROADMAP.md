@@ -17,3 +17,10 @@
 Codex已有实例接入、启动进程恢复旧thread、当前桌面聊天接入分别验收。不会把恢复进程视为已连接当前桌面实例。
 
 2026-10-18 状态补充：v0.3 开发版已补齐[真实双机 SSH 协作验收](../verification/vps-integration-20261018-v5/metrics.json)，40/40 项通过；[独立 SSH 观察与受控客户端故障恢复](../verification/vps-observer-20261018-v1/metrics.json) 11/11 项通过。上表顺序与验收目标保持不变，本轮提供其中 Codex adapter、跨节点 room 及精确会话通信的实机证据。测试使用 macOS arm64 的 Codex CLI 0.162.1 独立验证 server / 原测试 thread 和 Debian 13 x64 VPS OpenCode 2.0.20。当前活跃 Desktop 聊天接入、Kimi/Pi 已有会话、生产生命周期及退出进程恢复仍待扩展；观察客户端 gate 不等于公网/VPS 断网或完整离线运维验收。持久 lease 仅用于验收 helper，未加入生产 adapter 自动 resume 或进程重启。稳定 Release 保持 v0.2.0。
+
+
+## 2026-10-19 稳定化与正式交付规划
+
+当前新增阶段见[V0.3-STABILIZATION-PLAN.md](V0.3-STABILIZATION-PLAN.md)。早期条目与当时状态保留为历史；最新已验证范围以[兼容性说明](COMPATIBILITY.md)和独立验收报告为准。核心跨机、多个原生adapter、ZCode工具收件和查看器已具备实测证据，后续优先完成统一预检、无损暂停、分层对账、升级、实际项目试用和发行，暂缓新增生态范围。
+
+本轮仅规划。新阶段ST-01起均待开始，不能把该计划里的建议CLI入口或验收矩阵当成当前实现/通过结果。
