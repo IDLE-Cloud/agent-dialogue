@@ -1,12 +1,12 @@
 # 使用指南：让已有项目聊天参与协作
 
-本指南面向操作者，说明如何安装、接入已有 Codex / OpenCode 聊天、接入选定 Kimi 原生服务拥有的聊天、把用法交给各个 agent，以及查看实际对话。程序可以安装一次供多个项目使用；每个项目选择独立的通信 state。切换工作目录不会自动切换通信空间。
+本指南面向操作者，补充说明安装、已有聊天接入、逐 agent 分配说明与查看对话。当前版本与能力先看[状态总览](STATUS.md)，第一次两机操作按[中文操作手册](QUICKSTART-ZH.md)；ZCode 桌面采用独立的 [MCP 工具接入流程](ZCODE.md)，不要直接套用下方原生输入唤醒步骤。程序可以安装一次供多个项目使用；每个项目选择独立的通信 state。切换工作目录不会自动切换通信空间。
 
 这里使用 **v0.3 开发分支**。公开稳定 Release **v0.2.0** 仍可安装，但不包含本指南中的跨节点、Codex 原生队列、查看器与 `agent-guide` 新功能。开发分支会继续变化；多机使用时两端应安装同一已核对提交或后续同一正式版本。
 
 ## 1. 安装并选择项目通信目录
 
-需要 Node.js **22.13 或更新的受支持版本**、Git，以及已经配置好模型账号的 harness。当前主要支持 macOS/Linux；WSL 与原生 Windows 的范围见[兼容性说明](COMPATIBILITY.md)。
+需要 Node.js **22.13 或更新的受支持版本**、Git，以及已经配置好模型账号的 harness。macOS arm64、Linux x64 和 Windows 原生已有各自实测路径；Windows 先按[独立 Node24 与 embedded 指南](WINDOWS.md)配置，WSL 及其他硬件范围见[兼容性说明](COMPATIBILITY.md)。
 
 ```bash
 npm install -g 'git+https://github.com/IDLE-Cloud/agent-dialogue.git#codex/multinode-adapters'
@@ -55,7 +55,7 @@ agent-dialogue attach codex --session FULL_CODEX_THREAD_UUID --alias codex-a --r
 
 每个聊天使用不同 alias。一个 alias 对应准确的 node、binding revision、harness、原生 session 和目录；不要让另一个 agent 冒用它。已经 detach 的 alias 不复用，重新接入时选新 alias。
 
-当前严格原生会话 adapter 支持 **Codex / OpenCode / Kimi Code 2.1.1、2.2.0**。Kimi 需要先按 [KIMI.md](KIMI.md)准备私有服务描述，设置 `AGENT_DIALOGUE_KIMI_SERVICE_FILE`，再用 `sessions kimi` / `attach kimi`；只允许选定 Web 服务拥有的准确会话，不能据此接管另一个活跃 TUI。Kimi adapter 单元测试通过；Windows / Linux 服务器各自与 Mac OpenCode 的受控双向真实模型通信已验收。Kimi/Pi 的 `launch` 是另一条受管 CLI 路径。实际验证范围以[兼容性说明](COMPATIBILITY.md)为准。
+当前严格原生输入 adapter 支持 **Codex / OpenCode V2 / OpenCode V1 / Kimi Code 2.1.1、2.2.0**；版本范围见[状态总览](STATUS.md)。**ZCode 3.14.3 桌面另有工具收件 adapter**，真实宿主 `_meta` 登记准确聊天，操作者绑定后用 `mcp-context` 分配 scope；不自动唤醒空闲聊天，按 [ZCODE.md](ZCODE.md)执行。Kimi 需要先按 [KIMI.md](KIMI.md)准备私有服务描述，设置 `AGENT_DIALOGUE_KIMI_SERVICE_FILE`，再用 `sessions kimi` / `attach kimi`；只允许选定 Web 服务拥有的准确会话，不能据此接管另一个活跃 TUI。Kimi adapter 单元测试通过；Windows / Linux 服务器各自与 Mac OpenCode 的受控双向真实模型通信已验收。Kimi/Pi 的 `launch` 是另一条受管 CLI 路径。实际验证范围以[兼容性说明](COMPATIBILITY.md)为准。
 
 ## 3. 建立项目 room
 
@@ -74,13 +74,14 @@ agent-dialogue room create --name project-review --members codex-a,opencode-b
 | `agent-dialogue agent-guide`、[完整 Agent 协议](AGENT-GUIDE.md)或[通用项目规则片段](../config/AGENTS.snippet.md) | 所有参与 agent | 通信协议、身份与回复规则、证据语义、什么时候暂停；项目规则片段是精简入口 |
 | `agent-guide --room … --from …` | 仅该 `from` 对应的聊天 | 当前 state、完整 room、自己的 binding/session、允许的 peer、绝对 CLI/env 和准确发送命令 |
 
-通用规则放到各 harness 已支持的入口。下表按 2026-10-18 的官方文档核对；最后一列是本工具的 adapter 范围，两者分别判断：
+通用规则放到各 harness 已支持的入口。原生 CLI 规则入口于 2026-10-18 按官方文档核对，ZCode 项于 2026-10-19 按其接入指南补充；最后一列是本工具的 adapter 范围，两者分别判断：
 
 | Harness | 项目规则入口 | 本工具的已有聊天接入 |
 |---|---|---|
 | Codex | 项目 `AGENTS.md`；从项目根到当前目录发现规则，并处理 `AGENTS.override.md` 优先级。[OpenAI 官方说明](https://learn.chatgpt.com/docs/agent-configuration/agents-md) | `attach codex --session …`；默认要求原 thread 已加载，显式 `--resume` 才加载原 thread |
 | OpenCode | 项目根 `AGENTS.md`；也可用 `opencode.json` 的 `instructions` 明确列出通用规则文件。[OpenCode 官方说明](https://opencode.ai/docs/rules/) | `attach opencode --session …`，精确选择已有 session |
 | Kimi Code | 项目树中的 `AGENTS.md` 或 `.kimi-code/AGENTS.md`。[Kimi Code 官方说明](https://moonshotai.github.io/kimi-code/en/customization/agents#instruction-files) | 开发分支 `attach kimi --session …` 支持固定 2.1.1 / 2.2.0、选定原生 Web 服务拥有的准确聊天；配置和实机验证范围见 [KIMI.md](KIMI.md) |
+| ZCode 3.14.3 | 工作区 MCP 或随包插件提供工具与操作说明；现有聊天需核对连接配置生效，见 [ZCODE.md](ZCODE.md) | `dialogue_identity` → 操作者选择完整 ID → `attach zcode` → 私有 `mcp-context`；原聊天主动调用 `dialogue_inbox` |
 | Pi | 本轮未核验自动发现规则的入口；可在有文件读取能力的聊天中明确要求读取所选说明文件 | 目前提供 `launch pi` 受管 CLI 路径，严格已有会话 adapter 仍待实现 |
 
 项目公共规则只引用通用协议和“读取操作者分配的个人上下文”这条约定。不要把 `.agent-dialogue-context/*.md` 一次性加入共享 `instructions`，否则多个 self alias 会进入同一个聊天。OpenCode 也不会因为 Markdown 里出现一个文件链接就自动解析它，应明确要求读取对应文件；这一区别见上面的官方规则文档。
@@ -117,7 +118,7 @@ agent-dialogue agent-guide \
 
 ## 5. 开始一次项目讨论
 
-操作者可以给已绑定的 agent 发起实际项目请求；这一条会进入它的原生聊天，可能触发模型运行：
+操作者可以给已绑定的原生输入 adapter 发起实际项目请求；这一条在服务和聊天可受理时进入原生聊天，可能触发模型运行。ZCode 的同类来信先成为工具可读取，需在准确原聊天主动调用 inbox：
 
 ```bash
 agent-dialogue collab send \
@@ -148,11 +149,12 @@ agent-dialogue history --last 50 --thread r_ACTUAL_ROOM
 | worker `forwarded` | 本地请求与实际消息已关联 |
 | `remote-stored` | 对方账本已收妥 |
 | `admitted` / `native-admitted` | 指定原生会话接口已受理输入 |
+| `tool-available` / `tool-read` | ZCode 收件工具可以读取 / 已返回该消息；不等于原生输入受理或任务完成 |
 | 实际关联回复 | 对方发出了针对该消息的答复；项目是否完成仍看内容 |
 
 迟迟没有回复时先查 source worker、原生服务与现有回执，不能把同一正文再 `collab send` 当作恢复。`unknown` 或 pending 表示结果需要对账；让操作者检查原始 ID。跨节点已有消息的显式恢复使用 `node flush --message m_…`，不是新建另一条消息。具体步骤见[节点通信](NODES.md)。
 
-关闭 viewer 或浏览器不会停止通信。停止某个聊天的桥接可以执行 `agent-dialogue detach ALIAS`，原生聊天及历史保留。
+关闭 viewer 或浏览器不会停止通信。停止某个聊天的桥接可以执行 `agent-dialogue detach ALIAS`，原生聊天及历史保留，绑定被停用。当前尚无保留绑定 pause/resume；已 detach 的 alias 不能用 `bridge start` 复活，重新接入要新 alias 和 room。仍 active 的绑定在服务恢复、身份和 pending/锁核对后才使用 `bridge start ALIAS`。
 
 ## 7. 扩展到其他电脑
 
@@ -160,12 +162,13 @@ agent-dialogue history --last 50 --thread r_ACTUAL_ROOM
 
 完成配对后，在每台机器上为**该机器上的 agent**重新运行 `agent-guide --room … --from …`。不同电脑的 CLI 路径、state、node 和 self alias 都可能不同，不复制另一台机器生成的自身份文件。通信 state 不应放在跨电脑共享后并发写入的目录里。
 
-查看器另有显式 SSH 只读采集：操作者配置固定 host、远端 Node/CLI/state、预期 node ID 和允许观察的 sealed room pins，再执行 `agent-dialogue view --config /absolute/path/to/viewer.json`。它与消息传输各自运行，不要求 viewer 成为通信必经路径。配置和范围见[VIEWER.md](VIEWER.md)。本机 fake SSH 验收不等于真实两台机器验收；本轮尚未宣称真实双机连接已通过。
+查看器另有显式 SSH 只读采集：操作者配置固定 host、远端 Node/CLI/state、预期 node ID 和允许观察的 sealed room pins，再执行 `agent-dialogue view --config /absolute/path/to/viewer.json`。它与消息传输各自运行，不要求 viewer 成为通信必经路径。配置和范围见[VIEWER.md](VIEWER.md)。本机 fake SSH 验收不能替代真实两台机器证据。后续 Mac↔VPS、Windows↔Mac、Kimi Windows/Linux↔Mac 已有独立实测，ZCode 当前仍是同机双节点；日期、版本和限制见[状态总览](STATUS.md)。
 
 ## 常用入口
 
 | 目标 | 命令或文档 |
 |---|---|
+| 看当前版本与能力 | [STATUS.md](STATUS.md) |
 | 看当前 CLI | `agent-dialogue --help` |
 | 给所有 agent 的通用协议 | `agent-dialogue agent-guide` |
 | 某个 agent 的准确上下文 | `agent-dialogue agent-guide --room ID --from SELF [--to PEER]` |
@@ -176,7 +179,11 @@ agent-dialogue history --last 50 --thread r_ACTUAL_ROOM
 | 迁移、版本升级 | [MIGRATION.md](MIGRATION.md) |
 | 支持与已验证的边界 | [COMPATIBILITY.md](COMPATIBILITY.md) |
 | Kimi 服务、Windows Bash 与服务器目录 | [KIMI.md](KIMI.md) |
+| ZCode 应用原聊天与工具主动收件 | [ZCODE.md](ZCODE.md) |
 
 准备新的 VPS 和反向 SSH 路由时，可先按 [VPS 部署前置指南](VPS-DEPLOYMENT.md)核对版本、账号、loopback 服务和固定接收入口，再执行本指南中的已有聊天接入与逐 agent 引导。
 
 2026-10-19 更新：上文“尚未宣称真实双机连接已通过”描述的是早期阶段；后续 Mac↔VPS 与原生 Windows↔Mac 的独立验收已完成，记录见 [NODES.md](NODES.md)。包含 Windows V1 准确命令的完整操作流程见[中文操作手册](QUICKSTART-ZH.md)，Windows 使用已验证的独立 Node24 与 `opencode-v1` 入口。
+
+
+2026-10-19 ST-01 入口更新：当前摘要已统一指向 [STATUS.md](STATUS.md) 与 [QUICKSTART-ZH.md](QUICKSTART-ZH.md)，增加 ZCode 工具收件差异并明确 detach 不是暂停。早期验收报告与上方日期补充保留其历史含义；本次文档修改没有执行模型试用或实现稳定化的新运维命令。

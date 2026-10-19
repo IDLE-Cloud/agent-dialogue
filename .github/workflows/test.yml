@@ -48,6 +48,8 @@ jobs:
         run: >-
           node --test --test-concurrency=1
           tests/embedded-ledger.test.mjs
+          tests/inspect.test.mjs
+          tests/inspect-cli.test.mjs
           tests/windows-platform.test.mjs
           tests/windows-node-card.test.mjs
           tests/windows-transport.test.mjs

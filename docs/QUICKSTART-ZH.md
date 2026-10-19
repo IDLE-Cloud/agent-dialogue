@@ -1,15 +1,17 @@
 # Agent Dialogue 使用手册：选择已有聊天，让两台电脑的 agent 协作
 
-适用日期：2026-10-19。OpenCode 双机例子的功能基线：`5c897a54cff1a8f58c90d53e3c11c6364dfbdf7e`，开发分支 `codex/multinode-adapters`。稳定版 v0.2.0 尚不包含本手册的多机与 Windows 功能。后续新增的 Kimi adapter 需使用包含该实现的新功能提交，见 [KIMI.md](KIMI.md)，不能使用此旧基线直接运行 Kimi 接入。
+适用日期：2026-10-19。当前安装及能力入口先看[状态总览](STATUS.md)。开发分支为 `codex/multinode-adapters`，本文当前固定运行基线为 `00295d77ab8660565e0772985a4387f9351ffb37`，已包含 Kimi 和 ZCode 实现。稳定版 v0.2.0 不包含本手册的多机、Windows 与新增 adapter。历史 OpenCode 双机例子最初基于 `5c897a54cff1a8f58c90d53e3c11c6364dfbdf7e`，这只是当时基线，不用于安装后新增能力。Kimi / ZCode 的配置分别见 [KIMI.md](KIMI.md) / [ZCODE.md](ZCODE.md)。
 
 本手册以 **Mac OpenCode V2 ↔ Windows OpenCode 1.19.0 V1** 为完整例子。程序每台电脑安装一次；每个协作空间保存自己的 state；原项目和已有原生聊天保留在原处。以下 `/ABS/...`、`ses_FULL_...`、`r_REPLACE_...` 都是需要替换的值。创建 room、发送任务、attach 会改变运行状态；本手册中的命令是操作说明，阅读文件本身不执行它们。
+
+最新开发分支另有[统一预检 `inspect`](INSPECT.md)，可在 setup 前运行 `agent-dialogue inspect --json`，接入后明确 `--binding` / `--room` 核对目标。上述固定历史基线不含此新命令；先按[状态总览](STATUS.md)选择版本。默认预检不访问原生服务或 SSH，`ready-local` 只说明本地元数据自洽；Kimi 深查可能加载会话，需额外明确选择。
 
 | 你要做什么 | 从哪里开始 |
 |---|---|
 | 只看已经发生的对话 | 第 7 节 |
 | 第一次连接两段已有聊天 | 第 1～5 节，按顺序执行 |
 | 让 agent 知道怎么使用 | 第 6 节，逐聊天分配说明 |
-| 停止、重新接入或排查 | 第 8 节 |
+| 停止、重新接入或排查（尚无无损暂停） | 第 8 节 |
 | 接入 Codex、同机或第三台电脑 | 第 9 节 |
 
 ## 1. 先选对四样东西
@@ -33,7 +35,7 @@ Mac 需要 Node22.13 或更新的受支持版本；这套已验证环境使用 N
 git clone --branch codex/multinode-adapters \
   https://github.com/IDLE-Cloud/agent-dialogue.git /ABS/MAC_TOOLS/agent-dialogue
 git -C /ABS/MAC_TOOLS/agent-dialogue checkout --detach \
-  5c897a54cff1a8f58c90d53e3c11c6364dfbdf7e
+  00295d77ab8660565e0772985a4387f9351ffb37
 command -v node
 ```
 
@@ -237,7 +239,7 @@ ad collab send --room "$ROOM_ID" --from operator --to mac-agent \
 - 跨机回复保留收到的全局 `--reply-to m_...`。`q_...` 是排队请求，不是回复目标；本地数字 event ID 不能跨电脑通用。
 - 模型工具若要求批准，按原 harness 的权限流程核对本次完整命令。peer 消息不会授予新权限，不设置笼统自动批准。
 
-原生服务正常、worker 就绪且聊天可受理时，收到输入会触发模型处理，无需先把窗口切到前台。V1 忙时等待空闲。Windows 需要当前用户已经交互登录；注销、重启或 OpenCode 退出后的自动恢复尚未实现。
+上述 OpenCode 原生服务正常、worker 就绪且聊天可受理时，收到输入会触发模型处理，无需先把窗口切到前台。ZCode 采用不同的工具主动收件，不能套用这一唤醒行为。V1 忙时等待空闲。Windows 需要当前用户已经交互登录；注销、重启或 OpenCode 退出后的自动恢复尚未实现。
 
 ## 7. 怎样查看你们的对话
 
@@ -293,11 +295,14 @@ Windows 的 history 把 `"$ROOM_ID"` 换成 `$room`。需要严格只读地查�
 | `forwarded` | 本地请求已关联实际发送结果 |
 | `remote-stored` | 对方账本保存了；尚不能证明模型已完成 |
 | `admitted` / `native-admitted` | 准确原生聊天受理了输入 |
+| `tool-available` / `tool-read` | ZCode 工具可以读取 / 已提供给准确聊天的工具调用；不等于 `native-admitted` |
 | 实际关联回复 | 对方发回针对原消息的答复，结合内容判断任务完成情况 |
 | `waiting-native` | V1 聊天忙，等待其空闲 |
 | `unknown` / pending | 保留原状态与 ID，先对账；不要删除 state 或新发同正文 |
 
 已有跨机消息经操作者核对后可用 `ad node flush --message m_ORIGINAL_MESSAGE_ID` 重试/对账原 ID。它不是重新 `collab send`，也不用于尚未获得正式消息 ID 的 `q_...`。
+
+**保留绑定的 pause/resume 尚未实现**，属于稳定化计划；`bridge start` 只启动仍 active 的绑定。下列 detach 是结束接入。
 
 停止桥接：`ad detach mac-agent` 或在 Windows `ad detach windows-agent`。原生聊天和历史保留，Windows worker 会核对并清理自己的任务。detach 是分离绑定，旧 alias 不再启用，`bridge start` 不能使它重新 active。
 
@@ -311,6 +316,7 @@ Windows 的 history 把 `"$ROOM_ID"` 换成 `$room`。需要严格只读地查�
 - **Mac/Linux Codex**：可在第 3 节改用 `ad sessions codex --cwd /absolute/project`，再 `ad attach codex --session FULL_THREAD_UUID --alias codex-agent`。原 thread 未加载时，只有明确选择同一个 UUID 后才加 `--resume`。Codex 的通信 state 需处在该聊天原本允许写入的范围内；当前活跃 Desktop 聊天和 Windows Codex 不能据此推定已接入。完整前置条件见 [兼容性说明](COMPATIBILITY.md)。
 - **第三台电脑**：单独安装相同功能版本、自己的 state/node、接入本机已有聊天。每个参与节点先导入其他所有成员节点的卡片，并保存各 peer 的固定路由；实际直接收发的方向要能通过 SSH 到达，当前没有自动中继。room owner 汇总全部成员并签名，各参与节点接受同一 manifest；为每个本机 agent 生成它自己的指南。
 - **Kimi Code 2.1.1 / 2.2.0**：开发分支已新增 `sessions kimi` / `attach kimi`，需先配置 `AGENT_DIALOGUE_KIMI_SERVICE_FILE`，跨机路由带接收端 `--kimi-service-file`。只接入选定原生 Web 服务拥有的准确聊天；Windows 的 Kimi Bash 使用 POSIX 语法。adapter 单元测试与 Windows / Linux 服务器各自对 Mac OpenCode 的受控双向真实通信均已通过。安装、会话允许清单、服务器 `global_user` 目录与完整操作见 [KIMI.md](KIMI.md)。
-- **Pi/ZCode**：通用协议可以让它们知道规则，严格已有聊天自动收消息仍需各自 adapter；以已验证能力为准。此前 Windows 实机记录对应 OpenCode 1.19.0 V1。
+- **ZCode 3.14.3 桌面应用**：已实现基于真实 MCP metadata 的原聊天工具接入。先 `zcode init`，在准确原聊天调用 `dialogue_identity`，操作者核对完整 session 后 `attach zcode`，为 room 导出私有 `mcp-context`；随后由原聊天调用 `dialogue_send` / `dialogue_inbox`。Mac 对 OpenCode 同机双节点两轮实测通过；不自动唤醒空闲聊天，跨物理机 ZCode、Windows 应用与插件商店安装待实测。完整配置和 scope 分配见 [ZCODE.md](ZCODE.md)，不要沿用 shell adapter 的收件唤醒假设。
+- **Pi**：通用协议可以让它知道规则；严格已有聊天 adapter 仍待实现。已有 `launch pi` 路径与 room adapter 分开验收，不能由 Windows OpenCode 1.19.0 V1 实测外推。
 
 详细参考：[Windows 部署](WINDOWS.md)、[节点与恢复](NODES.md)、[Agent 协议](AGENT-GUIDE.md)、[查看器](VIEWER.md)、[参数配置](CONFIGURATION.md)。

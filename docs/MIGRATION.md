@@ -1,5 +1,7 @@
 # 从项目内安装迁移
 
+当前版本入口先看[状态总览](STATUS.md)。本文件保留项目内安装到独立安装的迁移说明；v0.3 保留绑定暂停、统一恢复和经验证的升级/回退仍在[稳定化计划](V0.3-STABILIZATION-PLAN.md)中，不能把下方手工核对步骤当作已验收的通用升级工具。
+
 旧版本把程序、`.runtime` 与 `.state/local` 放在研究项目目录中。独立版本将程序安装、用户状态和依赖缓存分开；不会扫描并自动接管旧目录。
 
 迁移只影响通信工具的安装与状态，已有 Codex/OpenCode 原生聊天仍由各 harness 保存。不要复制模型密钥、OpenCode password 或原研究仓库的第三方资料快照到本仓库。
@@ -17,7 +19,7 @@ agent-dialogue doctor
 agent-dialogue bindings
 ```
 
-将示例路径替换为实际旧目录。公开仓库和 Release 可直接下载，无需 GitHub 登录；若要使用仓库当前代码，也可运行 `npm install -g git+https://github.com/IDLE-Cloud/agent-dialogue.git`。`setup` 使用新缓存安装固定依赖，不需要搬运旧 `.runtime`。
+将示例路径替换为实际旧目录。公开仓库和 Release 可直接下载，无需 GitHub 登录；上述 URL 固定的是历史稳定 v0.2.0；无 fragment 的 `git+https://github.com/IDLE-Cloud/agent-dialogue.git` 选择 main，不能据此获得 v0.3 新能力。要使用开发版，明确选择 `#codex/multinode-adapters`，或按[状态总览](STATUS.md)固定已验证的完整提交，两端版本一致。`setup` 使用新缓存安装固定依赖，不需要搬运旧 `.runtime`。
 
 **先停止旧 bridge，再让新程序使用相同空间。** 不能同时运行两份 worker 处理同一绑定。`detach` 可用于结束不再使用的绑定，但会将其停用，不是保留活跃绑定的无损暂停命令。若希望保留原绑定继续使用，需要先根据旧 `bridge status` 核对并正常停止确切旧 worker；不要按程序名批量终止其他进程。
 
@@ -41,3 +43,12 @@ agent-dialogue bindings
 ## 从v0.2升级到v0.3开发版
 
 仍需先精确停止旧worker。v0.3按需生成当前空间的独立节点密钥，旧本机binding和room可继续用于本机协作；它们不因升级自动配对远端。要开始跨节点协作，应在交换双方卡片后创建新的共同room，再显式导出/接受清单，步骤见[NODES.md](NODES.md)。不要让旧worker与新worker同时处理同一空间，也不要在已有跨节点绑定的活跃空间中交替运行两个版本。
+
+
+## 2026-10-19 当前迁移边界补充
+
+- 安装新程序不会自动迁移原生聊天、服务描述、跨机接收路径或模型工具中的旧命令。移动程序后，核对 peer route 的接收端 Node/CLI/state/cache/service 路径，并重新生成各聊天自己的说明。ZCode 还需按 [ZCODE.md](ZCODE.md)核对 MCP command、服务描述和私有 scope；不能只更新 shell 指南。
+- `hcom` 和 `embedded` 是不同账本后端，不能把同一数据库交替交给两者。Windows 原生使用 embedded；把文件从 Linux 复制到 Windows 不构成已验证迁移。新电脑通常生成独立 node，交换卡片及共同 room，而非复制另一台活动节点的私钥。
+- 当前没有保留 binding 的 pause/resume。需要保留原身份时，先按确切旧 worker 所有权停止写入并完成离线备份；如果无法证明没有写入者或仍有 unknown/pending，先停留核对，不直接执行上述复制/升级步骤。`detach` 会停用旧 binding；它不是升级前无损暂停的替代。
+- 旧版 `v0.2.0` 程序不能自动视为可写 v0.3 跨节点状态的回退版本。回退仅在格式兼容已验证，或使用升级前旧二进制和完整离线备份时进行；升级后新消息不能被旧备份静默覆盖。两份复制 state 不得同时运行。通用兼容矩阵及回退验收仍待 ST-06。
+- 原 `m_UUID` 的传输不确定状态已有 `node flush --message m_UUID`，它不处理程序版本迁移，也不自动修复 `q_UUID`、原生 pending 或锁。保留原消息和输入证据，不清状态后换新 ID 重发。

@@ -11,7 +11,7 @@
   "engines": { "node": ">=22.13" },
   "os": ["darwin", "linux", "win32"],
   "bin": { "agent-dialogue": "bin/agent-dialogue.mjs" },
-  "files": ["bin/", "lib/", "web/viewer/", "config/", "docs/CONFIGURATION.md", "docs/MIGRATION.md", "docs/COMPATIBILITY.md", "docs/ROADMAP.md", "docs/NODES.md", "docs/WINDOWS.md", "docs/V0.3-DESIGN.md", "docs/VIEWER.md", "docs/USAGE.md", "docs/QUICKSTART-ZH.md", "docs/KIMI.md", "docs/ZCODE.md", "docs/AGENT-GUIDE.md", "docs/VPS-DEPLOYMENT.md", "docs/VPS-ACCEPTANCE.md", "README.md", "CHANGELOG.md", "THIRD_PARTY_NOTICES.md"],
+  "files": ["bin/", "lib/", "web/viewer/", "config/", "docs/STATUS.md", "docs/INSPECT.md", "docs/STABILIZATION-DESIGN.md", "docs/V0.3-STABILIZATION-PLAN.md", "docs/CONFIGURATION.md", "docs/MIGRATION.md", "docs/COMPATIBILITY.md", "docs/ROADMAP.md", "docs/NODES.md", "docs/WINDOWS.md", "docs/V0.3-DESIGN.md", "docs/VIEWER.md", "docs/USAGE.md", "docs/QUICKSTART-ZH.md", "docs/KIMI.md", "docs/ZCODE.md", "docs/AGENT-GUIDE.md", "docs/VPS-DEPLOYMENT.md", "docs/VPS-ACCEPTANCE.md", "README.md", "CHANGELOG.md", "THIRD_PARTY_NOTICES.md"],
   "scripts": {
     "test": "node --test tests/*.test.mjs",
     "doctor": "node bin/agent-dialogue.mjs doctor",

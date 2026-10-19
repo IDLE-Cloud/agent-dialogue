@@ -2,11 +2,13 @@
 
 [![Tests and installation](https://github.com/IDLE-Cloud/agent-dialogue/actions/workflows/test.yml/badge.svg)](https://github.com/IDLE-Cloud/agent-dialogue/actions/workflows/test.yml)
 
-让不同电脑、不同 harness 中的 agent 使用各自的项目聊天交流。既可以启动受管 CLI，也可以把已有 OpenCode / Codex 原生线程加入项目讨论，保留原会话与上下文；不要求新建“通信专用会话”或预先定义业务角色。
+让不同电脑、不同 harness 中的 agent 使用各自的项目聊天交流。既可以启动受管 CLI，也可以把已有 OpenCode / Codex / Kimi 原生聊天或 ZCode 桌面工具会话加入项目讨论，保留原会话与上下文；不要求新建“通信专用会话”或预先定义业务角色。
 
 v0.3 开发版增加节点签名、双向配对、共同 room 和 SSH stdio 传输，每台机器只调用自己的本地 harness。2026-10-18 已完成 [Codex ↔ VPS OpenCode 真实双机验收](verification/vps-integration-20261018-v5/metrics.json)，40/40 项断言通过，包含双向模型问答、接入前上下文、全局回复关联、实际 JSON 产物和 SSH 重放/拒收检查。Codex 范围是 macOS arm64 上独立的 CLI 验证 server 与明确选择的原测试 thread；具体平台及已有聊天边界见 [兼容性说明](docs/COMPATIBILITY.md)。公开稳定 Release 仍为 v0.2.0。
 
-第一次使用可按[中文使用指南](docs/USAGE.md)完成安装、已有聊天接入、room 和对话查看。让其他 agent 知道怎么用时，先给项目加入[通用规则片段](config/AGENTS.snippet.md)，再用 `agent-dialogue agent-guide --room ID --from SELF [--to PEER]` 为每个聊天生成自己的准确上下文；不要让多个 agent 共用同一个 `--from` 身份。
+**当前入口见[状态与支持总览](docs/STATUS.md)**，先区分稳定 `v0.2.0` 与 v0.3 开发快照。第一次多机使用按[中文操作手册](docs/QUICKSTART-ZH.md)完成安装、已有聊天接入、room 和对话查看；[操作者补充指南](docs/USAGE.md)解释逐 agent 分配说明。让其他 agent 知道怎么用时，先给项目加入[通用规则片段](config/AGENTS.snippet.md)，再用 `agent-dialogue agent-guide --room ID --from SELF [--to PEER]` 为每个聊天生成自己的准确上下文；不要让多个 agent 共用同一个 `--from` 身份。
+
+最新开发分支提供[统一预检](docs/INSPECT.md)：`agent-dialogue inspect --json` 默认只读本地已有元数据，未 setup 也可运行；明确 `--binding ALIAS --native` 才查询对应原生聊天。历史固定基线和 v0.2.0 不含此新命令。预检不自动修复、启动进程或唤醒模型；pause/resume 仍待后续实现。
 
 ## 安装
 
@@ -35,7 +37,7 @@ agent-dialogue setup
 agent-dialogue doctor
 ```
 
-本页的节点和 Codex 原生队列功能位于 v0.3 开发分支，测试该版本请明确安装：
+本页的节点、Codex 原生队列、Windows、Kimi、ZCode 和查看器功能位于 v0.3 开发分支，稳定 `v0.2.0` 不包含这些能力。测试最新开发状态可明确安装：
 
 ```bash
 npm install -g 'git+https://github.com/IDLE-Cloud/agent-dialogue.git#codex/multinode-adapters'
@@ -43,11 +45,14 @@ agent-dialogue setup
 agent-dialogue node status
 ```
 
-或从源码安装。`npm link` 使用该源码目录，因此之后应保留它：
+分支会变化。需要复用当前已验证运行基线时，安装 `git+https://github.com/IDLE-Cloud/agent-dialogue.git#00295d77ab8660565e0772985a4387f9351ffb37`；该提交仍是开发快照，两端使用同一完整提交，尚非新的稳定 Release。现有 worker 未停止前，不替换它正在使用的安装目录。
+
+或从源码安装开发分支。`npm link` 使用该源码目录，因此之后应保留它：
 
 ```bash
-git clone https://github.com/IDLE-Cloud/agent-dialogue.git
+git clone --branch codex/multinode-adapters https://github.com/IDLE-Cloud/agent-dialogue.git
 cd agent-dialogue
+# 如需固定上述历史基线，再 checkout --detach 对应完整提交。
 npm link
 agent-dialogue setup
 agent-dialogue doctor
@@ -83,7 +88,7 @@ agent-dialogue history --last 50 --thread r_实际房间ID
 agent-dialogue bridge status
 ```
 
-收到消息的 agent 会得到同一 CLI 的收发说明。它通过 shell 工具使用 `collab send --from 自己的别名 --to 对方别名` 主动发问或回复；回复使用 `--reply-to 原始数字事件ID`。可额外传 `--expected-session 完整ID` 断言接收会话。沿用原聊天的模型、上下文和工具批准策略。
+收到消息的原生 adapter 聊天会得到同一 CLI 的收发说明。它通过 shell 工具使用指南中的完整 `collab send --queue --from 自己的别名 --to 对方别名` 主动发问或回复，后台 worker 再投递。回复保留收到的完整命令：本机消息为数字 event ID，跨节点为全局 `m_UUID`；`--expected-session 完整ID` 断言接收会话。沿用原聊天的模型、上下文和工具批准策略。ZCode 使用 [MCP 工具与私有 scope](docs/ZCODE.md)，由原聊天主动收件。
 
 room 固定成员的原生服务、session、项目目录和绑定代次；实际投递到精确 session API，不按标题或“最新聊天”猜测。界面切到其他聊天不会改变绑定。一个已有聊天可参加多个 room，这些 room 共享该聊天的模型上下文。
 
@@ -148,7 +153,7 @@ agent-dialogue send codex-实际名称 \
 
 ## 消息与故障边界
 
-消息正文保存在 hcom 账本，绑定和回执保存在当前通信空间。`collab send` 成功表示入账，worker 的 `admitted` 表示原生会话受理，实际模型回复另行核对。结果不确定时先查同一输入 ID；无法确认就暂停，不盲目重复提交。残留锁需要检查进程与所有权后明确恢复。
+消息正文保存在所选本地账本（hcom 或 embedded），绑定和回执保存在当前通信空间。`collab send` 成功表示入账，worker 的 `admitted` 表示原生会话受理，实际模型回复另行核对。结果不确定时先查同一输入 ID；无法确认时保留待核对状态，不盲目重复提交。保留绑定的 pause/resume 命令仍待实现。残留锁需要检查进程与所有权后明确恢复。
 
 本机 alias 适用于同一用户的可信进程。跨节点签名固定发送节点，room 固定双方绑定；它们没有把每个模型变成独立的 OS 用户。网络中断或回执丢失时用 `node status` 和 `node flush --message m_UUID` 对账，同 ID 同内容返回原回执。`remote-stored` 只代表对方账本收妥，原生会话受理和实际模型回复分别核验。
 
@@ -174,7 +179,7 @@ agent-dialogue view --source 'Laptop=/absolute/path/to/state-a' --source 'Workst
 node --test tests/*.test.mjs
 ```
 
-开发分支已新增 Kimi Code 2.1.1 / 2.2.0 原生会话 adapter；已完成 Windows / Linux 服务器与 Mac OpenCode 的受控双向真实模型验收；后续扩展 Pi、退出进程恢复、桌面接入与离线运维。测试脚本 `scripts/node-integration.mjs` 可复现两个独立本机节点的真实免费模型协作，真实双机与受控观察恢复的独立 runner 见 [VPS 验收说明](docs/VPS-ACCEPTANCE.md)，`verification/` 保留脱敏指标。本仓库只分发实现、测试和使用说明，不携带原研究仓库的第三方源码快照、账号数据或完整聊天记录。
+开发分支已有 Kimi Code 2.1.1 / 2.2.0 原生会话 adapter、ZCode 3.14.3 桌面工具收件和多机通信实测。当前冻结首版范围，优先完成[稳定化计划](docs/V0.3-STABILIZATION-PLAN.md)中的预检、暂停/恢复、分层对账与交付；Pi、任意 Codex Desktop 接入和进程自动拉起后置。测试脚本 `scripts/node-integration.mjs` 可复现两个独立本机节点的真实免费模型协作，真实双机与受控观察恢复的独立 runner 见 [VPS 验收说明](docs/VPS-ACCEPTANCE.md)，`verification/` 保留脱敏指标。本仓库只分发实现、测试和使用说明，不携带原研究仓库的第三方源码快照、账号数据或完整聊天记录。
 
 ## Windows 原生节点开发版
 
@@ -198,4 +203,4 @@ ZCode 桌面工具收件开发入口见 [ZCODE.md](docs/ZCODE.md)：使用官方
 
 ## v0.3 稳定化与正式交付规划
 
-下一阶段按[稳定化计划](docs/V0.3-STABILIZATION-PLAN.md)收口：统一预检与接入、保留绑定的暂停/恢复、分层对账、升级与回退、一次真实项目连续试用及固定发行包。该计划基于00295d7，当前只完成规划；新增运维入口、跨机ZCode项目试用和新稳定Release均未据此宣称已实现。既有通信实测保持有效，支持版本和边界仍见[兼容性说明](docs/COMPATIBILITY.md)。
+按[稳定化计划](docs/V0.3-STABILIZATION-PLAN.md)收口：统一预检与接入、保留绑定的暂停/恢复、分层对账、升级与回退、一次真实项目连续试用及固定发行包。该计划基于00295d7；ST-01 当前入口、ST-02 [操作设计](docs/STABILIZATION-DESIGN.md)和 ST-03 [统一预检](docs/INSPECT.md)已交付实现及本机验证；平台结果另以本次 CI 为准。pause/resume、分层恢复、跨机 ZCode 项目试用和新稳定 Release 仍待后续实施/验收。当前已实现能力统一见[状态总览](docs/STATUS.md)。既有通信实测保持有效，支持版本和边界仍见[兼容性说明](docs/COMPATIBILITY.md)。

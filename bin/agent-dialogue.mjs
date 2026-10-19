@@ -16,6 +16,8 @@ const HELP = `agent-dialogue — cross-node, cross-harness agent communication
 
   setup                                   Install the pinned platform release in your user cache
   doctor [--json]                         Inspect tools, versions and local endpoints
+  inspect [--binding ALIAS] [--room ID] [--json]
+       [--native [--allow-session-load]]  Read existing state; native queries are explicit
   launch <codex|opencode|kimi|pi> --cwd PATH
        [--prompt TEXT] [--tag LABEL] [--interactive] [--terminal PRESET]
        [-- native-tool-arguments...]
@@ -226,6 +228,36 @@ export async function main(args = process.argv.slice(2), sourceEnv = process.env
   if (command === 'agent-guide' && input.length === 0) {
     console.log(await (await import('../lib/agent-guide.mjs')).readAgentGuide());
     return 0;
+  }
+  if (command === 'inspect') {
+    // Unlike doctor/node status, this path must work before setup without
+    // initializing a ledger, identity, cache or third-party tool process.
+    try {
+      const { options, rest } = parseOptions(input, { '--binding': 'value', '--room': 'value', '--native': 'boolean', '--allow-session-load': 'boolean', '--json': 'boolean' });
+      noRest(rest);
+      if (options['--native'] && !options['--binding'] || options['--allow-session-load'] && !options['--native']) fail('Invalid inspection scope.');
+      const inspectionContext = runtimeEnvironment(sourceEnv);
+      await protectPersonalState(inspectionContext.stateDir);
+      await protectPersonalState(inspectionContext.cacheDir);
+      const report = await (await import('../lib/inspect.mjs')).inspect(inspectionContext, {
+        binding: options['--binding'], room: options['--room'], native: !!options['--native'], allowSessionLoad: !!options['--allow-session-load'],
+      });
+      if (options['--json']) console.log(JSON.stringify(report, null, 2));
+      else {
+        console.log(`Inspection: ${report.overall}\nState: ${report.paths.stateDir}`);
+        for (const check of report.checks) {
+          console.log(`[${check.status}] ${check.code}: ${check.message}`);
+          for (const action of check.actions || []) console.log(`  Next: ${action.code}${action.command ? ` ${JSON.stringify(action.command)}` : ''}`);
+        }
+      }
+      return ['blocked', 'needs-review'].includes(report.overall) ? 1 : 0;
+    } catch {
+      // Native/config/parser errors may contain credentials or caller text.
+      // Per-check failures belong in the closed report; invalid invocation is
+      // deliberately a fixed diagnostic, never an arbitrary exception echo.
+      console.error('agent-dialogue inspect: invalid arguments or configuration; use inspect [--binding ALIAS] [--room ID] [--native [--allow-session-load]] [--json].');
+      return 2;
+    }
   }
   const context = runtimeEnvironment(sourceEnv);
   await protectPersonalState(context.stateDir);
