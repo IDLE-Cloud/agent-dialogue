@@ -30,7 +30,8 @@ Linux GNU 发布包支持不包含 Alpine/musl。平台安装检查与真实模�
 | Kimi Code CLI | `launch kimi` | 提供启动入口，尚未完成该版本真实双向模型验收 |
 | Kimi Code 2.1.1 / 2.2.0 原生服务聊天 | `sessions kimi`、`attach kimi`、`room`、`collab send`；`kimi-code` 为同义入口 | 开发分支新增固定 KAP REST adapter。只允许操作者选定的准确本机服务、workspace、目录及服务器拥有的 session 清单，空闲提交且核验完整持久 user 输入；不接管另一个活跃 TUI。17 项 adapter 单元测试通过；Windows 2.1.1 / Linux 2.2.0 各自对 Mac OpenCode 已完成受控双向真实模型通信，分别 56/56 与 53/53 门禁及来源检查。见 [KIMI.md](KIMI.md) |
 | Pi | `launch pi` | 原型已观察启动、绑定与消息交入；配置供应商额度错误使模型回复未通过 |
-| 任意桌面前端当前活跃聊天、ZCode | 后续集成 | 列表/绑定精确原生thread不代表已经连接该前端；不能把原thread恢复启动描述为已接入当前活跃桌面实例 |
+| ZCode 3.14.3 桌面工具收件 | `zcode init`、MCP `dialogue_identity`、`sessions zcode`、`attach zcode`、`mcp-context` | 开发分支新增基于真实 MCP request context 的工具收件接入。`_meta` 的准确主聊天和工作区与操作者 scope 分别核对；可主动发信、读收件箱和关联回复。工具可读取/工具已读取不等于原生 user 输入受理，不自动唤醒空闲聊天。真实桌面验收单独记录，见 [ZCODE.md](ZCODE.md) |
+| 任意桌面前端当前活跃聊天 | 后续集成 | 列表/绑定精确原生thread不代表已经连接该前端；不能把原thread恢复启动描述为已接入当前活跃桌面实例 |
 
 OpenCode V2 adapter 按本机 2.0.20 接口实现：`/api/session`、`/api/session/{ID}/prompt`、收件箱与消息查询。默认读取 `~/.local/state/opencode/service.json`，可用 `AGENT_DIALOGUE_OPENCODE_SERVICE_FILE` 明确选择另一本机服务记录。V1 1.19.0 使用独立的 `AGENT_DIALOGUE_OPENCODE_V1_SERVICE_FILE` 和 `/session/{ID}/prompt_async` 合同，不混用 V2 服务记录。其它版本需要实际兼容检查，不自动套用旧版或网页最新 API。
 

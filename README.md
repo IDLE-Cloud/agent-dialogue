@@ -191,3 +191,6 @@ Windows worker 使用当前用户交互登录下的无触发器计划任务，�
 开发分支新增 `sessions kimi` / `attach kimi`（`kimi-code` 同义入口），通过私有 `AGENT_DIALOGUE_KIMI_SERVICE_FILE` 选择 Kimi Code 2.1.1 / 2.2.0 原生 Web 服务。服务描述固定准确实例、workspace、目录和由该服务拥有的 session 清单；空闲时提交，核验完整持久 user 输入后才报告受理。它保持原模型与权限，不接管另一个活跃 TUI。Windows 的 Kimi Bash 使用 POSIX 命令，SSH 传输可单独使用 PowerShell。
 
 已完成 Windows Kimi 2.1.1 与 Linux Kimi 2.2.0 各自对 Mac OpenCode 的双向真实通信：每端 4 条签名消息、2 对关联回复、双方各 2 次原生通信工具调用，Windows 56/56、Linux 53/53 门禁和来源检查通过。验收使用限定命令与合成事实。私有服务准备、服务器 `global_user` 安装布局、跨机 `--kimi-service-file` 路由、逐聊天指南与状态处理见 [Kimi 操作说明](docs/KIMI.md)。
+
+
+ZCode 桌面工具收件开发入口见 [ZCODE.md](docs/ZCODE.md)：使用官方主机提供的 MCP `_meta` 核对准确聊天及工作区，scope 固定发送身份、room 和允许 peers；复用既有签名节点与账本，可主动收发及引用回复。它提供工具收件，不宣称外部消息会自动启动空闲桌面聊天；查看器单独显示工具可读取/工具已读取。真实桌面与安装结果以该指南和独立验收记录为准。

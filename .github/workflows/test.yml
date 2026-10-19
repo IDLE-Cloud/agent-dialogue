@@ -55,6 +55,14 @@ jobs:
           tests/windows-integration-contract.test.mjs
           tests/native-admission.test.mjs
           tests/kimi.test.mjs
+          tests/zcode.test.mjs
+          tests/zcode-wiring.test.mjs
+          tests/mcp-stdio.test.mjs
+          tests/mcp-tools.test.mjs
+          tests/zcode-mcp-ingress.test.mjs
+          tests/zcode-plugin.test.mjs
+          tests/zcode-cli.test.mjs
+          tests/tool-inbox-viewer.test.mjs
           tests/kimi-wiring.test.mjs
           tests/kimi-integration-contract.test.mjs
           tests/node-transport.test.mjs

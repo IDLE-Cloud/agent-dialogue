@@ -29,16 +29,20 @@ const HELP = `agent-dialogue — cross-node, cross-harness agent communication
   agent-guide [--room ID --from ALIAS [--to ALIAS]]
                                            Read protocol / generate one agent's exact context
   stop NAME                               Stop one existing local endpoint
-  sessions <opencode|opencode-v1|codex|kimi> [--cwd PATH] List exact native chats
-  attach <opencode|opencode-v1|codex|kimi> --session ID --alias NAME [--resume]
+  sessions <opencode|opencode-v1|codex|kimi|zcode> [--cwd PATH] List exact native chats
+  attach <opencode|opencode-v1|codex|kimi|zcode> --session ID --alias NAME [--resume]
                                            Bind an existing chat; Codex resume is explicit
+  zcode init --cwd PATH --file PATH         Create an owner-selected tool-inbox descriptor
+  mcp-context --room ID --from ALIAS [--to ALIAS] [--output PATH]
+                                           Export a private, fixed ZCode MCP assignment
+  mcp --zcode-service PATH [--context PATH]  Serve contextual MCP tools over stdio
   bindings                                Show exact bindings, rooms and receipts
   room create --name LABEL --members a,b   Create a project collaboration room
   room export ID | room import --file PATH Export/accept a signed room manifest
   node init --name LABEL | node export     Create identity / export signed peer card
   node peer add --file CARD (--ssh HOST | --local) --executable PATH
        [--cli PATH] --state-dir PATH [--cache-dir PATH]
-       [--service-file PATH] [--codex-home PATH] [--kimi-service-file PATH]
+       [--service-file PATH] [--codex-home PATH] [--kimi-service-file PATH] [--zcode-service-file PATH]
        [--shell posix|powershell] [--opencode-v1-service-file PATH]
        [--ledger hcom|embedded] [--ssh-config PATH]
   node status | node flush [--message ID]  Inspect nodes / retry the same durable message
@@ -233,6 +237,36 @@ export async function main(args = process.argv.slice(2), sourceEnv = process.env
     }));
     return 0;
   }
+  if (command === 'zcode') {
+    if (input[0] !== 'init') fail('Use zcode init --cwd PATH --file PATH.');
+    const { options, rest } = parseOptions(input.slice(1), { '--cwd': 'value', '--file': 'value' }); noRest(rest);
+    if (!options['--cwd'] || !options['--file']) fail('zcode init requires an exact workspace and private service file.');
+    const { createZCodeService } = await import('../lib/zcode.mjs');
+    console.log(JSON.stringify(await createZCodeService({ path: resolve(options['--file']), directory: resolve(options['--cwd']) }), null, 2));
+    return 0;
+  }
+  if (command === 'mcp-context') {
+    const { options, rest } = parseOptions(input, { '--room': 'value', '--from': 'value', '--to': 'value', '--output': 'value' }); noRest(rest);
+    const { createMcpScope } = await import('../lib/mcp-tools.mjs');
+    const text = JSON.stringify(await createMcpScope(context, { room: options['--room'], from: options['--from'], to: options['--to'] }), null, 2) + '\n';
+    if (options['--output']) {
+      const path = resolve(options['--output']), parent = dirname(path);
+      await mkdir(parent, { recursive: true, mode: 0o700 });
+      const info = await lstat(parent); if (!info.isDirectory() || info.isSymbolicLink()) fail('MCP context parent must be a regular directory.');
+      await writeFile(path, text, { flag: 'wx', mode: 0o600 });
+      if (platform() === 'win32') await (await import('../lib/private-files.mjs')).protectWindowsPrivatePath(path);
+      console.log(JSON.stringify({ saved: true, path }));
+    } else process.stdout.write(text);
+    return 0;
+  }
+  if (command === 'mcp') {
+    const { options, rest } = parseOptions(input, { '--context': 'value', '--zcode-service': 'value' }); noRest(rest);
+    const { createDialogueMcpTools } = await import('../lib/mcp-tools.mjs');
+    const { serveMcpStdio } = await import('../lib/mcp-stdio.mjs');
+    const handlers = await createDialogueMcpTools(context, { scopeFile: options['--context'] ? resolve(options['--context']) : undefined, serviceFile: options['--zcode-service'] ? resolve(options['--zcode-service']) : context.env.AGENT_DIALOGUE_ZCODE_SERVICE_FILE });
+    await serveMcpStdio({ ...handlers, serverInfo: { name: 'agent-dialogue', version: '0.3.0' } });
+    return 0;
+  }
   if (command === 'view') {
     const { runViewer } = await import('../lib/viewer/cli.mjs');
     return await runViewer(input, context);
@@ -260,12 +294,12 @@ export async function main(args = process.argv.slice(2), sourceEnv = process.env
     else if (input[0] === 'status' && input.length === 1) result = await nodes.nodeStatus(context);
     else if (input[0] === 'receive' && input.length === 1) result = await nodes.receiveEnvelope(context, await readStdinJson());
     else if (input[0] === 'peer' && input[1] === 'add') {
-      const { options, rest } = parseOptions(input.slice(2), { '--file': 'value', '--ssh': 'value', '--local': 'boolean', '--executable': 'value', '--cli': 'value', '--state-dir': 'value', '--cache-dir': 'value', '--service-file': 'value', '--opencode-v1-service-file': 'value', '--kimi-service-file': 'value', '--codex-home': 'value', '--shell': 'value', '--ledger': 'value', '--ssh-config': 'value' }); noRest(rest);
+      const { options, rest } = parseOptions(input.slice(2), { '--file': 'value', '--ssh': 'value', '--local': 'boolean', '--executable': 'value', '--cli': 'value', '--state-dir': 'value', '--cache-dir': 'value', '--service-file': 'value', '--opencode-v1-service-file': 'value', '--kimi-service-file': 'value', '--zcode-service-file': 'value', '--codex-home': 'value', '--shell': 'value', '--ledger': 'value', '--ssh-config': 'value' }); noRest(rest);
       if (!!options['--ssh'] === !!options['--local']) fail('Choose exactly one transport: --ssh HOST or --local.');
       const transport = { kind: options['--local'] ? 'local-process' : 'ssh', executable: options['--executable'], stateDir: options['--state-dir'] };
       if (options['--ssh']) transport.destination = options['--ssh'];
       if (options['--cli']) transport.args = [options['--cli']];
-      for (const [flag, key] of [['--cache-dir', 'cacheDir'], ['--service-file', 'serviceFile'], ['--opencode-v1-service-file', 'opencodeV1ServiceFile'], ['--codex-home', 'codexHome'], ['--kimi-service-file', 'kimiServiceFile'], ['--shell', 'shell'], ['--ledger', 'ledgerBackend'], ['--ssh-config', 'sshConfig']]) if (options[flag]) transport[key] = options[flag];
+      for (const [flag, key] of [['--cache-dir', 'cacheDir'], ['--service-file', 'serviceFile'], ['--opencode-v1-service-file', 'opencodeV1ServiceFile'], ['--codex-home', 'codexHome'], ['--kimi-service-file', 'kimiServiceFile'], ['--zcode-service-file', 'zcodeServiceFile'], ['--shell', 'shell'], ['--ledger', 'ledgerBackend'], ['--ssh-config', 'sshConfig']]) if (options[flag]) transport[key] = options[flag];
       result = await nodes.pairPeer(context, await readJsonFile(options['--file']), transport);
     } else if (input[0] === 'flush') {
       const { options, rest } = parseOptions(input.slice(1), { '--message': 'value' }); noRest(rest);

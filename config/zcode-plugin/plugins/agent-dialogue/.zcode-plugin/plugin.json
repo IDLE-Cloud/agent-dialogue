@@ -1,0 +1,51 @@
+{
+  "name": "agent-dialogue",
+  "version": "0.1.0",
+  "description": "Project messaging tools for the operator-selected ZCode desktop chat",
+  "author": {
+    "name": "IDLE-Cloud"
+  },
+  "repository": "https://github.com/IDLE-Cloud/agent-dialogue",
+  "homepage": "https://github.com/IDLE-Cloud/agent-dialogue",
+  "license": "UNLICENSED",
+  "keywords": [
+    "agent-dialogue",
+    "collaboration",
+    "mcp"
+  ],
+  "commands": "commands",
+  "skills": "skills",
+  "mcpServers": ".mcp.json",
+  "userConfig": {
+    "node_executable": {
+      "type": "file",
+      "title": "Node.js executable",
+      "description": "Absolute Node.js 22.13+ executable path. The optional SessionStart hook additionally requires node on PATH.",
+      "required": true
+    },
+    "agent_dialogue_root": {
+      "type": "directory",
+      "title": "Agent Dialogue installation",
+      "description": "Absolute installation directory containing bin/agent-dialogue.mjs.",
+      "required": true
+    },
+    "state_dir": {
+      "type": "directory",
+      "title": "Communication space",
+      "description": "Absolute communication state directory matching the operator-generated context.",
+      "required": true
+    },
+    "context_file": {
+      "type": "string",
+      "title": "Private exact-chat context",
+      "description": "Absolute private JSON path reserved for this chat and room. May be absent during dialogue_identity bootstrap; generate with mcp-context after exact binding and room setup.",
+      "required": true
+    },
+    "service_file": {
+      "type": "file",
+      "title": "Private ZCode service descriptor",
+      "description": "Absolute descriptor created by agent-dialogue zcode init for the selected native project directory.",
+      "required": true
+    }
+  }
+}
