@@ -10,9 +10,9 @@ agent-dialogue doctor
 
 上面的分支用于当前开发验收；长期部署应在验收后改为固定的发布版本或提交。
 
-每台电脑运行一份 agent-dialogue，保存自己的节点密钥、hcom 消息账本和会话绑定。消息通过已有 SSH 通道进入对端的 `node receive`，由对端本地 adapter 交给固定的原生聊天。本工具不新增监听端口或网络服务；SSH 服务和各 harness 的本地运行环境需要预先配置好。
+每台电脑运行一份 agent-dialogue，保存自己的节点密钥、本地消息账本和会话绑定。Linux/macOS 默认使用固定 hcom，Windows 原生使用独立的 embedded SQLite 账本；两者复用相同的节点签名、room 和回执检查。消息通过已有 SSH 通道进入对端的 `node receive`，由对端本地 adapter 交给固定的原生聊天。本工具不新增监听端口或网络服务；SSH 服务和各 harness 的本地运行环境需要预先配置好。
 
-当前传输面是 POSIX SSH stdio，适用于 Linux、macOS 和明确配置的 WSL 环境。原生 Windows cmd/PowerShell 接收命令尚未适配。ZeroTier 可以承载已有 SSH 连接；它只负责网络可达性，节点和会话身份仍由下面的配对与绑定检查确认。
+Linux/macOS 和明确配置的 WSL 使用 POSIX SSH stdio。开发分支也支持原生 Windows 的固定 PowerShell 接收命令：配对时显式选择 `--shell powershell`、Windows 绝对路径和 `--ledger embedded`，不需要 WSL，也不复用上游 hcom hooks。Windows OpenCode V1 已有会话、当前用户 worker 和私有 ACL 的配置见 [WINDOWS.md](WINDOWS.md)。ZeroTier 或 FRP 可以承载已有 SSH 连接；它们只负责网络可达性，节点和会话身份仍由下面的配对与绑定检查确认。
 
 `--local` 使用本机子进程模拟另一节点，仅用于两个独立状态目录之间的集成测试。这样的结果应标为本机双节点验证。
 
@@ -84,9 +84,11 @@ B 端以同样方式导入 `card-a.json`，保存到 A 端的 SSH 路由。若�
 
 这些也是对端路径。凭据文件内容不会随卡片传递；它由对端的本地 adapter 读取。双方各自保留自己的签名私钥，通过卡片固定对方公钥。
 
+上述路径示例针对 POSIX 对端。Windows OpenCode `1.19.0` 使用显式的 `opencode-v1` adapter 和 `--opencode-v1-service-file`；不要把 V1 描述文件传入 V2 的 `--service-file`，也不要把当前 TUI 窗口视为已提供可投递 HTTP 服务。接入流程与双向路由示例见 [Windows 指南](WINDOWS.md)。
+
 每次接收时只执行已经保存的固定程序和 `node receive`。请求正文与签名通过 stdin 传入，不拼入远程 shell；响应通过 stdout 返回。单次请求/响应限制为 256 KiB，执行超时为 20 秒。
 
-跨节点frame和本地排队请求在进入hcom前，另有120000字节的UTF-8编码上限，以兼容Linux单个命令参数限制。签名封装会重复正文并加入元数据；按编码后的整体frame计算，不只按字符数计算。超限在写入inbox/outbox intent前拒绝。
+跨节点frame和本地排队请求在进入本地账本前，统一执行120000字节的UTF-8编码上限，以兼容hcom在Linux上的单个命令参数限制。签名封装会重复正文并加入元数据；按编码后的整体frame计算，不只按字符数计算。超限在写入inbox/outbox intent前拒绝。
 
 ## 建立共同的 room
 
@@ -136,16 +138,18 @@ agent-dialogue bindings
 agent-dialogue bridge status
 ```
 
-`node status` 返回 `{node, peers, inbox, outbox}`。inbox/outbox 以全局 message ID 为键，保存 payload hash、room、状态、节点和本地/远端事件 ID 等控制元数据，正文继续保存在 hcom 账本。
+`node status` 返回 `{node, peers, inbox, outbox}`。inbox/outbox 以全局 message ID 为键，保存 payload hash、room、状态、节点和本地/远端事件 ID 等控制元数据，正文继续保存在各节点选定的本地账本。
 
 | 状态或证据 | 可以得出的结论 |
 |---|---|
 | 本地 outbox 已入账 | 本机保存了此次发送意图与可恢复的消息正文 |
-| 对端签名 `stored`，发送端显示 `remote-stored` | 对端接收门禁通过，并保存到对端 hcom 账本 |
+| 对端签名 `stored`，发送端显示 `remote-stored` | 对端接收门禁通过，并保存到对端本地账本 |
 | bridge 的原生受理记录 `native-admitted` | 固定原生聊天的接口已接收该输入 |
 | 实际模型回复 | 模型已经处理并作出回复，可继续核对其项目内容 |
 
 `stored` ACK 不代表原生聊天已经受理，也不代表模型读过或完成了工作。SSH 已返回但 bridge 暂停时，消息可以停留在对端账本，等待正确的本地 adapter 恢复。
+
+OpenCode V1 没有可用的持久原生 inbox。目标会话忙时，worker 显示 `waiting-native`，保持该账本事件和游标不变，不向忙会话提交输入；空闲后处理同一事件并以准确持久输入确认受理，再恢复 `ready`。`ready` 表示 worker 可继续处理消息，不代表模型已经完成或原生会话此刻一定空闲。结果不确定时仍停止并保留 pending，不按 busy 路径盲目重试。
 
 受限模型shell可使用`collab send --queue`，只向本地账本提交请求，后台source worker执行相同的原生/节点校验和网络投递。Codex默认得到这种命令。此时`queued`只是本地请求回执，source worker的`forwarded`记录才关联实际消息；消息的`remote-stored`和对方模型回复仍分别核对。模型不需要直接访问SSH或原生loopback API，但必须能够写入当前通信目录。
 
@@ -161,7 +165,7 @@ agent-dialogue node flush --message m_ACTUAL_MESSAGE_UUID
 
 ## 密钥、迁移和适用范围
 
-- 节点私钥在本机状态目录的 `dialogue/node.json`，权限为 0600。每个逻辑节点独立生成；不要把该文件复制到另一台并行运行的电脑，也不要把整个 `.state`/用户状态目录当作多机共享数据库。
+- 节点私钥在本机状态目录的 `dialogue/node.json`。POSIX 要求 0600；Windows 检查实际 owner SID 与 ACL，只允许当前用户、SYSTEM 和本机 Administrators 的访问，拒绝其它 Allow 主体。Windows 合成的 POSIX mode 不作为隐私依据。每个逻辑节点独立生成；不要把该文件复制到另一台并行运行的电脑，也不要把整个 `.state`/用户状态目录当作多机共享数据库。
 - 安装包和依赖缓存可以分别安装或缓存；原生聊天、模型认证和节点运行状态由每台机器自己保存。
 - 新电脑运行 `node init` 生成新身份，重新接入当地原生聊天，再交换卡片与 room manifest。更换节点身份后，对方需要显式重新配对。
 - 已有绑定的 alias 不能与导入的对端 alias 冲突。为不同参与者选不同 alias 后重新导出卡片。

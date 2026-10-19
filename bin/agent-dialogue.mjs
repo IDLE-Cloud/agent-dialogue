@@ -29,8 +29,8 @@ const HELP = `agent-dialogue — cross-node, cross-harness agent communication
   agent-guide [--room ID --from ALIAS [--to ALIAS]]
                                            Read protocol / generate one agent's exact context
   stop NAME                               Stop one existing local endpoint
-  sessions <opencode|codex> [--cwd PATH]    List exact native chats and capabilities
-  attach <opencode|codex> --session ID --alias NAME [--resume]
+  sessions <opencode|opencode-v1|codex> [--cwd PATH] List exact native chats
+  attach <opencode|opencode-v1|codex> --session ID --alias NAME [--resume]
                                            Bind an existing chat; Codex resume is explicit
   bindings                                Show exact bindings, rooms and receipts
   room create --name LABEL --members a,b   Create a project collaboration room
@@ -39,6 +39,8 @@ const HELP = `agent-dialogue — cross-node, cross-harness agent communication
   node peer add --file CARD (--ssh HOST | --local) --executable PATH
        [--cli PATH] --state-dir PATH [--cache-dir PATH]
        [--service-file PATH] [--codex-home PATH]
+       [--shell posix|powershell] [--opencode-v1-service-file PATH]
+       [--ledger hcom|embedded] [--ssh-config PATH]
   node status | node flush [--message ID]  Inspect nodes / retry the same durable message
   collab send --room ID --from ALIAS --to ALIAS --message TEXT
        [--reply-to EVENT] [--expected-session ID] [--queue]
@@ -158,8 +160,10 @@ export function launchArguments(tool, args) {
 async function executablePath(command, env) {
   for (const dir of (env.PATH || '').split(delimiter)) {
     if (!dir) continue;
-    const path = resolve(dir, command);
-    try { await access(path, constants.X_OK); return path; } catch { /* continue PATH search */ }
+    for (const suffix of process.platform === 'win32' ? ['', '.exe', '.cmd', '.bat'] : ['']) {
+      const path = resolve(dir, command + suffix);
+      try { await access(path, constants.X_OK); return path; } catch { /* continue PATH search */ }
+    }
   }
   return null;
 }
@@ -168,7 +172,7 @@ async function doctor(context, json) {
   await Promise.all(['codex', 'opencode', 'kimi', 'pi', 'node', 'ssh'].map(async name => {
     const path = await executablePath(name, context.env);
     let version = null, error = null;
-    if (path && name !== 'ssh') {
+    if (path && name !== 'ssh' && (process.platform !== 'win32' || name === 'node')) {
       try {
         const result = await run(path, ['--version'], { env: context.env, capture: true, timeout: 15_000 });
         version = (result.stdout || result.stderr).trim().split('\n')[0] || null;
@@ -179,6 +183,11 @@ async function doctor(context, json) {
   }));
   let hcom = { path: context.binary, version: null }, endpoints = [], errors = [];
   try {
+    if (context.ledgerBackend === 'embedded') {
+      const { runEmbedded } = await import('../lib/embedded-ledger.mjs');
+      hcom = { path: null, backend: 'embedded', version: (await runEmbedded(context, ['--version'])).trim() };
+      if (await exists(context.stateDir)) endpoints = JSON.parse(await runEmbedded(context, ['list', '--json']));
+    } else {
     const version = await run(context.binary, ['--version'], { env: context.env, capture: true, timeout: 10_000 });
     hcom.version = version.stdout.trim() || null;
     if (version.code) errors.push(`hcom --version exited ${version.code}`);
@@ -189,6 +198,7 @@ async function doctor(context, json) {
         const items = JSON.parse(listing.stdout);
         endpoints = (Array.isArray(items) ? items : [items]).map(({ name, base_name, tool, status, session_id, headless, hooks_bound, process_bound }) => ({ name, base_name, tool, status, session_id, headless, hooks_bound, process_bound }));
       }
+    }
     }
   } catch (e) { errors.push(e.message); }
   const result = { platform: `${platform()}-${arch()}`, node: process.version, projectDir: PROJECT_DIR, stateDir: context.stateDir, cacheDir: context.cacheDir, runtimeDir: context.runtimeDir, hcom, tools, endpoints, errors, note: 'Executable presence does not verify provider login, model availability or desktop-chat attachment.' };
@@ -227,7 +237,14 @@ export async function main(args = process.argv.slice(2), sourceEnv = process.env
     const { runViewer } = await import('../lib/viewer/cli.mjs');
     return await runViewer(input, context);
   }
-  if (command === 'setup') { if (input.length) fail('setup takes no arguments.'); return await installHcom(context); }
+  if (command === 'setup') {
+    if (input.length) fail('setup takes no arguments.');
+    if (context.ledgerBackend === 'embedded') {
+      console.log(JSON.stringify(await (await import('../lib/embedded-ledger.mjs')).initializeEmbedded(context), null, 2));
+      return 0;
+    }
+    return await installHcom(context);
+  }
   if (command === 'doctor') {
     const { options, rest } = parseOptions(input, { '--json': 'boolean' }); noRest(rest);
     return await doctor(context, !!options['--json']);
@@ -243,12 +260,12 @@ export async function main(args = process.argv.slice(2), sourceEnv = process.env
     else if (input[0] === 'status' && input.length === 1) result = await nodes.nodeStatus(context);
     else if (input[0] === 'receive' && input.length === 1) result = await nodes.receiveEnvelope(context, await readStdinJson());
     else if (input[0] === 'peer' && input[1] === 'add') {
-      const { options, rest } = parseOptions(input.slice(2), { '--file': 'value', '--ssh': 'value', '--local': 'boolean', '--executable': 'value', '--cli': 'value', '--state-dir': 'value', '--cache-dir': 'value', '--service-file': 'value', '--codex-home': 'value' }); noRest(rest);
+      const { options, rest } = parseOptions(input.slice(2), { '--file': 'value', '--ssh': 'value', '--local': 'boolean', '--executable': 'value', '--cli': 'value', '--state-dir': 'value', '--cache-dir': 'value', '--service-file': 'value', '--opencode-v1-service-file': 'value', '--codex-home': 'value', '--shell': 'value', '--ledger': 'value', '--ssh-config': 'value' }); noRest(rest);
       if (!!options['--ssh'] === !!options['--local']) fail('Choose exactly one transport: --ssh HOST or --local.');
       const transport = { kind: options['--local'] ? 'local-process' : 'ssh', executable: options['--executable'], stateDir: options['--state-dir'] };
       if (options['--ssh']) transport.destination = options['--ssh'];
       if (options['--cli']) transport.args = [options['--cli']];
-      for (const [flag, key] of [['--cache-dir', 'cacheDir'], ['--service-file', 'serviceFile'], ['--codex-home', 'codexHome']]) if (options[flag]) transport[key] = options[flag];
+      for (const [flag, key] of [['--cache-dir', 'cacheDir'], ['--service-file', 'serviceFile'], ['--opencode-v1-service-file', 'opencodeV1ServiceFile'], ['--codex-home', 'codexHome'], ['--shell', 'shell'], ['--ledger', 'ledgerBackend'], ['--ssh-config', 'sshConfig']]) if (options[flag]) transport[key] = options[flag];
       result = await nodes.pairPeer(context, await readJsonFile(options['--file']), transport);
     } else if (input[0] === 'flush') {
       const { options, rest } = parseOptions(input.slice(1), { '--message': 'value' }); noRest(rest);
@@ -292,6 +309,9 @@ export async function main(args = process.argv.slice(2), sourceEnv = process.env
     else if (command === 'detach' && input.length === 1) result = await bridge.detach(context, input[0]);
     else fail('Invalid collaboration command; see --help.');
     console.log(JSON.stringify(result, null, 2)); return 0;
+  }
+  if (context.ledgerBackend === 'embedded' && ['launch', 'send', 'stop', 'hcom'].includes(command)) {
+    fail('The embedded ledger supports native sessions/attach/room/collab; upstream hooks, launch and raw hcom commands are unavailable.');
   }
   let argv;
   if (command === 'launch') {
@@ -337,6 +357,11 @@ export async function main(args = process.argv.slice(2), sourceEnv = process.env
     argv = input;
   } else fail(`Unknown command: ${command}. Run --help.`);
   await mkdir(context.stateDir, { recursive: true });
+  if (context.ledgerBackend === 'embedded') {
+    const output = await (await import('../lib/embedded-ledger.mjs')).runEmbedded(context, argv);
+    if (output) process.stdout.write(output);
+    return 0;
+  }
   return (await run(context.binary, argv, { env: context.env })).code;
 }
 

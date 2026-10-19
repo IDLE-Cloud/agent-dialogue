@@ -1,9 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtemp, readFile, readdir, rm, stat, writeFile } from 'node:fs/promises';
+import { mkdtemp, readFile, readdir, rm, stat, symlink, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { loadOrCreateNode, nodePublic, payloadHash, signObject, validatePublicNode, validateWireMessage, verifyObject } from '../lib/node-identity.mjs';
+import { loadOrCreateNode, readExistingNode, nodePublic, payloadHash, signObject, validatePublicNode, validateWireMessage, verifyObject } from '../lib/node-identity.mjs';
+import { inspectWindowsPrivatePath } from '../lib/private-files.mjs';
 import { createHash } from 'node:crypto';
 
 async function fixture(t) {
@@ -24,8 +25,11 @@ function message(a, b) {
 test('persistent node uses private keys and a public hash identity, without exposing secrets in nodePublic', async t => {
   const context = await fixture(t), node = await loadOrCreateNode(context, { name: 'Mac node' });
   assert.equal(node.version, 1); assert.match(node.nodeId, /^n_[a-f0-9]{64}$/);
-  assert.equal((await stat(join(context.stateDir, 'dialogue', 'node.json'))).mode & 0o777, 0o600);
-  assert.equal((await stat(join(context.stateDir, 'dialogue'))).mode & 0o777, 0o700);
+  if (process.platform === 'win32') await inspectWindowsPrivatePath(join(context.stateDir, 'dialogue', 'node.json'));
+  else {
+    assert.equal((await stat(join(context.stateDir, 'dialogue', 'node.json'))).mode & 0o777, 0o600);
+    assert.equal((await stat(join(context.stateDir, 'dialogue'))).mode & 0o777, 0o700);
+  }
   assert.deepEqual(nodePublic(node), { nodeId: node.nodeId, name: 'Mac node', publicKey: node.publicKey });
   assert.ok(!('privateKey' in nodePublic(node)));
   assert.deepEqual(await loadOrCreateNode(context, { name: 'must not rename existing' }), node);
@@ -54,8 +58,34 @@ test('existing malformed, mismatched, or publicly readable identity is rejected 
     assert.equal(await readFile(path, 'utf8'), invalid);
   }
   await writeFile(path, JSON.stringify(node));
-  const { chmod } = await import('node:fs/promises'); await chmod(path, 0o644);
-  await assert.rejects(loadOrCreateNode(context), /private regular file/);
+  if (process.platform !== 'win32') {
+    const { chmod } = await import('node:fs/promises'); await chmod(path, 0o644);
+    await assert.rejects(loadOrCreateNode(context), /private regular file/);
+  }
+});
+
+test('existing identity reads preserve exact key bytes, node ID, and file metadata', async t => {
+  const context = await fixture(t), node = await loadOrCreateNode(context, { name: 'Keep original' });
+  const path = join(context.stateDir, 'dialogue', 'node.json'), before = await readFile(path), info = await stat(path);
+  const existing = await readExistingNode(context);
+  assert.deepEqual(existing, node);
+  assert.deepEqual(await readFile(path), before);
+  const after = await stat(path);
+  assert.equal(after.ino, info.ino); assert.equal(after.mode, info.mode); assert.equal(after.mtimeMs, info.mtimeMs);
+});
+
+test('identity file symlinks are rejected without reading or replacing the target key', async t => {
+  const context = await fixture(t), target = await fixture(t);
+  await loadOrCreateNode(context); const original = await loadOrCreateNode(target);
+  const path = join(context.stateDir, 'dialogue', 'node.json'), targetPath = join(target.stateDir, 'dialogue', 'node.json');
+  const before = await readFile(targetPath);
+  await rm(path);
+  try { await symlink(targetPath, path, 'file'); }
+  catch (error) { if (process.platform === 'win32' && error.code === 'EPERM') return t.skip('Windows account lacks symlink permission'); throw error; }
+  await assert.rejects(readExistingNode(context), /private regular file/i);
+  await assert.rejects(loadOrCreateNode(context), /private regular file/i);
+  assert.deepEqual(await readFile(targetPath), before);
+  assert.equal((await readExistingNode(target)).nodeId, original.nodeId);
 });
 
 test('canonical signatures bind all fields and the exact paired key', async t => {

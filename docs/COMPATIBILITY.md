@@ -1,6 +1,6 @@
 # 兼容性与验证边界
 
-Node.js 要求为 22.13 或更新的受支持版本，无 npm 运行依赖。`setup` 显式下载固定的 hcom 0.7.30 发布包并核对 SHA-256；安装全局命令本身不启动 agent、后台服务或模型调用。
+Node.js 要求为 22.13 或更新的受支持版本，无 npm 运行依赖；Windows 部署示例使用独立 Node 24。Linux/macOS 的 `setup` 显式下载固定的 hcom 0.7.30 发布包并核对 SHA-256；Windows 开发分支使用内建 SQLite 账本，不下载 hcom。安装全局命令本身不启动 agent、后台服务或模型调用。
 
 公开的 v0.2.0 Release 资产为 `idle-cloud-agent-dialogue-0.2.0.tgz`，npm 包名为 `@idle-cloud/agent-dialogue`。可直接安装 [Release 包](https://github.com/IDLE-Cloud/agent-dialogue/releases/download/v0.2.0/idle-cloud-agent-dialogue-0.2.0.tgz)，无需 GitHub 登录。这个 JavaScript 包相同，`setup` 再按所在机器选择对应 hcom 二进制；Release 下载不代表已完成所有平台的模型验收。
 
@@ -12,7 +12,7 @@ Node.js 要求为 22.13 或更新的受支持版本，无 npm 运行依赖。`se
 | macOS x64 | 固定发布包安装入口 | 尚未完成该硬件上的真实模型验收 |
 | Linux GNU x64 | 固定发布包安装入口 | Ubuntu CI已通过Node22/24/26测试、全局包安装、真实hcom setup和doctor；Debian 13 x64 VPS 上 OpenCode 2.0.20 与 macOS Codex 的真实双机 SSH 模型验收已通过，见下方2026-10-18记录 |
 | Linux GNU arm64 | 固定发布包安装入口 | 需要 CI 包校验与真实 harness 联调 |
-| Windows 原生 | 当前不支持 `setup` | 尚未适配本机进程、路径与安装行为 |
+| Windows 原生 | 开发分支支持独立 Node、`setup` embedded 账本、PowerShell SSH | OpenCode V1 1.19.0 adapter、私有 ACL 与当前用户 Scheduled Task worker 已实现并有合同回归；实际部署和模型验收分别记录，不能外推到任意既有 TUI 或桌面窗口。见 [WINDOWS.md](WINDOWS.md) |
 | Windows WSL2 | 可选择 Linux 环境尝试部署 | 使用 WSL 内的 Node、harness 和服务；真实 WSL 端到端尚未验收，不等于连接 Windows 原生已有聊天 |
 
 Linux GNU 发布包支持不包含 Alpine/musl。平台安装检查与真实模型验证分别记录，不能混为同一项通过。
@@ -26,11 +26,12 @@ Linux GNU 发布包支持不包含 Alpine/musl。平台安装检查与真实模�
 | Codex CLI 0.162.1 专用验证 server | `attach codex`、本地 submission、SSH room 通信 | macOS arm64 上显式选择并恢复同一个 owned 测试 thread，与 Debian VPS OpenCode 双向交流及项目 JSON 产物验收通过；不等于接入当前活跃 Desktop 聊天 |
 | OpenCode CLI | `launch opencode`，hcom 原生收发 | macOS arm64 原型已验证与 Codex 互通 |
 | OpenCode 2.0.20 已有聊天 | `sessions opencode`、`attach`、`room`、`collab send` | 已验证精确原生 session、三个已有聊天项目问答、错误绑定拒收与 worker 重启检查；Debian VPS 双机验收已通过。每个节点的 adapter 仍连接该节点本机 loopback 服务，节点之间使用 SSH |
+| OpenCode 1.19.0 已有聊天 | `sessions opencode-v1`、`attach opencode-v1`、`room`、`collab send` | 使用操作者选定的本机服务描述，固定服务版本、项目、目录、shell 与完整 session；保持原会话 agent/model/variant。V1 无持久原生 inbox，只在空闲时提交，确认完整持久输入后才记 admitted；HTTP 204 本身不是受理证据。Windows 配置见 [WINDOWS.md](WINDOWS.md) |
 | Kimi Code CLI | `launch kimi` | 提供启动入口，尚未完成该版本真实双向模型验收 |
 | Pi | `launch pi` | 原型已观察启动、绑定与消息交入；配置供应商额度错误使模型回复未通过 |
 | 任意桌面前端当前活跃聊天、ZCode | 后续集成 | 列表/绑定精确原生thread不代表已经连接该前端；不能把原thread恢复启动描述为已接入当前活跃桌面实例 |
 
-OpenCode 原生 adapter 按本机 2.0.20 接口实现：`/api/session`、`/api/session/{ID}/prompt`、收件箱与消息查询。默认读取 `~/.local/state/opencode/service.json`，可用 `AGENT_DIALOGUE_OPENCODE_SERVICE_FILE` 明确选择另一本机服务记录。其他版本需要实际兼容检查，不自动套用旧版或网页最新 API。
+OpenCode V2 adapter 按本机 2.0.20 接口实现：`/api/session`、`/api/session/{ID}/prompt`、收件箱与消息查询。默认读取 `~/.local/state/opencode/service.json`，可用 `AGENT_DIALOGUE_OPENCODE_SERVICE_FILE` 明确选择另一本机服务记录。V1 1.19.0 使用独立的 `AGENT_DIALOGUE_OPENCODE_V1_SERVICE_FILE` 和 `/session/{ID}/prompt_async` 合同，不混用 V2 服务记录。其它版本需要实际兼容检查，不自动套用旧版或网页最新 API。
 
 模型账号、模型目录、免费额度与 shell 权限属于原 harness。已有聊天接入保留这些配置，不为获得回复自动切换供应商或放宽权限。工具通信成功不代表特定模型当前可用。
 
@@ -43,6 +44,8 @@ OpenCode 原生 adapter 按本机 2.0.20 接口实现：`/api/session`、`/api/s
 - 当前没有自动拉起退出进程、任意远端控制、自动破锁或可承诺的完整离线 exactly-once。
 - v0.3已有独立节点卡片、共同room、SSH stdio和全局消息ID；同机双节点与2026-10-18真实双机 SSH 场景分别保留验收结果。后者明确使用 macOS Codex 与 Debian VPS OpenCode，不能外推到未验收的 harness 或平台。详见[NODES.md](NODES.md)。
 - 当前面向同一用户授权的可信节点与本机进程；alias、通信空间和 room 不是多用户认证或沙箱边界。
+- Windows embedded 后端仅实现准确会话桥接需要的本地账本，不支持上游 hcom hooks、`launch`、原始 hcom 命令或 relay；不能混用已有 hcom 数据目录。Windows worker 的当前用户 Scheduled Task 无触发器、无提权且不存密码，可跨 SSH 退出存活，依赖用户处于登录状态，不代表开机或注销后自动恢复。
+- OpenCode V1 busy 时保留待处理账本事件并显示 `waiting-native`，成功受理或明确拒绝后恢复 worker `ready`；`ready` 不表示模型完成。V1 服务实例没有原生进程 nonce，操作者在服务重启后仍需更新选定描述身份并重新核验绑定。
 - 真实验收使用的持久 Codex subscription lease 属于验收 helper。生产 adapter 不会因此自动 resume 聊天或重启退出的进程；这些动作仍需显式授权与对应实现。
 
 ## v0.3 开发验证

@@ -59,3 +59,11 @@ The tool is installed per computer; the communication state is selected per spac
 Exact existing-chat room adapters currently cover Codex through its supported app-server service and OpenCode through its native service. Kimi/Pi have the upstream hcom launch path, which is a separate capability; being able to read an `AGENTS.md` file does not add an existing-chat adapter. Other harnesses can read this guide, but require a tested transport/session adapter before they can act as a room binding. Internal subagent conversations created solely by a harness's own collaboration tools are not automatically imported.
 
 The browser viewer observes registered histories and receipts. It does not send messages, start agents or make a chat discover this guide. For operator setup and troubleshooting, see [USAGE.md](USAGE.md); for multi-computer pairing see [NODES.md](NODES.md).
+
+## Windows native bindings
+
+For a Windows OpenCode V1 binding, use the **PowerShell command generated for this exact chat**. Keep its environment assignments, absolute Node/CLI paths, sender, room, destination and full expected session. Do not rewrite it as a POSIX command, remove the PowerShell call operator, or change the assigned ledger. A single quote inside a PowerShell single-quoted message is escaped as `''`.
+
+Windows uses the embedded communication ledger; it does not provide upstream hcom launch/hooks. The current V1 adapter is pinned to OpenCode 1.19.0. Incoming inputs wait locally when the native session is busy; an HTTP 204 or persisted user input does not establish a completed model turn. Keep existing model and permission settings, and let the native harness request approval when needed.
+
+The owning worker runs as a demand-only current-user interactive scheduled task. It does not automatically restore a logged-out/restarted Windows session or start an exited harness. If delivery is unavailable, report the exact evidence instead of changing service descriptors, copying another node identity, or starting replacement chats. Installation and operator lifecycle details are in [WINDOWS.md](WINDOWS.md).

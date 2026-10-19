@@ -33,3 +33,37 @@ jobs:
         run: node bin/agent-dialogue.mjs setup
       - name: Check installed tool
         run: node bin/agent-dialogue.mjs doctor --json
+  windows-native:
+    runs-on: windows-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 24
+      - name: Native Windows contracts, ledger and lifecycle
+        shell: pwsh
+        run: >-
+          node --test
+          tests/embedded-ledger.test.mjs
+          tests/windows-platform.test.mjs
+          tests/windows-node-card.test.mjs
+          tests/windows-transport.test.mjs
+          tests/windows-viewer.test.mjs
+          tests/windows-worker.test.mjs
+          tests/opencode-v1.test.mjs
+          tests/windows-integration-contract.test.mjs
+          tests/native-admission.test.mjs
+          tests/node-identity.test.mjs
+          tests/private-files.test.mjs
+      - name: Initialize and check an isolated embedded ledger
+        shell: pwsh
+        env:
+          AGENT_DIALOGUE_LEDGER: embedded
+        run: |
+          $env:AGENT_DIALOGUE_STATE_DIR = Join-Path $env:RUNNER_TEMP 'agent-dialogue-ci-state'
+          $env:AGENT_DIALOGUE_CACHE_DIR = Join-Path $env:RUNNER_TEMP 'agent-dialogue-ci-cache'
+          node bin/agent-dialogue.mjs setup
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          node bin/agent-dialogue.mjs doctor --json
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }

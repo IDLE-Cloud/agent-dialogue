@@ -175,3 +175,9 @@ node --test tests/*.test.mjs
 ```
 
 下一步增加 Kimi/Pi 的已有会话 adapter，再逐项扩展退出进程恢复、桌面接入与离线运维。测试脚本 `scripts/node-integration.mjs` 可复现两个独立本机节点的真实免费模型协作，真实双机与受控观察恢复的独立 runner 见 [VPS 验收说明](docs/VPS-ACCEPTANCE.md)，`verification/` 保留脱敏指标。本仓库只分发实现、测试和使用说明，不携带原研究仓库的第三方源码快照、账号数据或完整聊天记录。
+
+## Windows 原生节点开发版
+
+Windows 接入使用独立 Node 24、embedded 通信账本、已有 FRP/OpenSSH 和明确的 PowerShell 路由，并提供 OpenCode `1.19.0` 的 `opencode-v1` 已有会话适配。使用前按 [Windows 部署说明](docs/WINDOWS.md)准备私有服务描述，再选择完整 session ID、配置双向节点和 room；普通 `opencode` 别名仍指向 V2。无需启动 WSL，也不覆盖现有全局 Node 或 harness。
+
+Windows worker 使用当前用户交互登录下的无触发器计划任务，在 SSH 退出后继续运行；没有开机/注销恢复。原生 V1 收到消息与实际模型完成回复分别核验，能力边界及实机证据以该指南和独立验收记录为准。
