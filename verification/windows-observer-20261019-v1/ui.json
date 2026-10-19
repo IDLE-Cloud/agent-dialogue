@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "status": "passed",
+  "scope": "Real Codex in-app browser, local read-only viewer",
+  "checks": {
+    "both_registered_sources_visible": true,
+    "six_message_timeline_visible": true,
+    "windows_reply_selectable": true,
+    "exact_session_identity_visible": true,
+    "two_source_delivery_evidence_visible": true,
+    "reply_reference_visible": true,
+    "detached_historical_binding_state_visible": true
+  },
+  "logical_messages": 6,
+  "sources": 2,
+  "selected_reply_evidence_items": 7
+}

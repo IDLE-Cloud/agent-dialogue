@@ -25,12 +25,31 @@ D:\Projects\ProjectA\              原来的项目文件
 
 ## 安装开发版
 
+先为新安装创建专用私有目录。下面的 PowerShell 片段使用当前用户的 `LOCALAPPDATA`；它仅适用于尚不存在的新目录。已有安装先核对其 ACL，不用这段代码重置原目录。
+
+```powershell
+$adRoot = Join-Path $env:LOCALAPPDATA 'agent-dialogue'
+if (Test-Path -LiteralPath $adRoot) { throw '该目录已存在，请先核对原安装和 ACL。' }
+[IO.Directory]::CreateDirectory($adRoot) | Out-Null
+$adSid = [Security.Principal.WindowsIdentity]::GetCurrent().User
+$adAcl = [Security.AccessControl.DirectorySecurity]::new()
+$adAcl.SetOwner($adSid)
+$adAcl.SetAccessRuleProtection($true, $false)
+$adRule = [Security.AccessControl.FileSystemAccessRule]::new(
+  $adSid, 'FullControl', 'ContainerInherit,ObjectInherit', 'None', 'Allow'
+)
+$adAcl.AddAccessRule($adRule)
+Set-Acl -LiteralPath $adRoot -AclObject $adAcl
+```
+
+随后在这个目录中安装运行时和程序，账本、服务描述及新文件继承当前用户的私有 ACL。节点密钥和 worker launch 目录还会进行各自的校验；工具不会自动收紧任意外部账本目录或服务描述文件。
+
 从 [Node.js 官方下载页](https://nodejs.org/en/download) 选择固定的 Windows x64 Node 24 ZIP，并核对同版本官方校验文件。解压到用户选择的私有工具目录，不需要覆盖 PATH 中已有的 Node 20，也不需要修改其它 agent 的启动方式。
 
 在 PowerShell 中设置本轮工具路径。所有例子都显式调用独立 Node：
 
 ```powershell
-$adRoot = 'C:\AgentDialogue'
+$adRoot = Join-Path $env:LOCALAPPDATA 'agent-dialogue'
 $adNode = Join-Path $adRoot 'runtime\node-v24.22.0-win-x64\node.exe'
 $adCli = Join-Path $adRoot 'app\bin\agent-dialogue.mjs'
 
@@ -107,6 +126,8 @@ $env:AGENT_DIALOGUE_OPENCODE_V1_SERVICE_FILE = $serviceFile
 `attach` 为该绑定启动一个 **当前用户、Limited、InteractiveToken、无触发器** 的计划任务。任务的 Exec action 直接运行固定 Node 和 worker；使用计划任务是为了让 worker 不随一次 SSH 会话结束。它不保存 Windows 登录密码、不请求管理员、不设置登录或开机触发器，也不覆盖同名任务。
 
 worker 的 launch 描述只保存经允许的通信环境和绝对路径，不把模型 API key 或服务密码复制进去。服务密码仍在本机描述文件，worker 保存的是它的路径。
+
+新任务会明确给当前用户 SID 配置该任务对象的访问权，使 Limited worker 能在退出时删除自己的任务。任务运行级别仍是普通用户；不修改全局任务权限。
 
 ```powershell
 & $adNode $adCli bridge status
@@ -193,3 +214,11 @@ room 配置成功后，在 Windows 为准确的聊天生成自己的说明：
 仓库的 Windows Node 24 CI 运行可移植的账本、平台、传输、worker、V1、观察和验收合同测试，并在独立目录执行 embedded setup/doctor；CI 不登录任何用户主机，不调用付费或免费模型，也不替代真实 FRP 多轮测试。
 
 目前仅明确实现 OpenCode `1.19.0` V1 的这条原生路径。V2、Codex、Kimi、Pi 或 ZCode 在 Windows 上的既有聊天、任意活跃 TUI 接管、注销/重启自启、自动启动退出的 harness，都需要各自适配与验收。后续真实结果应附独立脱敏指标；完整原生 ID、机器路径和诊断继续保留在私有部署记录。
+
+## 已完成的实机验证
+
+2026-10-19 已完成 [Mac ↔ 原生 Windows 双向通信验收](../verification/windows-integration-20261019-v2/README.md)，21/21 项检查通过。两端模型各执行两条通信命令，产生4条全局签名消息和两组关联回复；接入的普通原生聊天保留。Windows为OpenCode1.19.0/Node24.22.0，Mac为OpenCode2.0.20，均使用核验零价格且实际cost0的模型。本轮命令与回复正文由owner测试fixture预先指定，验证消息链路和真实工具执行，不代表开放式自治协作质量评测。
+
+[只读观察](../verification/windows-observer-20261019-v1/metrics.json)的8项检查通过：6条逻辑记录、4条跨机副本合并、2组回复引用，两侧各7个状态文件的字节哈希不变。[实际Limited任务生命周期](../verification/windows-lifecycle-20261019-v1/metrics.json)另有12项检查通过，证明注册SSH结束后任务独立启动、随后自行删除任务与启动描述。该修复单独验证，未把旧任务需要操作者清理的失败过程改写成自动成功。
+
+本机全量427项、Windows原机基础集合97项、修复后的Windows worker专项12项及隔离安装包检查均通过。基础集合和修复专项分别保存结果。正式项目接入仍需操作者选择准确服务、目录和完整session ID；此次测试绑定最后已detach，不会持续向测试聊天投递。

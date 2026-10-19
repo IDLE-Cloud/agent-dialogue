@@ -181,3 +181,5 @@ node --test tests/*.test.mjs
 Windows 接入使用独立 Node 24、embedded 通信账本、已有 FRP/OpenSSH 和明确的 PowerShell 路由，并提供 OpenCode `1.19.0` 的 `opencode-v1` 已有会话适配。使用前按 [Windows 部署说明](docs/WINDOWS.md)准备私有服务描述，再选择完整 session ID、配置双向节点和 room；普通 `opencode` 别名仍指向 V2。无需启动 WSL，也不覆盖现有全局 Node 或 harness。
 
 Windows worker 使用当前用户交互登录下的无触发器计划任务，在 SSH 退出后继续运行；没有开机/注销恢复。原生 V1 收到消息与实际模型完成回复分别核验，能力边界及实机证据以该指南和独立验收记录为准。
+
+2026-10-19：已完成[原生 Windows 双向实机通信](verification/windows-integration-20261019-v2/README.md)、[只读观察](verification/windows-observer-20261019-v1/metrics.json)与[普通权限任务自清理](verification/windows-lifecycle-20261019-v1/metrics.json)。该能力仍在开发分支；稳定 Release v0.2.0 不包含 Windows 接入。

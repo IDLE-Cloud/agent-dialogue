@@ -141,3 +141,25 @@ test('launch directory and config symlinks fail closed before scheduler changes'
   assert.deepEqual(await readdir(target), []);
   assert.equal(f.calls.length, 0);
 });
+
+test('a Limited worker can delete its own task when registration originated in an elevated SSH login', async t => {
+  const f = await fixture(t);
+  // Windows defaults observed on the real workstation: elevated registration
+  // gives BA/SYSTEM full control, but the task principal SID only FR (read).
+  // A Limited token cannot use the BA ACE to delete its own registered task.
+  let currentUserMayDelete = false;
+  const runner = async (_, args) => {
+    const script = decode(args);
+    if (script.includes('RegisterTaskDefinition')) {
+      currentUserMayDelete = script.includes("$sd='D:P(A;;FA;;;SY)(A;;FA;;;BA)(A;;FA;;;'+$sid+')'") && script.includes('RegisterTaskDefinition($n,$d,2,$sid,$null,3,$sd)');
+      return { code: 0, stdout: JSON.stringify({ taskName: `AgentDialogue-${bindingId}-${token}`, registered: true, started: true }) };
+    }
+    if (script.includes('DeleteTask')) return currentUserMayDelete
+      ? { code: 0, stdout: JSON.stringify({ taskName: `AgentDialogue-${bindingId}-${token}`, removed: true }) }
+      : { code: 1, stdout: '', stderr: 'Access denied: principal has only FR in the default task DACL.' };
+    return { code: 0, stdout: '{"secured":true}' };
+  };
+  const result = await startWindowsWorker(f.context, { ...f.options, runner });
+  await cleanupWindowsWorker(bindingId, token, { launchConfigPath: result.launchConfigPath, runner });
+  await assert.rejects(readFile(result.launchConfigPath), { code: 'ENOENT' });
+});
