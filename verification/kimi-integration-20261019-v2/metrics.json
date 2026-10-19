@@ -1,0 +1,99 @@
+{
+  "version": 1,
+  "run_id": "kimi-integration-20261019-v2",
+  "status": "passed",
+  "recorded_at": "2026-10-19T09:22:49.292Z",
+  "runtime_commit": "b13902f598dfcc0f4c968e752c41537067a8af88",
+  "verification_contract_sha256": "a25feb0577da129a0c0d83d02854aa59de4639f85157712790c6b0b44aaf4bb0",
+  "scope": "two independent owned Kimi Web test chats, each bidirectionally exchanging with the same owned Mac OpenCode chat; operator-prescribed communication commands and synthetic facts",
+  "transport": "authenticated SSH; existing Windows FRP path and restricted Linux reverse tunnel",
+  "platforms": {
+    "windows": {
+      "harness": "Kimi Code",
+      "version": "2.1.1",
+      "checks": {
+        "total": 56,
+        "passed": 56,
+        "failed": 0
+      },
+      "signed_messages": 4,
+      "correlated_reply_pairs": 2,
+      "kimi_native_bash_calls": 2,
+      "mac_native_opencode_calls": 2,
+      "rejected_probes": 4,
+      "replay_of_original_id": 1,
+      "source_files": 30,
+      "source_provenance": {
+        "checkout_line_endings": "CRLF",
+        "raw_lf_bytes_match": false,
+        "exact_frozen_lf_to_crlf_files": 30,
+        "other_mismatches": 0
+      }
+    },
+    "linux": {
+      "harness": "Kimi Code",
+      "version": "2.2.0",
+      "checks": {
+        "total": 53,
+        "passed": 53,
+        "failed": 0
+      },
+      "signed_messages": 4,
+      "correlated_reply_pairs": 2,
+      "kimi_native_bash_calls": 2,
+      "mac_native_opencode_calls": 2,
+      "rejected_probes": 4,
+      "replay_of_original_id": 1,
+      "source_files": 30,
+      "source_provenance": {
+        "checkout_line_endings": "LF",
+        "raw_lf_bytes_match": true
+      }
+    }
+  },
+  "total_signed_messages": 8,
+  "total_correlated_pairs": 4,
+  "total_kimi_native_tools": 4,
+  "total_mac_native_tools": 4,
+  "unit_tests": {
+    "total": 457,
+    "passed": 457,
+    "failed": 0
+  },
+  "package_smoke": "passed",
+  "cleanup": {
+    "owned_bindings_detached": 3,
+    "owned_workers_stopped": 3,
+    "native_chats_preserved": true,
+    "native_services_preserved": true
+  },
+  "boundaries": [
+    "no takeover of an unrelated active TUI",
+    "native model selection is an explicit owner setup step",
+    "no autonomous collaboration-quality or causal-context claim",
+    "guard and observation phases make no model calls",
+    "all historical failed seed and verification runs remain private and preserved"
+  ],
+  "observer": {
+    "checks": {
+      "total": 20,
+      "passed": 20,
+      "failed": 0
+    },
+    "ui_checks": {
+      "total": 9,
+      "passed": 9,
+      "failed": 0
+    },
+    "sources": 3,
+    "rooms": 2,
+    "logical_messages": 14,
+    "signed_messages": 8,
+    "operator_messages": 6,
+    "linked_replies": 4,
+    "source_files_per_node": 5,
+    "all_source_files_unchanged": true,
+    "native_api_calls": 0,
+    "model_calls": 0
+  }
+}

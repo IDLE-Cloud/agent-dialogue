@@ -28,10 +28,13 @@ Linux GNU 发布包支持不包含 Alpine/musl。平台安装检查与真实模�
 | OpenCode 2.0.20 已有聊天 | `sessions opencode`、`attach`、`room`、`collab send` | 已验证精确原生 session、三个已有聊天项目问答、错误绑定拒收与 worker 重启检查；Debian VPS 双机验收已通过。每个节点的 adapter 仍连接该节点本机 loopback 服务，节点之间使用 SSH |
 | OpenCode 1.19.0 已有聊天 | `sessions opencode-v1`、`attach opencode-v1`、`room`、`collab send` | 使用操作者选定的本机服务描述，固定服务版本、项目、目录、shell 与完整 session；保持原会话 agent/model/variant。V1 无持久原生 inbox，只在空闲时提交，确认完整持久输入后才记 admitted；HTTP 204 本身不是受理证据。Windows 配置见 [WINDOWS.md](WINDOWS.md) |
 | Kimi Code CLI | `launch kimi` | 提供启动入口，尚未完成该版本真实双向模型验收 |
+| Kimi Code 2.1.1 / 2.2.0 原生服务聊天 | `sessions kimi`、`attach kimi`、`room`、`collab send`；`kimi-code` 为同义入口 | 开发分支新增固定 KAP REST adapter。只允许操作者选定的准确本机服务、workspace、目录及服务器拥有的 session 清单，空闲提交且核验完整持久 user 输入；不接管另一个活跃 TUI。17 项 adapter 单元测试通过；Windows 2.1.1 / Linux 2.2.0 各自对 Mac OpenCode 已完成受控双向真实模型通信，分别 56/56 与 53/53 门禁及来源检查。见 [KIMI.md](KIMI.md) |
 | Pi | `launch pi` | 原型已观察启动、绑定与消息交入；配置供应商额度错误使模型回复未通过 |
 | 任意桌面前端当前活跃聊天、ZCode | 后续集成 | 列表/绑定精确原生thread不代表已经连接该前端；不能把原thread恢复启动描述为已接入当前活跃桌面实例 |
 
 OpenCode V2 adapter 按本机 2.0.20 接口实现：`/api/session`、`/api/session/{ID}/prompt`、收件箱与消息查询。默认读取 `~/.local/state/opencode/service.json`，可用 `AGENT_DIALOGUE_OPENCODE_SERVICE_FILE` 明确选择另一本机服务记录。V1 1.19.0 使用独立的 `AGENT_DIALOGUE_OPENCODE_V1_SERVICE_FILE` 和 `/session/{ID}/prompt_async` 合同，不混用 V2 服务记录。其它版本需要实际兼容检查，不自动套用旧版或网页最新 API。
+
+Kimi 原生 adapter 使用 `AGENT_DIALOGUE_KIMI_SERVICE_FILE` 选择私有服务描述，固定版本 2.1.1 / 2.2.0 和原生 `server_id`；SSH peer 路由可用 `--kimi-service-file` 指定接收端描述路径。它使用原生 `prompt_id` 关联持久消息 `id`，POST 接受或内存队列不构成 admission。Windows 的 Kimi Bash 工具使用 POSIX 语法，SSH 传输仍可独立选择 PowerShell。这里只列已实现协议，真实模型验收按独立记录判断。
 
 模型账号、模型目录、免费额度与 shell 权限属于原 harness。已有聊天接入保留这些配置，不为获得回复自动切换供应商或放宽权限。工具通信成功不代表特定模型当前可用。
 
@@ -46,6 +49,7 @@ OpenCode V2 adapter 按本机 2.0.20 接口实现：`/api/session`、`/api/sessi
 - 当前面向同一用户授权的可信节点与本机进程；alias、通信空间和 room 不是多用户认证或沙箱边界。
 - Windows embedded 后端仅实现准确会话桥接需要的本地账本，不支持上游 hcom hooks、`launch`、原始 hcom 命令或 relay；不能混用已有 hcom 数据目录。Windows worker 的当前用户 Scheduled Task 无触发器、无提权且不存密码，可跨 SSH 退出存活，依赖用户处于登录状态，不代表开机或注销后自动恢复。
 - OpenCode V1 busy 时保留待处理账本事件并显示 `waiting-native`，成功受理或明确拒绝后恢复 worker `ready`；`ready` 不表示模型完成。V1 服务实例没有原生进程 nonce，操作者在服务重启后仍需更新选定描述身份并重新核验绑定。
+- Kimi 原生服务的冷会话索引不证明另一个进程的会话所有权；queue/messages 读取还可能加载冷会话。因此只接入明确由选定 Web 服务拥有的允许清单，首轮联调使用该服务新建的独立测试聊天。忙碌、审批/问题和已有队列时等待；不会自动批准、改模型、抢占活跃 TUI 或恢复退出进程。
 - 真实验收使用的持久 Codex subscription lease 属于验收 helper。生产 adapter 不会因此自动 resume 聊天或重启退出的进程；这些动作仍需显式授权与对应实现。
 
 ## v0.3 开发验证

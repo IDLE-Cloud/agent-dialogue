@@ -1,6 +1,6 @@
 # Agent Dialogue 使用手册：选择已有聊天，让两台电脑的 agent 协作
 
-适用日期：2026-10-19。功能基线：`5c897a54cff1a8f58c90d53e3c11c6364dfbdf7e`，开发分支 `codex/multinode-adapters`。稳定版 v0.2.0 尚不包含本手册的多机与 Windows 功能。
+适用日期：2026-10-19。OpenCode 双机例子的功能基线：`5c897a54cff1a8f58c90d53e3c11c6364dfbdf7e`，开发分支 `codex/multinode-adapters`。稳定版 v0.2.0 尚不包含本手册的多机与 Windows 功能。后续新增的 Kimi adapter 需使用包含该实现的新功能提交，见 [KIMI.md](KIMI.md)，不能使用此旧基线直接运行 Kimi 接入。
 
 本手册以 **Mac OpenCode V2 ↔ Windows OpenCode 1.19.0 V1** 为完整例子。程序每台电脑安装一次；每个协作空间保存自己的 state；原项目和已有原生聊天保留在原处。以下 `/ABS/...`、`ses_FULL_...`、`r_REPLACE_...` 都是需要替换的值。创建 room、发送任务、attach 会改变运行状态；本手册中的命令是操作说明，阅读文件本身不执行它们。
 
@@ -310,6 +310,7 @@ Windows 的 history 把 `"$ROOM_ID"` 换成 `$room`。需要严格只读地查�
 - **同机两个聊天**：同一 state 下分别 attach，不做 SSH/卡片交换；直接 create room，再分别生成指南。两个不同 state 即使在同一电脑，也属于不同节点流程。
 - **Mac/Linux Codex**：可在第 3 节改用 `ad sessions codex --cwd /absolute/project`，再 `ad attach codex --session FULL_THREAD_UUID --alias codex-agent`。原 thread 未加载时，只有明确选择同一个 UUID 后才加 `--resume`。Codex 的通信 state 需处在该聊天原本允许写入的范围内；当前活跃 Desktop 聊天和 Windows Codex 不能据此推定已接入。完整前置条件见 [兼容性说明](COMPATIBILITY.md)。
 - **第三台电脑**：单独安装相同功能版本、自己的 state/node、接入本机已有聊天。每个参与节点先导入其他所有成员节点的卡片，并保存各 peer 的固定路由；实际直接收发的方向要能通过 SSH 到达，当前没有自动中继。room owner 汇总全部成员并签名，各参与节点接受同一 manifest；为每个本机 agent 生成它自己的指南。
-- **Kimi/Pi/ZCode**：通用协议可以让它们知道规则，严格已有聊天自动收消息仍需各自 adapter；以已验证能力为准。Windows 当前实机路径是 OpenCode 1.19.0 V1。
+- **Kimi Code 2.1.1 / 2.2.0**：开发分支已新增 `sessions kimi` / `attach kimi`，需先配置 `AGENT_DIALOGUE_KIMI_SERVICE_FILE`，跨机路由带接收端 `--kimi-service-file`。只接入选定原生 Web 服务拥有的准确聊天；Windows 的 Kimi Bash 使用 POSIX 语法。adapter 单元测试与 Windows / Linux 服务器各自对 Mac OpenCode 的受控双向真实通信均已通过。安装、会话允许清单、服务器 `global_user` 目录与完整操作见 [KIMI.md](KIMI.md)。
+- **Pi/ZCode**：通用协议可以让它们知道规则，严格已有聊天自动收消息仍需各自 adapter；以已验证能力为准。此前 Windows 实机记录对应 OpenCode 1.19.0 V1。
 
 详细参考：[Windows 部署](WINDOWS.md)、[节点与恢复](NODES.md)、[Agent 协议](AGENT-GUIDE.md)、[查看器](VIEWER.md)、[参数配置](CONFIGURATION.md)。

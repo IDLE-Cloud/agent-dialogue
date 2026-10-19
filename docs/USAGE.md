@@ -1,6 +1,6 @@
 # 使用指南：让已有项目聊天参与协作
 
-本指南面向操作者，说明如何安装、接入已有 Codex / OpenCode 聊天、把用法交给各个 agent，以及查看实际对话。程序可以安装一次供多个项目使用；每个项目选择独立的通信 state。切换工作目录不会自动切换通信空间。
+本指南面向操作者，说明如何安装、接入已有 Codex / OpenCode 聊天、接入选定 Kimi 原生服务拥有的聊天、把用法交给各个 agent，以及查看实际对话。程序可以安装一次供多个项目使用；每个项目选择独立的通信 state。切换工作目录不会自动切换通信空间。
 
 这里使用 **v0.3 开发分支**。公开稳定 Release **v0.2.0** 仍可安装，但不包含本指南中的跨节点、Codex 原生队列、查看器与 `agent-guide` 新功能。开发分支会继续变化；多机使用时两端应安装同一已核对提交或后续同一正式版本。
 
@@ -55,7 +55,7 @@ agent-dialogue attach codex --session FULL_CODEX_THREAD_UUID --alias codex-a --r
 
 每个聊天使用不同 alias。一个 alias 对应准确的 node、binding revision、harness、原生 session 和目录；不要让另一个 agent 冒用它。已经 detach 的 alias 不复用，重新接入时选新 alias。
 
-当前严格已有会话 adapter 支持 **Codex / OpenCode**。Kimi/Pi 另有 `launch` 受管 CLI 路径；读取项目规则不等于它们已获得同样的已有会话 adapter。不要因为某个 harness 能读取 `AGENTS.md`，就推断 `attach` 已支持它。实际验证范围以[兼容性说明](COMPATIBILITY.md)为准。
+当前严格原生会话 adapter 支持 **Codex / OpenCode / Kimi Code 2.1.1、2.2.0**。Kimi 需要先按 [KIMI.md](KIMI.md)准备私有服务描述，设置 `AGENT_DIALOGUE_KIMI_SERVICE_FILE`，再用 `sessions kimi` / `attach kimi`；只允许选定 Web 服务拥有的准确会话，不能据此接管另一个活跃 TUI。Kimi adapter 单元测试通过；Windows / Linux 服务器各自与 Mac OpenCode 的受控双向真实模型通信已验收。Kimi/Pi 的 `launch` 是另一条受管 CLI 路径。实际验证范围以[兼容性说明](COMPATIBILITY.md)为准。
 
 ## 3. 建立项目 room
 
@@ -80,7 +80,7 @@ agent-dialogue room create --name project-review --members codex-a,opencode-b
 |---|---|---|
 | Codex | 项目 `AGENTS.md`；从项目根到当前目录发现规则，并处理 `AGENTS.override.md` 优先级。[OpenAI 官方说明](https://learn.chatgpt.com/docs/agent-configuration/agents-md) | `attach codex --session …`；默认要求原 thread 已加载，显式 `--resume` 才加载原 thread |
 | OpenCode | 项目根 `AGENTS.md`；也可用 `opencode.json` 的 `instructions` 明确列出通用规则文件。[OpenCode 官方说明](https://opencode.ai/docs/rules/) | `attach opencode --session …`，精确选择已有 session |
-| Kimi Code | 项目树中的 `AGENTS.md` 或 `.kimi-code/AGENTS.md`。[Kimi Code 官方说明](https://moonshotai.github.io/kimi-code/en/customization/agents#instruction-files) | 目前提供 `launch kimi` 受管 CLI 路径，尚无本指南同等的严格已有会话 adapter |
+| Kimi Code | 项目树中的 `AGENTS.md` 或 `.kimi-code/AGENTS.md`。[Kimi Code 官方说明](https://moonshotai.github.io/kimi-code/en/customization/agents#instruction-files) | 开发分支 `attach kimi --session …` 支持固定 2.1.1 / 2.2.0、选定原生 Web 服务拥有的准确聊天；配置和实机验证范围见 [KIMI.md](KIMI.md) |
 | Pi | 本轮未核验自动发现规则的入口；可在有文件读取能力的聊天中明确要求读取所选说明文件 | 目前提供 `launch pi` 受管 CLI 路径，严格已有会话 adapter 仍待实现 |
 
 项目公共规则只引用通用协议和“读取操作者分配的个人上下文”这条约定。不要把 `.agent-dialogue-context/*.md` 一次性加入共享 `instructions`，否则多个 self alias 会进入同一个聊天。OpenCode 也不会因为 Markdown 里出现一个文件链接就自动解析它，应明确要求读取对应文件；这一区别见上面的官方规则文档。
@@ -175,6 +175,7 @@ agent-dialogue history --last 50 --thread r_ACTUAL_ROOM
 | 多机配对与恢复 | [NODES.md](NODES.md) |
 | 迁移、版本升级 | [MIGRATION.md](MIGRATION.md) |
 | 支持与已验证的边界 | [COMPATIBILITY.md](COMPATIBILITY.md) |
+| Kimi 服务、Windows Bash 与服务器目录 | [KIMI.md](KIMI.md) |
 
 准备新的 VPS 和反向 SSH 路由时，可先按 [VPS 部署前置指南](VPS-DEPLOYMENT.md)核对版本、账号、loopback 服务和固定接收入口，再执行本指南中的已有聊天接入与逐 agent 引导。
 

@@ -222,3 +222,6 @@ room 配置成功后，在 Windows 为准确的聊天生成自己的说明：
 [只读观察](../verification/windows-observer-20261019-v1/metrics.json)的8项检查通过：6条逻辑记录、4条跨机副本合并、2组回复引用，两侧各7个状态文件的字节哈希不变。[实际Limited任务生命周期](../verification/windows-lifecycle-20261019-v1/metrics.json)另有12项检查通过，证明注册SSH结束后任务独立启动、随后自行删除任务与启动描述。该修复单独验证，未把旧任务需要操作者清理的失败过程改写成自动成功。
 
 本机全量427项、Windows原机基础集合97项、修复后的Windows worker专项12项及隔离安装包检查均通过。基础集合和修复专项分别保存结果。正式项目接入仍需操作者选择准确服务、目录和完整session ID；此次测试绑定最后已detach，不会持续向测试聊天投递。
+
+
+2026-10-19 Kimi 增量：开发分支已新增固定 Kimi Code 2.1.1 / 2.2.0 的原生 KAP adapter；Windows 2.1.1 已完成独立服务准确聊天的双向真实模型通信和 56/56 门禁及来源检查。它使用 POSIX Bash 工具、独立服务描述与会话允许清单，不接管另一个活跃 TUI。准备和操作见 [KIMI.md](KIMI.md)，公开结果见 [Kimi 验收](../verification/kimi-integration-20261019-v2/README.md)。上面的早期能力范围保留为 OpenCode V1 当时的记录。

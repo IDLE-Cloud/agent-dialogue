@@ -174,7 +174,7 @@ agent-dialogue view --source 'Laptop=/absolute/path/to/state-a' --source 'Workst
 node --test tests/*.test.mjs
 ```
 
-下一步增加 Kimi/Pi 的已有会话 adapter，再逐项扩展退出进程恢复、桌面接入与离线运维。测试脚本 `scripts/node-integration.mjs` 可复现两个独立本机节点的真实免费模型协作，真实双机与受控观察恢复的独立 runner 见 [VPS 验收说明](docs/VPS-ACCEPTANCE.md)，`verification/` 保留脱敏指标。本仓库只分发实现、测试和使用说明，不携带原研究仓库的第三方源码快照、账号数据或完整聊天记录。
+开发分支已新增 Kimi Code 2.1.1 / 2.2.0 原生会话 adapter；已完成 Windows / Linux 服务器与 Mac OpenCode 的受控双向真实模型验收；后续扩展 Pi、退出进程恢复、桌面接入与离线运维。测试脚本 `scripts/node-integration.mjs` 可复现两个独立本机节点的真实免费模型协作，真实双机与受控观察恢复的独立 runner 见 [VPS 验收说明](docs/VPS-ACCEPTANCE.md)，`verification/` 保留脱敏指标。本仓库只分发实现、测试和使用说明，不携带原研究仓库的第三方源码快照、账号数据或完整聊天记录。
 
 ## Windows 原生节点开发版
 
@@ -185,3 +185,9 @@ Windows worker 使用当前用户交互登录下的无触发器计划任务，�
 2026-10-19：已完成[原生 Windows 双向实机通信](verification/windows-integration-20261019-v2/README.md)、[只读观察](verification/windows-observer-20261019-v1/metrics.json)与[普通权限任务自清理](verification/windows-lifecycle-20261019-v1/metrics.json)。该能力仍在开发分支；稳定 Release v0.2.0 不包含 Windows 接入。
 
 从已有聊天开始使用，见[中文操作手册](docs/QUICKSTART-ZH.md)：按顺序完成双向配对、共同 room、逐 agent 引导、项目任务与查看记录，并说明停止后如何重新接入。
+
+## Kimi Code 原生服务适配
+
+开发分支新增 `sessions kimi` / `attach kimi`（`kimi-code` 同义入口），通过私有 `AGENT_DIALOGUE_KIMI_SERVICE_FILE` 选择 Kimi Code 2.1.1 / 2.2.0 原生 Web 服务。服务描述固定准确实例、workspace、目录和由该服务拥有的 session 清单；空闲时提交，核验完整持久 user 输入后才报告受理。它保持原模型与权限，不接管另一个活跃 TUI。Windows 的 Kimi Bash 使用 POSIX 命令，SSH 传输可单独使用 PowerShell。
+
+已完成 Windows Kimi 2.1.1 与 Linux Kimi 2.2.0 各自对 Mac OpenCode 的双向真实通信：每端 4 条签名消息、2 对关联回复、双方各 2 次原生通信工具调用，Windows 56/56、Linux 53/53 门禁和来源检查通过。验收使用限定命令与合成事实。私有服务准备、服务器 `global_user` 安装布局、跨机 `--kimi-service-file` 路由、逐聊天指南与状态处理见 [Kimi 操作说明](docs/KIMI.md)。

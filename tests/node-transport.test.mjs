@@ -7,7 +7,7 @@ import { exchange, validateTransport } from '../lib/node-transport.mjs';
 
 const request = { payload: { kind: 'test', text: 'project communication' }, signature: 'test-signature' };
 const response = { payload: { kind: 'receipt', accepted: true }, signature: 'response-signature' };
-const transport = (kind = 'local-process') => ({ kind, executable: process.execPath, args: ['/opt/agent dialogue/bin/agent-dialogue.mjs'], stateDir: '/tmp/agent dialogue/state', ...(kind === 'ssh' ? { destination: 'user@project-server' } : {}) });
+const transport = (kind = 'local-process') => ({ kind, executable: kind === 'ssh' ? '/opt/test/node' : process.execPath, args: ['/opt/agent dialogue/bin/agent-dialogue.mjs'], stateDir: '/tmp/agent dialogue/state', ...(kind === 'ssh' ? { destination: 'user@project-server' } : {}) });
 const ok = async () => ({ code: 0, stdout: JSON.stringify(response) });
 
 test('SSH invokes a fixed quoted command while the entire envelope goes only to stdin', async () => {

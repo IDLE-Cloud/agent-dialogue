@@ -54,6 +54,10 @@ jobs:
           tests/opencode-v1.test.mjs
           tests/windows-integration-contract.test.mjs
           tests/native-admission.test.mjs
+          tests/kimi.test.mjs
+          tests/kimi-wiring.test.mjs
+          tests/kimi-integration-contract.test.mjs
+          tests/node-transport.test.mjs
           tests/node-identity.test.mjs
           tests/private-files.test.mjs
       - name: Initialize and check an isolated embedded ledger
