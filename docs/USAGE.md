@@ -177,3 +177,5 @@ agent-dialogue history --last 50 --thread r_ACTUAL_ROOM
 | 支持与已验证的边界 | [COMPATIBILITY.md](COMPATIBILITY.md) |
 
 准备新的 VPS 和反向 SSH 路由时，可先按 [VPS 部署前置指南](VPS-DEPLOYMENT.md)核对版本、账号、loopback 服务和固定接收入口，再执行本指南中的已有聊天接入与逐 agent 引导。
+
+2026-10-19 更新：上文“尚未宣称真实双机连接已通过”描述的是早期阶段；后续 Mac↔VPS 与原生 Windows↔Mac 的独立验收已完成，记录见 [NODES.md](NODES.md)。包含 Windows V1 准确命令的完整操作流程见[中文操作手册](QUICKSTART-ZH.md)，Windows 使用已验证的独立 Node24 与 `opencode-v1` 入口。

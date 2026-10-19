@@ -183,3 +183,5 @@ Windows 接入使用独立 Node 24、embedded 通信账本、已有 FRP/OpenSSH 
 Windows worker 使用当前用户交互登录下的无触发器计划任务，在 SSH 退出后继续运行；没有开机/注销恢复。原生 V1 收到消息与实际模型完成回复分别核验，能力边界及实机证据以该指南和独立验收记录为准。
 
 2026-10-19：已完成[原生 Windows 双向实机通信](verification/windows-integration-20261019-v2/README.md)、[只读观察](verification/windows-observer-20261019-v1/metrics.json)与[普通权限任务自清理](verification/windows-lifecycle-20261019-v1/metrics.json)。该能力仍在开发分支；稳定 Release v0.2.0 不包含 Windows 接入。
+
+从已有聊天开始使用，见[中文操作手册](docs/QUICKSTART-ZH.md)：按顺序完成双向配对、共同 room、逐 agent 引导、项目任务与查看记录，并说明停止后如何重新接入。

@@ -162,3 +162,5 @@ node scripts/ssh-observer-verify.mjs ssh-observer-20261018-v99
 2026-10-18 追加：冻结源码提交 `074603e6d38d60e438fb3fc18e9be40953980a2f` 的[真实双机验收](../verification/vps-integration-20261018-v5/metrics.json)共 **40/40** 项通过，其中观察阶段通过真实 SSH 采集两端已有 room，将四条正式全局消息去重并关联回复及原生受理证据。采集在两个 owned worker 均停止后执行，静止来源本机11个、VPS13个文件的前后字节哈希一致。此前真实模型交流使用 macOS arm64 上 Codex CLI 0.162.1 专用验证 server 的同一个 owned 原测试 thread，以及 Debian 13 x64 上 OpenCode 2.0.20；它不代表接入当前活跃 Codex Desktop 窗口。
 
 同日[独立观察恢复验收](../verification/vps-observer-20261018-v1/metrics.json) **11/11** 项通过，模型调用和原生 harness API 调用均为零。初始及恢复后的两次允许采集实际经过 SSH；专用进程内 gate 只阻断准确的 observer export 调用，两次被阻断的请求不运行 SSH。来源因此显示不可用，保留最后成功的五条逻辑消息与采集时间；恢复后时间更新、消息不重复，本机11个和远端13个文件字节哈希仍一致。这个故障模型没有中断 VPS 或公网、没有改变 bridge route，也没有验证生产 adapter 自动恢复聊天或重启进程。完整公网故障与长期运行仍需单独验证。
+
+2026-10-19 更新：SSH 来源默认使用绝对 POSIX 路径；显式 `shell: "powershell"` 时支持 Windows 驱动器绝对路径与固定 PowerShell 接收程序。Windows 来源完整配置和双端操作见[中文操作手册](QUICKSTART-ZH.md)及 [Windows 指南](WINDOWS.md)。当前已完成真实 Windows SSH 只读观察，脱敏结果见 `verification/windows-observer-20261019-v1/metrics.json`。
