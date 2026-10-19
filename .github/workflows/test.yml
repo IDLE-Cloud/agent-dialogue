@@ -44,7 +44,7 @@ jobs:
       - name: Native Windows contracts, ledger and lifecycle
         shell: pwsh
         run: >-
-          node --test
+          node --test --test-concurrency=1
           tests/embedded-ledger.test.mjs
           tests/windows-platform.test.mjs
           tests/windows-node-card.test.mjs
