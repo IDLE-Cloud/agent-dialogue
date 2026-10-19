@@ -9,3 +9,5 @@
 本机包隔离 prefix 安装、任意 cwd、显式 v2 升级保留节点、inspect 保持 v2 store 字节等检查已通过，计数及摘要见 [metrics.json](metrics.json)。运行文件摘要范围为 bin/lib/config/web/package.json，格式在 JSON 内声明。平台 CI 在此本机快照时尚未完成；Windows 的真实 SID/ACL 与进程结果必须另查关联 PR 检查。
 
 ST-05 分层对账/残留恢复、ST-06 固定版本升级/回退演练，以及真实项目试用和正式 RC 后续进行；本次没有合并、tag 或 Release，稳定版本仍为 v0.2.0。
+
+后续补测说明（2026-10-20）：Node24.19.0 全量发现一项同 worker PID 保持失败。正常控制文件原子发布可能被 pathname 前后比对误判为损坏；先红复现后改用固定 fd 的有界安全快照，并保留原地改写拒绝。首轮 Node26 成功快照不覆盖；最新双版本结果及失败修正见 [后续报告](../lifecycle-20261020-v2/README.md)。

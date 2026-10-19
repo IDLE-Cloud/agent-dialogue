@@ -1,9 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdir, mkdtemp, readFile, readdir, rm, stat } from 'node:fs/promises';
+import { mkdir, mkdtemp, open, readFile, readdir, rename, rm, stat, symlink, truncate, utimes, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { createBinding, createRoom, decodeFrame, encodeFrame, readStore, resolveBinding, resolveRoom, validateAlias, validateIncoming, validateRoute, withStore } from '../lib/bridge-store.mjs';
+import { inspectWindowsPrivatePath } from '../lib/private-files.mjs';
 
 function storeFixture() {
   const store = { version: 1, bindings: {}, rooms: {} };
@@ -109,7 +110,9 @@ test('persistent store saves control metadata atomically with private permission
   const result = await withStore(context, async store => { createBinding(store, input('alice')); createBinding(store, input('bob')); return createRoom(store, { name: 'Project', members: ['alice', 'bob'] }).id; });
   const saved = await readStore(context);
   assert.equal(saved.rooms[result].members.length, 2);
-  assert.equal((await stat(join(stateDir, 'dialogue', 'store.json'))).mode & 0o777, 0o600);
+  const path = join(stateDir, 'dialogue', 'store.json');
+  if (process.platform === 'win32') await inspectWindowsPrivatePath(path);
+  else assert.equal((await stat(path)).mode & 0o777, 0o600);
   assert.deepEqual((await readdir(join(stateDir, 'dialogue'))).sort(), ['store.json']);
   assert.ok(!(await readFile(join(stateDir, 'dialogue', 'store.json'), 'utf8')).includes('Review the project plan'));
 });
@@ -125,4 +128,77 @@ test('lock contention fails closed and a failed mutation never replaces committe
   await assert.rejects(withStore(context, store => { store.note = 'uncommitted'; throw new Error('aborted'); }), /aborted/);
   assert.equal((await readStore(context)).note, 'committed');
   assert.deepEqual((await readdir(join(stateDir, 'dialogue'))).sort(), ['store.json']);
+});
+
+test('concurrent atomic control-store publication yields complete safe snapshots instead of fatal pathname races', async t => {
+  const stateDir = await mkdtemp(join(tmpdir(), 'dialogue-snapshot-'));
+  t.after(() => rm(stateDir, { recursive: true, force: true }));
+  const context = { stateDir }, dir = join(stateDir, 'dialogue'), path = join(dir, 'store.json');
+  await mkdir(dir, { mode: 0o700 });
+  const marker = 'immutable-snapshot-'.repeat(2048);
+  const value = generation => ({ version: 1, bindings: {}, rooms: {}, generation, marker: `${generation}:${marker}` });
+  await writeFile(path, JSON.stringify(value(0)), { mode: 0o600 });
+  const prepared = await Promise.all(Array.from({ length: 80 }, async (_, index) => {
+    const temporary = join(dir, `publish-${index + 1}.json`);
+    await writeFile(temporary, JSON.stringify(value(index + 1)), { mode: 0o600 });
+    return temporary;
+  }));
+  // Every publisher uses the production store's immutable-file + rename model.
+  // Readers may select either neighboring generation, but never a torn object
+  // or a fatal error merely because the pathname now names the next inode.
+  const publish = (async () => { for (const temporary of prepared) { await rename(temporary, path); await new Promise(resolve => setImmediate(resolve)); } })();
+  const outcomes = await Promise.allSettled(Array.from({ length: 16 }, async () => {
+    for (let index = 0; index < 40; index++) {
+      const snapshot = await readStore(context);
+      assert.ok(Number.isSafeInteger(snapshot.generation) && snapshot.generation >= 0 && snapshot.generation <= 80);
+      assert.equal(snapshot.marker, `${snapshot.generation}:${marker}`);
+    }
+  }));
+  await publish;
+  const failures = outcomes.filter(outcome => outcome.status === 'rejected');
+  assert.equal(failures.length, 0, `${failures.length} readers failed during safe atomic publication: ${failures[0]?.reason?.message || ''}`);
+});
+
+test('control snapshots still reject malformed, oversized, nonregular and symbolic-link sources', async t => {
+  const stateDir = await mkdtemp(join(tmpdir(), 'dialogue-snapshot-invalid-'));
+  t.after(() => rm(stateDir, { recursive: true, force: true }));
+  const context = { stateDir }, dir = join(stateDir, 'dialogue'), path = join(dir, 'store.json');
+  await mkdir(dir, { mode: 0o700 });
+  await writeFile(path, '{malformed', { mode: 0o600 });
+  await assert.rejects(readStore(context));
+  await truncate(path, 16 * 1024 * 1024 + 1);
+  await assert.rejects(readStore(context), /Invalid dialogue control store/);
+  await rm(path); await mkdir(path);
+  await assert.rejects(readStore(context), /Invalid dialogue control store/);
+  await rm(path, { recursive: true });
+  if (process.platform !== 'win32') {
+    const target = join(dir, 'other.json'), bytes = '{"version":1,"bindings":{},"rooms":{}}';
+    await writeFile(target, bytes); await symlink(target, path);
+    await assert.rejects(readStore(context), /Invalid dialogue control store/);
+    assert.equal(await readFile(target, 'utf8'), bytes);
+  }
+});
+
+test('an in-place mutation of the opened control inode still rejects the read', async t => {
+  const stateDir = await mkdtemp(join(tmpdir(), 'dialogue-snapshot-inplace-'));
+  t.after(() => rm(stateDir, { recursive: true, force: true }));
+  const context = { stateDir }, dir = join(stateDir, 'dialogue'), path = join(dir, 'store.json');
+  await mkdir(dir, { mode: 0o700 });
+  await writeFile(path, '{"version":1,"bindings":{},"rooms":{},"note":"before"}', { mode: 0o600 });
+  const probe = await open(path, 'r'), prototype = Object.getPrototypeOf(probe), original = prototype.read;
+  await probe.close();
+  let changed = false;
+  // Alter the same opened inode after bytes have been read but before final
+  // descriptor metadata verification. The bytes alone remain valid JSON.
+  t.mock.method(prototype, 'read', async function (...args) {
+    const result = await original.apply(this, args);
+    if (!changed) {
+      changed = true;
+      await writeFile(path, '{"version":1,"bindings":{},"rooms":{},"note":"after!"}');
+      const next = new Date(Date.now() + 2000); await utimes(path, next, next);
+    }
+    return result;
+  });
+  await assert.rejects(readStore(context), /Dialogue control store changed during reading/);
+  assert.equal(changed, true);
 });

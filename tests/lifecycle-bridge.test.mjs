@@ -66,15 +66,19 @@ async function fixture(t) {
   const launchImpl = async (_context, { bindingId, token, workerPath }) => {
     launches++;
     const child = spawn(process.execPath, [workerPath, bindingId, '--token', token], { env: bridge.bridgeEnvironment(context), stdio: ['ignore', 'pipe', 'pipe'], windowsHide: true });
-    child.stdout.resume(); child.stderr.resume();
-    const closed = new Promise(done => child.once('close', done)); children.push({ child, closed });
+    const record = { child, stderr: '', runtimeAtExit: null };
+    child.stdout.resume(); child.stderr.setEncoding('utf8').on('data', chunk => { record.stderr = (record.stderr + chunk).slice(-8192); });
+    const closed = new Promise(done => child.once('close', async () => {
+      try { record.runtimeAtExit = JSON.parse(await readFile(join(context.stateDir, 'dialogue', `${bindingId}.worker.json`), 'utf8')); } catch {}
+      done();
+    })); record.closed = closed; children.push(record);
     return { accepted: true };
   };
   const send = async alias => {
     const binding = bindings.find(b => b.alias === alias);
     return JSON.parse(await runEmbedded(context, ['send', '--json', '--from', 'dialogue-operator', `@${binding.hcomName}`, '--thread', room.id, '--intent', 'request', '--', encodeFrame({ version: 1, room: room.id, from: 'operator', to: alias, fromBindingId: 'operator', toBindingId: binding.id, fromRevision: 1, toRevision: 1, text: 'Literal owned fixture input.', replyTo: null })])).event_id;
   };
-  return { context, root, bindings, room, runtime, launchImpl, send, get posts() { return posts; }, get launches() { return launches; }, changeService: async () => { serviceId = 'different-owned-service'; await saveService(); }, holdNextPrompt() {
+  return { context, root, bindings, room, runtime, launchImpl, send, get posts() { return posts; }, get launches() { return launches; }, diagnostics: () => JSON.stringify(children.map(({ child, stderr, runtimeAtExit }) => ({ pid: child.pid, exitCode: child.exitCode, stderr, runtimeAtExit }))), changeService: async () => { serviceId = 'different-owned-service'; await saveService(); }, holdNextPrompt() {
     let enter, release;
     const entered = new Promise(done => { enter = done; }), released = new Promise(done => { release = done; });
     promptGate = { enter, released, release }; t.after(release);
@@ -99,7 +103,7 @@ test('pause and resume preserve exact chat, pins, cursor and single real owned w
   await bridge.resumeBridge(f.context, 'alice', { launchImpl: f.launchImpl, timeoutMs: process.platform === 'win32' ? 60000 : 10000 });
   await until(async () => (await f.runtime('alice'))?.receipts[waiting]?.status === 'admitted');
   const after = await f.runtime('alice');
-  assert.equal(after.pid, before.pid); assert.equal(after.token, before.token); assert.equal(f.launches, 2); assert.equal(f.posts, 2);
+  assert.equal(after.pid, before.pid, f.diagnostics()); assert.equal(after.token, before.token); assert.equal(f.launches, 2); assert.equal(f.posts, 2);
   await bridge.pauseBridge(f.context, 'alice'); await bridge.resumeBridge(f.context, 'alice', { launchImpl: f.launchImpl, timeoutMs: process.platform === 'win32' ? 60000 : 10000 });
   assert.equal(f.posts, 2); assert.equal(f.launches, 2);
 });
