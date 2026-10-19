@@ -29,8 +29,8 @@ const HELP = `agent-dialogue — cross-node, cross-harness agent communication
   agent-guide [--room ID --from ALIAS [--to ALIAS]]
                                            Read protocol / generate one agent's exact context
   stop NAME                               Stop one existing local endpoint
-  sessions <opencode|opencode-v1|codex> [--cwd PATH] List exact native chats
-  attach <opencode|opencode-v1|codex> --session ID --alias NAME [--resume]
+  sessions <opencode|opencode-v1|codex|kimi> [--cwd PATH] List exact native chats
+  attach <opencode|opencode-v1|codex|kimi> --session ID --alias NAME [--resume]
                                            Bind an existing chat; Codex resume is explicit
   bindings                                Show exact bindings, rooms and receipts
   room create --name LABEL --members a,b   Create a project collaboration room
@@ -38,7 +38,7 @@ const HELP = `agent-dialogue — cross-node, cross-harness agent communication
   node init --name LABEL | node export     Create identity / export signed peer card
   node peer add --file CARD (--ssh HOST | --local) --executable PATH
        [--cli PATH] --state-dir PATH [--cache-dir PATH]
-       [--service-file PATH] [--codex-home PATH]
+       [--service-file PATH] [--codex-home PATH] [--kimi-service-file PATH]
        [--shell posix|powershell] [--opencode-v1-service-file PATH]
        [--ledger hcom|embedded] [--ssh-config PATH]
   node status | node flush [--message ID]  Inspect nodes / retry the same durable message
@@ -260,12 +260,12 @@ export async function main(args = process.argv.slice(2), sourceEnv = process.env
     else if (input[0] === 'status' && input.length === 1) result = await nodes.nodeStatus(context);
     else if (input[0] === 'receive' && input.length === 1) result = await nodes.receiveEnvelope(context, await readStdinJson());
     else if (input[0] === 'peer' && input[1] === 'add') {
-      const { options, rest } = parseOptions(input.slice(2), { '--file': 'value', '--ssh': 'value', '--local': 'boolean', '--executable': 'value', '--cli': 'value', '--state-dir': 'value', '--cache-dir': 'value', '--service-file': 'value', '--opencode-v1-service-file': 'value', '--codex-home': 'value', '--shell': 'value', '--ledger': 'value', '--ssh-config': 'value' }); noRest(rest);
+      const { options, rest } = parseOptions(input.slice(2), { '--file': 'value', '--ssh': 'value', '--local': 'boolean', '--executable': 'value', '--cli': 'value', '--state-dir': 'value', '--cache-dir': 'value', '--service-file': 'value', '--opencode-v1-service-file': 'value', '--kimi-service-file': 'value', '--codex-home': 'value', '--shell': 'value', '--ledger': 'value', '--ssh-config': 'value' }); noRest(rest);
       if (!!options['--ssh'] === !!options['--local']) fail('Choose exactly one transport: --ssh HOST or --local.');
       const transport = { kind: options['--local'] ? 'local-process' : 'ssh', executable: options['--executable'], stateDir: options['--state-dir'] };
       if (options['--ssh']) transport.destination = options['--ssh'];
       if (options['--cli']) transport.args = [options['--cli']];
-      for (const [flag, key] of [['--cache-dir', 'cacheDir'], ['--service-file', 'serviceFile'], ['--opencode-v1-service-file', 'opencodeV1ServiceFile'], ['--codex-home', 'codexHome'], ['--shell', 'shell'], ['--ledger', 'ledgerBackend'], ['--ssh-config', 'sshConfig']]) if (options[flag]) transport[key] = options[flag];
+      for (const [flag, key] of [['--cache-dir', 'cacheDir'], ['--service-file', 'serviceFile'], ['--opencode-v1-service-file', 'opencodeV1ServiceFile'], ['--codex-home', 'codexHome'], ['--kimi-service-file', 'kimiServiceFile'], ['--shell', 'shell'], ['--ledger', 'ledgerBackend'], ['--ssh-config', 'sshConfig']]) if (options[flag]) transport[key] = options[flag];
       result = await nodes.pairPeer(context, await readJsonFile(options['--file']), transport);
     } else if (input[0] === 'flush') {
       const { options, rest } = parseOptions(input.slice(1), { '--message': 'value' }); noRest(rest);

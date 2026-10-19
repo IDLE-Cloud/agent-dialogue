@@ -12,7 +12,7 @@ async function fixture(t) {
   const root = await mkdtemp(join(tmpdir(), 'ad-windows-worker-')); t.after(() => rm(root, { recursive: true, force: true }));
   const context = { stateDir: join(root, 'state'), cacheDir: join(root, 'cache'), ledgerBackend: 'embedded', env: {
     PATH: 'C:\\Windows\\System32;C:\\Agent Tools\\Node', AGENT_DIALOGUE_OPENCODE_V1_SERVICE_FILE: "D:\\Agent's State\\service.json",
-    OPENAI_API_KEY: 'DO-NOT-PERSIST', OPENCODE_SERVER_PASSWORD: 'DO-NOT-PERSIST', HCOM_NAME: 'parent-agent', CODEX_THREAD_ID: 'parent-thread', RANDOM_SECRET: 'DO-NOT-PERSIST',
+    AGENT_DIALOGUE_KIMI_SERVICE_FILE: 'D:/private/kimi.json', KIMI_SERVER_TOKEN: 'DO-NOT-PERSIST', OPENAI_API_KEY: 'DO-NOT-PERSIST', OPENCODE_SERVER_PASSWORD: 'DO-NOT-PERSIST', HCOM_NAME: 'parent-agent', CODEX_THREAD_ID: 'parent-thread', RANDOM_SECRET: 'DO-NOT-PERSIST',
   } };
   const calls = [];
   const runner = async (executable, args, options) => { calls.push({ executable, args, options, script: decode(args) }); return { code: 0, stdout: JSON.stringify(calls.length === 1 ? { secured: true } : { taskName: `AgentDialogue-${bindingId}-${token}`, registered: true, started: true }), stderr: '' }; };
@@ -44,7 +44,8 @@ test('launcher persists only scoped env and creates a current-user Limited task 
   assert.equal(config.env.AGENT_DIALOGUE_CACHE_DIR, f.context.cacheDir);
   assert.equal(config.env.AGENT_DIALOGUE_LEDGER, 'embedded');
   assert.equal(config.env.AGENT_DIALOGUE_OPENCODE_V1_SERVICE_FILE, f.context.env.AGENT_DIALOGUE_OPENCODE_V1_SERVICE_FILE);
-  for (const key of ['OPENAI_API_KEY', 'OPENCODE_SERVER_PASSWORD', 'HCOM_NAME', 'CODEX_THREAD_ID', 'RANDOM_SECRET']) assert.equal(Object.hasOwn(config.env, key), false);
+  assert.equal(config.env.AGENT_DIALOGUE_KIMI_SERVICE_FILE, f.context.env.AGENT_DIALOGUE_KIMI_SERVICE_FILE);
+  for (const key of ['KIMI_SERVER_TOKEN', 'OPENAI_API_KEY', 'OPENCODE_SERVER_PASSWORD', 'HCOM_NAME', 'CODEX_THREAD_ID', 'RANDOM_SECRET']) assert.equal(Object.hasOwn(config.env, key), false);
   assert.equal(JSON.stringify(config).includes('DO-NOT-PERSIST'), false);
   assert.equal(f.calls.length, 2);
   assert.match(f.calls[0].script, /SetAccessRuleProtection/);

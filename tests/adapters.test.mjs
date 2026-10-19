@@ -17,7 +17,7 @@ function fake(overrides = {}) {
 test('normalizes explicit harness aliases and rejects unavailable adapters', () => {
   assert.equal(harnessId('opencode'), 'opencode-v2'); assert.equal(harnessId('opencode-v2'), 'opencode-v2');
   assert.equal(harnessId('codex'), 'codex-app-server'); assert.equal(harnessId('codex-app-server'), 'codex-app-server');
-  for (const tool of [undefined, null, '', 'pi', 'kimi', 'latest', 'CODEX']) assert.throws(() => harnessId(tool), /Unsupported native harness/);
+  for (const tool of [undefined, null, '', 'pi', 'kimi-cli', 'latest', 'CODEX']) assert.throws(() => harnessId(tool), /Unsupported native harness/);
 });
 
 test('factory receives normalized harness/context and retains instance methods and capabilities', async () => {
