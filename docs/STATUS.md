@@ -62,7 +62,7 @@ Node.js 要求为 22.13 或更新的受支持版本；Windows 实机和 CI 使�
 | 生命周期控制 schema 升级 | `state upgrade --offline`，声明全空间静止并检查已知 worker/锁/reservation；v1→v2 不改 node/room/wire 身份 | 自动发现所有 CLI/MCP/SSH 写入者、自动备份、通用 ST-06 升级/回退；旧 writer 不能写 v2 |
 | 进程退出、残留锁 | 按[迁移说明](MIGRATION.md)保留完整状态，核对确切写入者及所有权 | 自动拉起原生进程、开机/注销恢复、自动破锁 |
 
-统一预检和本轮保留绑定的生命周期已进入最新开发源码；后者的 CLI、边界与离线启用步骤见[生命周期指南](LIFECYCLE.md)。分层恢复、通用升级回退、一次连续真实项目试用和 RC 包仍是[稳定化计划](V0.3-STABILIZATION-PLAN.md)的后续工作。当前新阶段不能据已有通信测试标为整体完成，历史通信实测也不能替代本轮生命周期平台验收。
+统一预检和保留绑定的生命周期已进入开发源码，ST-04实现提交 `fbca2f12af442e3f145edd2eb6281fc65d2ac4c6` 已通过五组CI，包含Windows真实SID/ACL、334项合同和embedded setup/doctor；本机Node24/26各644项、旧writer fence43/43、安装包默认launcher40/40也通过。[最终验收](https://github.com/IDLE-Cloud/agent-dialogue/blob/codex/multinode-adapters/verification/lifecycle-20261020-v6/README.md)给出精确计数和限制；CLI、边界与离线启用步骤见[生命周期指南](LIFECYCLE.md)。分层恢复、通用升级回退、一次连续真实项目试用和RC包仍是[稳定化计划](V0.3-STABILIZATION-PLAN.md)的后续工作。当前稳定Release仍为v0.2.0，历史通信实测与本轮无模型生命周期验收分别保留。
 
 ## 4. 按目的选择操作入口
 

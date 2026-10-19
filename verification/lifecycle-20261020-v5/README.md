@@ -9,3 +9,5 @@
 另在固定 b692 源码的隔离安装包中，使用实际默认 detached launcher，先后通过38项和补充输入先落盘的40项断言：带空格 prefix、任意 cwd、外置 state/cache、显式 start 复用、pause 零 POST、resume 同 PID/token 单次输入、stop 保留绑定/游标/回执。两轮共4个所属 worker 都正常停止后确认退出。该验证只用 macOS loopback fake 服务，没有模型、真实 harness、SSH 或用户 state；它不替代新源码 Windows 验收。
 
 包身份分别记录：较早本机 smoke 的268746字节先于 b692 最后文档；固定 b692 checkout 的 CI 包为270894字节，私有 archive fixture包为270867字节。两者76文件内容逐一等于 b692，但 tar mode 元数据不同，不能混称同一字节发行资产。上述均为验收产物，固定 RC 资产仍由 ST-09 完成。
+
+后续平台结果已完成：同运行源码的五组CI全部通过；实际Windows334项/329pass/5skip/0fail/0cancel，完整结果另存[最终验收](../lifecycle-20261020-v6/README.md)。本页及metrics保留先前“平台待验”时的阶段事实。

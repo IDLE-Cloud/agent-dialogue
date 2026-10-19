@@ -115,3 +115,5 @@ stop 与 pause 都不终止整个 harness 服务或删除原生聊天。若同�
 ## 6. 继续观察对话与证据
 
 仍用原 room 的 [viewer](VIEWER.md) 查看多机消息、queue 关联、原生受理和工具读取。生命周期显示来自各来源快照；它不会替用户执行 resume、重试或清状态。默认 inspect 只读元数据，显式原生查询及原因码见 [INSPECT.md](INSPECT.md)。正式能力和验证进度见 [STATUS.md](STATUS.md)及[稳定化计划](V0.3-STABILIZATION-PLAN.md)。
+
+本轮ST-04实现已通过[五组平台CI](https://github.com/IDLE-Cloud/agent-dialogue/actions/runs/39294916371)，包括Windows原生合同和embedded setup/doctor；源码、实际计数、安装包默认launcher及旧writer隔离结果见[最终验收](https://github.com/IDLE-Cloud/agent-dialogue/blob/codex/multinode-adapters/verification/lifecycle-20261020-v6/README.md)。这次验收没有运行真实模型或重新部署既有多机服务；自动未知对账、通用迁移回退和RC仍未完成。
