@@ -193,4 +193,4 @@ Windows worker 使用当前用户交互登录下的无触发器计划任务，�
 已完成 Windows Kimi 2.1.1 与 Linux Kimi 2.2.0 各自对 Mac OpenCode 的双向真实通信：每端 4 条签名消息、2 对关联回复、双方各 2 次原生通信工具调用，Windows 56/56、Linux 53/53 门禁和来源检查通过。验收使用限定命令与合成事实。私有服务准备、服务器 `global_user` 安装布局、跨机 `--kimi-service-file` 路由、逐聊天指南与状态处理见 [Kimi 操作说明](docs/KIMI.md)。
 
 
-ZCode 桌面工具收件开发入口见 [ZCODE.md](docs/ZCODE.md)：使用官方主机提供的 MCP `_meta` 核对准确聊天及工作区，scope 固定发送身份、room 和允许 peers；复用既有签名节点与账本，可主动收发及引用回复。它提供工具收件，不宣称外部消息会自动启动空闲桌面聊天；查看器单独显示工具可读取/工具已读取。真实桌面与安装结果以该指南和独立验收记录为准。
+ZCode 桌面工具收件开发入口见 [ZCODE.md](docs/ZCODE.md)：使用官方主机提供的 MCP `_meta` 核对准确聊天及工作区，scope 固定发送身份、room 和允许 peers；复用既有签名节点与账本，可主动收发及引用回复。它提供工具收件，不宣称外部消息会自动启动空闲桌面聊天；查看器单独显示工具可读取/工具已读取。已完成 [Mac ZCode 3.14.3 桌面 ↔ OpenCode 的两轮真实收发](verification/zcode-desktop-20261019-v1/README.md)：4 条签名消息、6 次实际原生 MCP 工具，原聊天中持久工具结果与全局回复引用均核对。该轮为同机两个独立节点；Windows ZCode 应用、自动空闲唤醒和插件商店安装尚未实测。

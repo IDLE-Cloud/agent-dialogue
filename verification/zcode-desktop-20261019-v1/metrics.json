@@ -1,0 +1,60 @@
+{
+  "version": 1,
+  "observed_at": "2026-10-19T12:09:11.349Z",
+  "status": "passed",
+  "desktop_run_source_commit": "82df6e4ca14c12b28d09cf5ab192a93a10ed8113",
+  "topology": {
+    "hosts": 1,
+    "independent_nodes": 2,
+    "transport": "local-process",
+    "desktop_harness": "ZCode 3.14.3 (7762)",
+    "peer_harness": "OpenCode 2.0.20",
+    "desktop_model": "GLM-5.3 (existing selection)",
+    "peer_model": "deepseek-v4.1-flash-free",
+    "peer_zero_price_catalog_verified": true
+  },
+  "counts": {
+    "signed_logical_messages": 4,
+    "ledger_copies": 8,
+    "global_reply_links": 3,
+    "zcode_completed_native_mcp_tools": 6,
+    "zcode_native_tool_sends": 2,
+    "zcode_native_tool_inboxes": 2,
+    "zcode_tool_reads": 2,
+    "zcode_native_admitted": 0,
+    "peer_native_admitted": 2,
+    "peer_successful_shell_replies": 2,
+    "scoped_permission_approvals_once": 2,
+    "test_controller_pre_execution_denials": 1
+  },
+  "checks": {
+    "exact_native_desktop_identity": true,
+    "six_actual_completed_untruncated_native_mcp_tools": true,
+    "two_actual_native_sends_fixed_keys": true,
+    "two_actual_native_inbox_results": true,
+    "four_signed_messages_and_eight_copies": true,
+    "two_questions_two_replies": true,
+    "global_reply_chain": true,
+    "native_inbox_matches_actual_reply_ids": true,
+    "native_followup_uses_first_reply": true,
+    "both_owners_preserved_project_facts": true,
+    "all_sends_remote_stored": true,
+    "zcode_tool_reads_without_native_admission": true,
+    "opencode_actual_native_admission": true,
+    "each_peer_native_input_occurs_once": true,
+    "two_actual_successful_peer_shell_replies": true,
+    "actual_native_final_answer_combines_facts": true
+  },
+  "limits": {
+    "zcode_receive": "tool-pull",
+    "idle_auto_wake": false,
+    "native_prompt_injection": false,
+    "windows_desktop_app_exercised": false,
+    "multiple_physical_hosts_exercised": false,
+    "plugin_marketplace_install_exercised": false
+  },
+  "recovery": {
+    "kind": "test-controller-marker-correction",
+    "detail": "The second peer reply omitted a test marker and was denied before execution. One owner instruction corrected the marker; exactly two replies reached the ledger with no duplicate global messages."
+  }
+}

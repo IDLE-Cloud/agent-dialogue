@@ -220,3 +220,10 @@ Hook 的 context 来源是显式 `AGENT_DIALOGUE_ZCODE_CONTEXT` 绝对文件路�
 工具不可见时检查 MCP/插件启用状态、Node 路径、服务描述权限和进程错误；原生服务确认 `protocolVersion: "legacy"` 被保存，插件则额外注意本版 loader 的字段保留边界。identity 可以调用而其他工具拒绝时，检查是否完成准确 attach、room 与 scope。调用身份错误时核对主机元数据、完整 session、native directory 和版本，不放宽校验绕过。
 
 如果消息存在而空闲 ZCode 没有继续执行，这是本版主动读收件箱的能力边界；回到原聊天明确让它使用 `dialogue_inbox`。查看器可以展示已交换的通信，不会因此触发模型。
+
+
+## 9. 已完成的桌面验收
+
+2026-10-19 已完成 [ZCode 3.14.3 Mac 桌面 ↔ OpenCode 2.0.20 实际项目问答](../verification/zcode-desktop-20261019-v1/README.md)。两个独立节点在同一台电脑，4 条签名消息、8 份账本副本、3 条全局父引用；ZCode 原生聊天中实际持久化 6 次 completed 且未截断的 MCP 工具结果（identity/context/两次发送/两次收件），16 项通信与原生证据断言通过。同轮 viewer 15 项检查通过，两个测试 worker 最后停止，原聊天保留。
+
+这证明可在 ZCode 应用中选择具体聊天并参与已有项目 room。本轮采用手动原生工作区配置，ZCode 保留原有模型与权限；没有验证 Windows ZCode 应用、两台物理电脑上的 ZCode 或插件市场安装。空闲时仍需操作者提示同一聊天调用收件工具。自动测试中的合成宿主元数据和 Windows CLI/ACL 检查应与此真实桌面证据分开理解。
