@@ -47,6 +47,7 @@ jobs:
         shell: pwsh
         run: >-
           node --test --test-concurrency=1
+          tests/atomic-rename.test.mjs
           tests/bridge-store.test.mjs
           tests/embedded-ledger.test.mjs
           tests/inspect.test.mjs

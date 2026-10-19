@@ -1,10 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtemp, mkdir, open, readFile, rename, rm, stat, symlink, truncate, utimes, writeFile } from 'node:fs/promises';
+import { mkdtemp, mkdir, open, readFile, rm, stat, symlink, truncate, utimes, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { createBinding, withStore } from '../lib/bridge-store.mjs';
 import { bridgeStatus } from '../lib/bridge.mjs';
+import { renameImmutable } from '../lib/atomic-rename.mjs';
 
 async function fixture(t) {
   const root = await mkdtemp(join(tmpdir(), 'ad-lifecycle-runtime-'));
@@ -28,9 +29,9 @@ test('runtime readers retain complete immutable snapshots during concurrent atom
     return temporary;
   }));
   const publishing = (async () => {
-    for (const temporary of prepared) { await rename(temporary, f.path); await new Promise(resolve => setImmediate(resolve)); }
+    for (const temporary of prepared) { await renameImmutable(temporary, f.path); await new Promise(resolve => setImmediate(resolve)); }
   })();
-  const outcomes = await Promise.allSettled(Array.from({ length: 16 }, async () => {
+  const [publication, ...outcomes] = await Promise.allSettled([publishing, ...Array.from({ length: 16 }, async () => {
     for (let index = 0; index < 40; index++) {
       const worker = await f.worker();
       assert.equal(worker.status, 'paused', 'a legal rename is not invalid owner evidence');
@@ -38,8 +39,8 @@ test('runtime readers retain complete immutable snapshots during concurrent atom
       assert.ok(Number.isSafeInteger(worker.generation) && worker.generation >= 0 && worker.generation <= 80);
       assert.equal(worker.cursor, worker.generation); assert.equal(worker.marker, `${worker.generation}:${marker}`);
     }
-  }));
-  await publishing;
+  })]);
+  if (publication.status === 'rejected') throw publication.reason;
   const failed = outcomes.filter(outcome => outcome.status === 'rejected');
   assert.equal(failed.length, 0, `${failed.length} runtime readers failed during legal atomic publication: ${failed[0]?.reason?.message || ''}`);
 });

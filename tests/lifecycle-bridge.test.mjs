@@ -18,7 +18,7 @@ async function until(fn, timeout = process.platform === 'win32' ? 60000 : 15000)
 async function fixture(t) {
   const root = await mkdtemp(join(tmpdir(), 'ad-lifecycle-worker-'));
   const context = { stateDir: join(root, 'state'), cacheDir: join(root, 'cache'), ledgerBackend: 'embedded', env: { ...process.env, AGENT_DIALOGUE_LEDGER: 'embedded' } };
-  const children = [], messages = new Map(); let posts = 0, launches = 0, serviceId = 'owned-fixture', bindings = [], promptGate;
+  const children = [], messages = new Map(); let posts = 0, launches = 0, serviceId = 'owned-fixture', bindings = [], promptGate, sessionGate;
   const sessions = new Map(['alice', 'bob'].map(alias => [`ses_${alias}`, { id: `ses_${alias}`, projectID: 'p', location: { directory: resolve(root) }, time: {} }]));
   const server = createServer(async (req, res) => {
     const path = new URL(req.url, 'http://127.0.0.1').pathname;
@@ -27,7 +27,10 @@ async function fixture(t) {
     const match = path.match(/^\/api\/session\/(ses_[a-z]+)(?:\/(.*))?$/);
     if (!match || !sessions.has(match[1])) return json({}, 404);
     const id = match[1];
-    if (!match[2]) return json({ data: sessions.get(id) });
+    if (!match[2]) {
+      if (sessionGate && id === 'ses_alice') { const gate = sessionGate; sessionGate = undefined; gate.enter(); await gate.released; }
+      return json({ data: sessions.get(id) });
+    }
     if (match[2] === 'prompt' && req.method === 'POST') {
       const chunks = []; for await (const chunk of req) chunks.push(chunk);
       const body = JSON.parse(Buffer.concat(chunks)); posts++;
@@ -42,7 +45,7 @@ async function fixture(t) {
   });
   await new Promise(done => server.listen(0, '127.0.0.1', done));
   t.after(async () => {
-    promptGate?.release();
+    promptGate?.release(); sessionGate?.release();
     for (const b of bindings) {
       if (children.some(({ child }) => child.exitCode === null)) await bridge.stopBridge?.(context, b.alias, { timeoutMs: 15000 }).catch(() => {});
     }
@@ -78,7 +81,12 @@ async function fixture(t) {
     const binding = bindings.find(b => b.alias === alias);
     return JSON.parse(await runEmbedded(context, ['send', '--json', '--from', 'dialogue-operator', `@${binding.hcomName}`, '--thread', room.id, '--intent', 'request', '--', encodeFrame({ version: 1, room: room.id, from: 'operator', to: alias, fromBindingId: 'operator', toBindingId: binding.id, fromRevision: 1, toRevision: 1, text: 'Literal owned fixture input.', replyTo: null })])).event_id;
   };
-  return { context, root, bindings, room, runtime, launchImpl, send, get posts() { return posts; }, get launches() { return launches; }, diagnostics: () => JSON.stringify(children.map(({ child, stderr, runtimeAtExit }) => ({ pid: child.pid, exitCode: child.exitCode, stderr, runtimeAtExit }))), changeService: async () => { serviceId = 'different-owned-service'; await saveService(); }, holdNextPrompt() {
+  return { context, root, bindings, room, runtime, launchImpl, send, get posts() { return posts; }, get launches() { return launches; }, diagnostics: () => JSON.stringify(children.map(({ child, stderr, runtimeAtExit }) => ({ pid: child.pid, exitCode: child.exitCode, stderr, runtimeAtExit }))), changeService: async () => { serviceId = 'different-owned-service'; await saveService(); }, holdNextSessionQuery() {
+    let enter, release;
+    const entered = new Promise(done => { enter = done; }), released = new Promise(done => { release = done; });
+    sessionGate = { enter, released, release }; t.after(release);
+    return { entered, release };
+  }, holdNextPrompt() {
     let enter, release;
     const entered = new Promise(done => { enter = done; }), released = new Promise(done => { release = done; });
     promptGate = { enter, released, release }; t.after(release);
@@ -157,6 +165,21 @@ test('resume refuses a changed native service and unresolved outgoing state with
   await assert.rejects(bridge.resumeBridge(f.context, 'alice', { launchImpl: f.launchImpl, timeoutMs: process.platform === 'win32' ? 60000 : 10000 }));
   const state = await readStore(f.context);
   assert.equal(state.lifecycle[f.bindings[0].id].desired, 'paused'); assert.equal(f.launches, 1); assert.equal(f.posts, 0);
+});
+
+test('resume rechecks active room pins at the enable commit after a concurrent peer detach', { timeout: process.platform === 'win32' ? 300000 : 60000 }, async t => {
+  const f = await fixture(t);
+  await bridge.pauseBridge(f.context, 'alice');
+  const before = (await readStore(f.context)).lifecycle[f.bindings[0].id];
+  const gate = f.holdNextSessionQuery();
+  const resumed = bridge.resumeBridge(f.context, 'alice', { launchImpl: f.launchImpl, timeoutMs: process.platform === 'win32' ? 60000 : 10000 });
+  const rejected = assert.rejects(resumed, error => error.code === 'ROOM_STALE_BINDING');
+  await gate.entered;
+  await bridge.detach(f.context, 'bob');
+  gate.release(); await rejected;
+  const store = await readStore(f.context);
+  assert.deepEqual(store.lifecycle[f.bindings[0].id], before);
+  assert.equal(store.bindings.bob.active, false); assert.equal(f.launches, 0); assert.equal(f.posts, 0);
 });
 
 test('a recorded runtime without a valid process owner is never treated as a fresh missing runtime', async t => {

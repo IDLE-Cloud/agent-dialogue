@@ -1,10 +1,13 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdir, mkdtemp, open, readFile, readdir, rename, rm, stat, symlink, truncate, utimes, writeFile } from 'node:fs/promises';
+import filesystem from 'node:fs/promises';
+import { syncBuiltinESMExports } from 'node:module';
+import { mkdir, mkdtemp, open, readFile, readdir, rm, stat, symlink, truncate, utimes, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { createBinding, createRoom, decodeFrame, encodeFrame, readStore, resolveBinding, resolveRoom, validateAlias, validateIncoming, validateRoute, withStore } from '../lib/bridge-store.mjs';
 import { inspectWindowsPrivatePath } from '../lib/private-files.mjs';
+import { renameImmutable } from '../lib/atomic-rename.mjs';
 
 function storeFixture() {
   const store = { version: 1, bindings: {}, rooms: {} };
@@ -146,15 +149,15 @@ test('concurrent atomic control-store publication yields complete safe snapshots
   // Every publisher uses the production store's immutable-file + rename model.
   // Readers may select either neighboring generation, but never a torn object
   // or a fatal error merely because the pathname now names the next inode.
-  const publish = (async () => { for (const temporary of prepared) { await rename(temporary, path); await new Promise(resolve => setImmediate(resolve)); } })();
-  const outcomes = await Promise.allSettled(Array.from({ length: 16 }, async () => {
+  const publish = (async () => { for (const temporary of prepared) { await renameImmutable(temporary, path); await new Promise(resolve => setImmediate(resolve)); } })();
+  const [publication, ...outcomes] = await Promise.allSettled([publish, ...Array.from({ length: 16 }, async () => {
     for (let index = 0; index < 40; index++) {
       const snapshot = await readStore(context);
       assert.ok(Number.isSafeInteger(snapshot.generation) && snapshot.generation >= 0 && snapshot.generation <= 80);
       assert.equal(snapshot.marker, `${snapshot.generation}:${marker}`);
     }
-  }));
-  await publish;
+  })]);
+  if (publication.status === 'rejected') throw publication.reason;
   const failures = outcomes.filter(outcome => outcome.status === 'rejected');
   assert.equal(failures.length, 0, `${failures.length} readers failed during safe atomic publication: ${failures[0]?.reason?.message || ''}`);
 });
@@ -201,4 +204,28 @@ test('an in-place mutation of the opened control inode still rejects the read', 
   });
   await assert.rejects(readStore(context), /Dialogue control store changed during reading/);
   assert.equal(changed, true);
+});
+
+test('failed store publication retains its exact private temporary and old destination while releasing only its control lock', async t => {
+  const stateDir = await mkdtemp(join(tmpdir(), 'dialogue-publication-failed-'));
+  t.after(() => rm(stateDir, { recursive: true, force: true }));
+  const context = { stateDir }, dir = join(stateDir, 'dialogue'), path = join(dir, 'store.json');
+  await withStore(context, store => { store.note = 'original'; });
+  const original = await readFile(path), calls = [];
+  const mocked = t.mock.method(filesystem, 'rename', async (source, destination) => {
+    calls.push([source, destination]);
+    throw Object.assign(new Error('synthetic publication failure'), { code: 'EIO' });
+  });
+  syncBuiltinESMExports();
+  try { await assert.rejects(withStore(context, store => { store.note = 'unpublished'; }), { code: 'EIO' }); }
+  finally { mocked.mock.restore(); syncBuiltinESMExports(); }
+  assert.equal(calls.length, 1); assert.equal(calls[0][1], path);
+  const names = await readdir(dir), temporary = names.filter(name => /^\.store-.*\.tmp$/.test(name));
+  assert.equal(temporary.length, 1); assert.equal(join(dir, temporary[0]), calls[0][0]);
+  assert.deepEqual(await readFile(path), original);
+  assert.equal(JSON.parse(await readFile(calls[0][0], 'utf8')).note, 'unpublished');
+  assert.ok(!names.includes('.lock'));
+  await assert.rejects(withStore(context, store => { store.note = 'callback-failed'; throw new Error('callback failed'); }), /callback failed/);
+  assert.deepEqual((await readdir(dir)).sort(), names.sort());
+  assert.deepEqual(await readFile(path), original);
 });

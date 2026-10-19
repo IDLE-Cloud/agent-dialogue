@@ -80,7 +80,7 @@ test('paused destinations continue signed ledger ingress and local submissions e
   assert.equal((await ledger(f.b.context)).length, 2);
 });
 
-test('two sources exchange concurrently while both receivers can acquire control locks', { timeout: 15000 }, async t => {
+test('two sources exchange concurrently while both receivers can acquire control locks', { timeout: process.platform === 'win32' ? 30000 : 15000 }, async t => {
   const f = await fixture(t), gate = deferred(); let entered = 0;
   const exchangeTo = destination => async (_peer, envelope) => {
     if (++entered === 2) gate.resolve(); await gate.promise;
@@ -137,7 +137,7 @@ test('remote send rechecks complete source identity and room pins after the nati
   }
 });
 
-test('pause waits for an admitted source exchange then forbids any new send', { timeout: 15000 }, async t => {
+test('pause waits for an admitted source exchange then forbids any new send', { timeout: process.platform === 'win32' ? 30000 : 15000 }, async t => {
   const f = await fixture(t), entered = deferred(), release = deferred(); let pausedFinished = false;
   const sending = sendRemote(f.a.context, f.message(), { exchangeImpl: async (_peer, envelope) => { entered.resolve(); await release.promise; return receiveEnvelope(f.b.context, envelope); } });
   await entered.promise;
@@ -178,7 +178,7 @@ test('paused MCP inbox returns no body and advances no observation; status and q
   assert.equal((await ledger(f.a.context)).length, 2);
 });
 
-test('MCP inbox owns destination dispatch through reading and observation commit', { timeout: 15000 }, async t => {
+test('MCP inbox owns destination dispatch through reading and observation commit', { timeout: process.platform === 'win32' ? 60000 : 15000 }, async t => {
   const entered = deferred(), release = deferred();
   const f = await mcpFixture(t, { ledgerImpl: async (...args) => { entered.resolve(); await release.promise; return ledger(...args); } });
   const sent = await f.append();
@@ -191,7 +191,7 @@ test('MCP inbox owns destination dispatch through reading and observation commit
   const next = await f.call('dialogue_inbox'); assert.equal(next.isError, true); assert.equal(JSON.stringify(next).includes('PRIVATE_PROJECT_BODY'), false);
 });
 
-test('MCP inbox rechecks operator scope after a suspended ledger read before exposing a body', { timeout: 15000 }, async t => {
+test('MCP inbox rechecks operator scope after a suspended ledger read before exposing a body', { timeout: process.platform === 'win32' ? 30000 : 15000 }, async t => {
   const entered = deferred(), release = deferred();
   const f = await mcpFixture(t, { ledgerImpl: async (...args) => { entered.resolve(); await release.promise; return ledger(...args); } });
   await f.append();

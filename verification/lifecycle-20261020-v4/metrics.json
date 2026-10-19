@@ -1,0 +1,119 @@
+{
+  "schemaVersion": 1,
+  "stage": "ST-04 Windows publication and final room-pin correction; local acceptance, native platform pending",
+  "observedAt": "2026-10-19T17:08:55.648229+00:00",
+  "sourceBaseCommit": "527001d65303cec0d2e40ac6a765ffae26c3d863",
+  "sourceSnapshot": "working-tree runtime content committed with this report",
+  "runtimeFiles": 53,
+  "runtimeFilesSha256": "2305cbaebc24613e36aee4390cef701429301f10d0836bd279ce777f62dcf86a",
+  "digestFormat": "SHA256 of UTF-8 compact JSON array sorted by POSIX path, each object has path then sha256; no trailing newline",
+  "environment": {
+    "physicalHosts": 1,
+    "platform": "darwin-arm64",
+    "nodeVersions": [
+      "v24.19.0",
+      "v26.10.0"
+    ]
+  },
+  "tests": {
+    "newContractsFromInspectBase": 74,
+    "lifecycleContracts": 59,
+    "storeSnapshotAndPublicationContracts": 4,
+    "runtimeSnapshotContracts": 3,
+    "atomicPublicationContracts": 8,
+    "perNodeVersion": {
+      "total": 642,
+      "passed": 641,
+      "failed": 0,
+      "skipped": 1
+    },
+    "skipReason": "Windows-only ACL test on POSIX",
+    "atomicHelperRed": {
+      "total": 22,
+      "passed": 15,
+      "failed": 7
+    },
+    "atomicHelperStoreRuntimeFocusedNode24": {
+      "total": 25,
+      "passed": 25
+    },
+    "peerDetachResumeRed": {
+      "total": 1,
+      "passed": 0,
+      "failed": 1
+    },
+    "peerDetachCoreBridgeGreen": {
+      "total": 30,
+      "passed": 30
+    },
+    "deliveryWindowsBudgetLocal": {
+      "total": 44,
+      "passed": 44
+    },
+    "priorWindowsActualFailure": {
+      "runId": 39287999536,
+      "jobId": 118180885894,
+      "total": 322,
+      "passed": 314,
+      "failed": 2,
+      "cancelled": 1,
+      "skipped": 5,
+      "cause": "two EPERM publishers and one whole-test budget timeout"
+    }
+  },
+  "publication": {
+    "windowsOnlyRetryCodes": [
+      "EPERM",
+      "EACCES"
+    ],
+    "retryDeadlineMs": 1500,
+    "maxAttempts": 80,
+    "sameImmutableSourceAndDestination": true,
+    "changedEvidenceRefused": true,
+    "failedCandidatePreserved": true,
+    "destinationUnlinked": false,
+    "aclChanged": false,
+    "messageOrNativeRetry": false
+  },
+  "package": {
+    "status": "passed-on-both-node-versions",
+    "files": 76,
+    "bytes": 268746,
+    "isolatedPrefix": true,
+    "arbitraryCwd": true,
+    "v2UpgradePreservesNode": true,
+    "inspectPreservesStore": true
+  },
+  "review": {
+    "independentSafetyReview": "ready",
+    "openBlockingFindings": 0,
+    "finalPinsCheckedInsideEnableControlTransaction": true,
+    "peerDispatchOrNativeHeldByCommitCheck": false
+  },
+  "priorActualWriterFence": {
+    "oldCommit": "0aa51db985473dc22acd6245473604619f9a574f",
+    "newCommit": "527001d65303cec0d2e40ac6a765ffae26c3d863",
+    "assertions": 43,
+    "passed": 43,
+    "realUserStateTouched": false,
+    "scope": "necessary offline schema fence only; not generic ST-06 migration"
+  },
+  "workflow": {
+    "windowsNativeCI": "pending for this correction",
+    "measuredWholeTestBudgetAdjustmentOnly": true,
+    "productionPermissionDeadlineMs": 8000
+  },
+  "safety": {
+    "modelTurns": 0,
+    "realHarnessApiCalls": 0,
+    "remoteHostChanges": 0,
+    "loopbackFixtures": true,
+    "ownedChildWorkers": true
+  },
+  "boundaries": [
+    "local Windows error simulation is not actual Windows acceptance",
+    "ST-05 reconciliation and lock recovery not implemented",
+    "ST-06 generic migration/rollback not implemented",
+    "no merge/tag/release"
+  ]
+}
