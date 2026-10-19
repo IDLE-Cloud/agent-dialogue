@@ -7,6 +7,7 @@
   const labels = {
     'ledger-stored': '账本已记录', queued: '本地排队', forwarded: '后台已转发',
     'remote-stored': '对端已收妥', 'native-admitted': '原生已受理',
+    'tool-available': '工具可读取', 'tool-read': '工具已读取',
     'reply-linked': '已有关联回复', pending: '待确认', unknown: '状态未知',
     rejected: '已拒绝', conflict: '记录冲突',
   };
@@ -18,6 +19,7 @@
     'forward-pending': '后台转发待确认',
     'wire-signature': '消息签名', 'wire-copy': '跨节点副本', reply: '明确回复引用',
     'queue-forwarded': '提交已关联正式消息', 'queued-submission': '本地排队提交',
+    'tool-inbox-read': '准确会话的工具读取回执',
   };
   const state = {
     snapshot: null, roomId: new URLSearchParams(location.hash.slice(1)).get('room') || '',
@@ -78,7 +80,8 @@
 
   function statusTone(code) {
     if (['remote-stored', 'native-admitted', 'reply-linked'].includes(code)) return 'positive';
-    if (['queued', 'pending', 'unknown'].includes(code)) return 'waiting';
+    if (['queued', 'pending', 'unknown', 'tool-available'].includes(code)) return 'waiting';
+    if (code === 'tool-read') return 'info';
     if (['rejected', 'conflict'].includes(code)) return 'problem';
     if (code === 'forwarded') return 'info';
     return '';
@@ -398,6 +401,9 @@
       const statuses = el('div', 'message-statuses');
       for (const status of selected.statuses || []) statuses.append(chip(status));
       section.append(statuses);
+      if ((selected.statuses || []).some((status) => ['tool-available', 'tool-read'].includes(statusCode(status)))) {
+        section.append(el('p', 'detail-meta', '工具调用返回消息仅证明服务端向准确会话提供了内容，不证明原生持久输入、模型已读或任务完成。'));
+      }
       const actions = el('div', 'identity-actions');
       const copy = el('button', 'text-button', '复制消息与身份');
       copy.type = 'button';
