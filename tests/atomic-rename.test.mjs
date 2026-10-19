@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtemp, readFile, rename, rm, stat, writeFile } from 'node:fs/promises';
+import { link, lstat, mkdtemp, readFile, rename, rm, stat, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { renameImmutable } from '../lib/atomic-rename.mjs';
@@ -93,4 +93,29 @@ test('attempt budget is bounded even if the injected retry clock does not advanc
   const f = await fixture(t); let calls = 0;
   await assert.rejects(renameImmutable(f.source, f.target, { platform: 'win32', now: () => 0, wait: async () => {}, maxAttempts: 3, renameImpl: async () => { calls++; throw denied('EACCES'); } }), { code: 'EACCES' });
   assert.equal(calls, 3); assert.equal(await readFile(f.source, 'utf8'), 'new immutable bytes');
+});
+
+test('distinct 64-bit inodes whose Number values collide still publish using exact BigInt identity', async t => {
+  const f = await fixture(t), sourceInode = 2n ** 60n, targetInode = sourceInode + 1n, requests = [];
+  assert.equal(Number(sourceInode), Number(targetInode)); assert.notEqual(sourceInode, targetInode);
+  let renamed = 0;
+  await renameImmutable(f.source, f.target, { platform: 'win32', lstatImpl: async (path, options) => {
+    requests.push(options);
+    const info = await lstat(path, options), inode = path === f.source ? sourceInode : targetInode;
+    return { ...info, ino: options?.bigint ? inode : Number(inode), isFile: () => info.isFile(), isSymbolicLink: () => info.isSymbolicLink() };
+  }, renameImpl: async (source, target) => { renamed++; await rename(source, target); } });
+  assert.equal(renamed, 1); assert.ok(requests.length >= 4); assert.ok(requests.every(options => options?.bigint === true));
+  assert.equal(await readFile(f.target, 'utf8'), 'new immutable bytes');
+  await assert.rejects(stat(f.source), { code: 'ENOENT' });
+});
+
+test('actual source and destination hardlinks remain rejected before any publication attempt', async t => {
+  const f = await fixture(t); await rm(f.target); await link(f.source, f.target);
+  const source = await lstat(f.source, { bigint: true }), target = await lstat(f.target, { bigint: true });
+  assert.equal(source.dev, target.dev); assert.equal(source.ino, target.ino);
+  let renamed = 0;
+  await assert.rejects(renameImmutable(f.source, f.target, { renameImpl: async () => { renamed++; } }), { code: 'ATOMIC_RENAME_OPTIONS_INVALID' });
+  assert.equal(renamed, 0);
+  assert.equal(await readFile(f.source, 'utf8'), 'new immutable bytes');
+  assert.equal(await readFile(f.target, 'utf8'), 'new immutable bytes');
 });

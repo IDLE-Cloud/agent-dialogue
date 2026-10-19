@@ -1,0 +1,111 @@
+{
+  "schemaVersion": 1,
+  "stage": "ST-04 exact 64-bit file identity correction; local acceptance, new native CI pending",
+  "observedAt": "2026-10-19T17:30:11.954445+00:00",
+  "sourceBaseCommit": "b692554e928efb5e96d455a6e8f7337340daa8f5",
+  "sourceSnapshot": "working-tree runtime content committed with this report",
+  "runtimeFiles": 53,
+  "runtimeFilesSha256": "f3d499ec122289d6e5f31835bdd153423d92b3040b2d65eb9205f91f69030f44",
+  "digestFormat": "SHA256 of UTF-8 compact JSON array sorted by POSIX path, each object has path then sha256; no trailing newline",
+  "local": {
+    "nodeVersions": [
+      "v24.19.0",
+      "v26.10.0"
+    ],
+    "perVersion": {
+      "total": 644,
+      "passed": 643,
+      "failed": 0,
+      "cancelled": 0,
+      "skipped": 1
+    },
+    "newContractsFromInspectBase": 76,
+    "decomposition": {
+      "lifecycle": 59,
+      "store": 4,
+      "runtime": 3,
+      "atomic": 10
+    },
+    "focused": {
+      "total": 57,
+      "passed": 57
+    },
+    "atomicBigintRed": {
+      "total": 10,
+      "passed": 9,
+      "failed": 1
+    },
+    "atomicStoreRuntimeGreen": {
+      "total": 27,
+      "passed": 27
+    }
+  },
+  "priorActualCI": {
+    "runId": 39291657435,
+    "sourceCommit": "b692554e928efb5e96d455a6e8f7337340daa8f5",
+    "unixJobsPassed": 4,
+    "windowsJobId": 118193556924,
+    "windows": {
+      "total": 332,
+      "passed": 324,
+      "failed": 3,
+      "cancelled": 0,
+      "skipped": 5
+    },
+    "rawFileIdsRecorded": false,
+    "causeInference": "Number rounding of 64-bit file identity; deterministic regression reproduces same distinct-files error",
+    "embeddedSetupDoctor": "skipped"
+  },
+  "package": {
+    "bothLocalNodeVersionsPassed": true,
+    "files": 76,
+    "snapshotBeforeThisReport": {
+      "compressedBytes": 268921
+    },
+    "frozenReleaseAsset": false
+  },
+  "priorInstalledProductionLauncher": {
+    "sourceCommit": "b692554e928efb5e96d455a6e8f7337340daa8f5",
+    "assertionsV1": 38,
+    "passedV1": 38,
+    "assertionsV2": 40,
+    "passedV2": 40,
+    "ownedWorkersConfirmedDead": 4,
+    "defaultLauncherInjected": false,
+    "pausedNativePosts": 0,
+    "resumedNativePostsPerRun": 1,
+    "persistedFakeInputsPerRun": 1,
+    "duplicates": 0,
+    "samePidToken": true,
+    "programBytesModesUnchanged": true,
+    "fixtureTarballSha256": "ef986b45f300385845b1bd4ce5f4334386b1521c2716b6c4bfe772b56ee3b896",
+    "fixtureTarballBytes": 270867,
+    "checkoutCIPackageBytes": 270894,
+    "all76ContentFilesEqualFixedCommit": true,
+    "sameArchiveBytesClaimed": false,
+    "platform": "macOS only"
+  },
+  "review": {
+    "independentSafetyReview": "ready",
+    "openBlockingFindings": 0,
+    "historicalIdentityChecks": "tracked for ST-07; not claimed newly accepted"
+  },
+  "workflow": {
+    "newNativeCI": "pending",
+    "productionPermissionDeadlineMs": 8000,
+    "windowsRetryDeadlineMs": 1500,
+    "windowsRetryMaxAttempts": 80
+  },
+  "safety": {
+    "modelTurns": 0,
+    "realHarnessCalls": 0,
+    "sshCalls": 0,
+    "remoteHostChanges": 0,
+    "realUserStateTouched": false
+  },
+  "boundaries": [
+    "ST-04 in progress until actual new Windows acceptance",
+    "ST-05 and ST-06 remain pending",
+    "no merge, tag or release"
+  ]
+}
