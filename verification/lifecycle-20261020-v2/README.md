@@ -9,3 +9,5 @@
 包仍执行隔离安装、任意cwd、显式v2升级保留node、inspect保留store字节等检查。版本、运行源码摘要、包计数与平台进度见 [metrics.json](metrics.json)。Windows新增完整store合同，含真实SID/ACL权限核验；平台CI在本机快照时尚未完成，不能把本机两版本当作Windows/Linux验收。
 
 本次无真实模型、原生服务或远端变更。ST-05 对账和 ST-06 通用迁移/回退等后续未实施；旧记录/锁/未知结果继续保留，未合并或发版。
+
+后续平台结果：CI39286533285 的 Linux Node24 全量629项为627pass/1fail/1skip，在 `startBridge` 等待 ready 时出现 runtime 的同类打开竞态；完整原始日志保留。控制 store 修复不等于独立 runtime 读取器也已正确，继续修复与新增三项回归见[后续报告](../lifecycle-20261020-v3/README.md)。本快照不改写为平台通过。

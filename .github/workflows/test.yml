@@ -54,6 +54,7 @@ jobs:
           tests/lifecycle.test.mjs
           tests/lifecycle-delivery.test.mjs
           tests/lifecycle-observation.test.mjs
+          tests/lifecycle-runtime.test.mjs
           tests/lifecycle-bridge.test.mjs
           tests/lifecycle-cli.test.mjs
           tests/windows-platform.test.mjs
