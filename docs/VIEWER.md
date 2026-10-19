@@ -122,11 +122,15 @@ SSH 仅执行绝对 Node 路径加绝对 CLI 路径的固定 `view-export --stat
 | 账本已记录 | 存在正式消息的本地账本事件 |
 | 后台已转发 | worker 的精确 q→正式消息映射 |
 | 对端已收妥 | 发送端 bridge 验证后的 `remote-stored`，或接收端 inbox/账本记录 |
+| 工具可读取 | `zcode-tools` 接收 worker 已核对准确绑定、session 和消息身份，消息可由对应聊天调用 `dialogue_inbox` 获取；不代表已经触发该聊天 |
+| 工具已读取 | MCP 宿主提供的准确原生会话身份已通过检查，`dialogue_inbox` 服务端已向该次工具调用提供此消息；记录匹配 binding revision、session、room、event 和存在时的全局消息 ID |
 | 原生已受理 | 接收端原生 input ID 与 admitted 回执 |
 | 已有关联回复 | 反向参与者发出了明确引用该消息的回复 |
 | 待确认 / 状态未知 / 已拒绝 | 对应的 pending、unknown、rejected 记录；详情中保留来源 |
 
 证据可以并存，均不等于“模型已读”“正在思考”或“任务完成”。当前 outbox 不保存签名 stored 回执本体；查看器展示 bridge 验证后的记录，不声称独立复验该回执签名。账本中保留的 wire 消息签名可以利用已采集的节点公钥复验，详情注明 verified/invalid/not-collected。
+
+ZCode 的工具收件箱采用主动读取：`tool-available` 与 `tool-read` 是单独的证据状态，可以在页面按“工具可读取”“工具已读取”筛选。它们没有原生 input ID，不会被提升为 `native-admitted`；即使旧状态误留了 `admitted` 或 input ID，`zcode-tools` 也不能据此显示“原生已受理”。工具返回消息不证明消息已持久写入原生用户输入、模型确实看完、已生成回复或任务完成。空闲聊天不会因为查看网页或消息可读取而自动唤醒；是否实际交流，应继续查看原聊天中的工具调用及明确关联的回复。详见 [ZCode 接入说明](ZCODE.md)。
 
 binding 当前已经 detach，并不会抹去此前成功投递。来源读取失败时保留最后成功快照并显示采集时间，不能据此推断对方离线或消息未发生。控制 JSON 缺失/损坏会单独提示；其他来源仍可阅读。
 

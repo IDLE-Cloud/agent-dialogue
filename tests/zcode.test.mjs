@@ -3,6 +3,9 @@ import assert from 'node:assert/strict';
 import { chmod, lstat, mkdtemp, readFile, readdir, rm, symlink, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { execFile } from 'node:child_process';
+import { promisify } from 'node:util';
+import { inspectWindowsPrivatePath } from '../lib/private-files.mjs';
 import { ZCodeToolsClient, createZCodeService, zcodeRequestContext } from '../lib/zcode.mjs';
 
 const directory = process.platform === 'win32' ? 'E:\\Knowledgebase\\Project' : '/workspace/project';
@@ -44,6 +47,11 @@ test('ZCode service creation is exclusive, private and tools-only', async t => {
   assert.deepEqual(client.capabilities, { existingAttach: true, toolInbox: true, autoWake: false, queue: false, stableInputId: false, resume: false });
   await assert.rejects(createZCodeService({ path: serviceFile, directory }), /exists|overwrite/);
   if (process.platform !== 'win32') { assert.equal((await lstat(serviceFile)).mode & 0o777, 0o600); assert.equal((await lstat(descriptor.runtimeDir)).mode & 0o777, 0o700); }
+  else for (const [path, isDirectory] of [[serviceFile, false], [descriptor.runtimeDir, true]]) {
+    const evidence = await inspectWindowsPrivatePath(path, { directory: isDirectory });
+    assert.equal(evidence.ownerSid, evidence.currentUserSid); assert.equal(evidence.protected, true);
+    assert.ok(evidence.aces.every(rule => rule.type !== 'allow' || rule.rights === 0 || rule.sid === evidence.currentUserSid));
+  }
 });
 
 test('ZCode lists no native session until a real contextual MCP registration', async t => {
@@ -136,6 +144,18 @@ test('ZCode refuses permissions becoming public after creation', { skip: process
   await chmod(serviceFile, 0o644); await assert.rejects(client.sessions(), /private|permissions/);
   await chmod(serviceFile, 0o600); await chmod(descriptor.runtimeDir, 0o755);
   await assert.rejects(client.sessions(), /private|permissions/);
+});
+
+test('ZCode refuses a broadened Windows descriptor ACL without silently repairing it', { skip: process.platform !== 'win32' }, async t => {
+  const { serviceFile, client } = await fixture(t);
+  const script = `$ErrorActionPreference='Stop';$p='${serviceFile.replaceAll("'", "''")}';$a=[IO.File]::GetAccessControl($p);$all=New-Object Security.Principal.SecurityIdentifier('S-1-1-0');$a.AddAccessRule((New-Object Security.AccessControl.FileSystemAccessRule($all,'Read','Allow')));[IO.File]::SetAccessControl($p,$a);`;
+  const executable = join(process.env.SystemRoot, 'System32', 'WindowsPowerShell', 'v1.0', 'powershell.exe');
+  await promisify(execFile)(executable, ['-NoLogo', '-NoProfile', '-NonInteractive', '-EncodedCommand', Buffer.from(script, 'utf16le').toString('base64')], { windowsHide: true, timeout: 15000 });
+  const before = await readFile(serviceFile);
+  await assert.rejects(client.sessions(), /private Windows ACL/);
+  await assert.rejects(ZCodeToolsClient.discover({ serviceFile }), /private Windows ACL/);
+  await assert.rejects(inspectWindowsPrivatePath(serviceFile), /another user|broad group/);
+  assert.deepEqual(await readFile(serviceFile), before);
 });
 
 test('ZCode discover requires explicit owner service path, never scans existing chats', async () => {

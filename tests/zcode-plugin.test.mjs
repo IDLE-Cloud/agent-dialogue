@@ -131,13 +131,17 @@ test('plugin usage distinguishes candidate registration, exact operator assignme
 
 test('ZCode guide distinguishes UI MCP import wrapper from native project config and pins legacy mode', async () => {
   const text = await readFile(new URL('../docs/ZCODE.md', import.meta.url), 'utf8');
-  const blocks = [...text.matchAll(/```json\n([\s\S]*?)\n```/g)].map(match => JSON.parse(match[1]));
-  const imported = blocks.find(block => block.mcpServers)?.mcpServers?.['agent-dialogue'];
-  const native = blocks.find(block => block.mcp?.servers)?.mcp?.servers?.['agent-dialogue'];
-  assert.ok(imported, 'UI complete configuration example must use mcpServers');
-  assert.ok(native, 'native project configuration must use mcp.servers');
-  assert.deepEqual(native, imported, 'only the wrapper differs between the two examples');
-  assert.equal(native.protocolVersion, 'legacy');
+  // Git may check Markdown out as CRLF on Windows; the example contract is
+  // independent of checkout line endings. Exercise both from the same source.
+  for (const content of [text.replaceAll('\r\n', '\n'), text.replaceAll('\r\n', '\n').replaceAll('\n', '\r\n')]) {
+    const blocks = [...content.matchAll(/```json\r?\n([\s\S]*?)\r?\n```/g)].map(match => JSON.parse(match[1]));
+    const imported = blocks.find(block => block.mcpServers)?.mcpServers?.['agent-dialogue'];
+    const native = blocks.find(block => block.mcp?.servers)?.mcp?.servers?.['agent-dialogue'];
+    assert.ok(imported, 'UI complete configuration example must use mcpServers');
+    assert.ok(native, 'native project configuration must use mcp.servers');
+    assert.deepEqual(native, imported, 'only the wrapper differs between the two examples');
+    assert.equal(native.protocolVersion, 'legacy');
+  }
   assert.match(text, /29628c9acdb81b703bbd4080c207a0e7ce5e276e/);
   assert.match(text, /plugins\/mcp\.ts/);
 });
