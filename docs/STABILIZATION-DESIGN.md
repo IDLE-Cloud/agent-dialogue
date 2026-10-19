@@ -184,3 +184,10 @@ ST-06 须补固定版本兼容矩阵和操作演练证据；本文不宣称 v0.2
 5. 完成无模型合同后，再按计划 R07 在两台物理机、两种 harness 的准确项目聊天中有界试用。历史多机证据不改写成本阶段新功能实测。
 
 自动化先用现有 fake adapter、真实所属子进程和 embedded ledger helper。平台 CI 复用 Linux22/24/26、macOS24、Windows24。真实服务器、模型和桌面试用保持独立证据，只有相关运行合同改变才重跑必要组合。
+
+
+## 8. 2026-10-20 ST-04 实施进度
+
+共享 `lib/lifecycle.mjs`、v2 lifecycle schema、严格 dispatch/control owner、所有直接/worker/MCP 工作的 D→C 准入和原 binding 的 pause/resume 已实现，另提供 cooperative `bridge stop` 与显式 `state upgrade --offline`。实际操作及旧安装 worker 边界见 [LIFECYCLE.md](LIFECYCLE.md)。本机全量与安装包结果以本次 verification 记录为准，平台 CI 独立验收。
+
+本节不改写前文设计历史。ST-05 的 q→m 持久来源、安全锁恢复与完整原生 pending 对账、ST-06 的固定版本迁移/回退演练仍待实施。未知证据不删除，另一个安装路径的旧 worker 不自动接管，默认不调用模型或远端。

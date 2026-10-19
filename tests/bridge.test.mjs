@@ -138,10 +138,10 @@ test('new room is sealed with persistent node pins after releasing the create lo
   assert.equal((await readStore(context)).rooms[room.id].manifestHash, room.manifestHash);
 });
 
-test('execution after admission rechecks active generation and native project under the control lock', async t => {
+test('execution rechecks identity and holds dispatch through native start while permitting control bookkeeping', async t => {
   const stateDir = await mkdtemp(join(tmpdir(), 'dialogue-drain-guard-'));
   t.after(() => rm(stateDir, { recursive: true, force: true }));
-  const context = { stateDir }, liveBinding = { ...binding, active: true };
+  const context = { stateDir }, liveBinding = { ...binding, id: 'b_12345678-1234-4234-8234-123456789abc', active: true };
   await withStore(context, store => { store.bindings[binding.alias] = liveBinding; });
   let starts = 0;
   const client = {
@@ -149,8 +149,11 @@ test('execution after admission rechecks active generation and native project un
     session: async () => native,
     drain: async () => {
       starts++;
-      // Detach cannot take the same lock between final identity validation and start.
-      await assert.rejects(withStore(context, store => { store.bindings[binding.alias].active = false; }), /busy/);
+      // Ingress/control bookkeeping remains available; pause cannot pass its
+      // shared dispatch gate between final identity validation and native start.
+      await withStore(context, store => assert.equal(store.bindings[binding.alias].active, true));
+      const { pauseBinding } = await import('../lib/lifecycle.mjs');
+      await assert.rejects(pauseBinding(context, binding.alias, { timeoutMs: 0 }), error => error.code === 'DISPATCH_BUSY');
       return { started: true };
     },
   };
@@ -158,7 +161,7 @@ test('execution after admission rechecks active generation and native project un
   await withStore(context, store => { store.bindings[binding.alias].active = false; });
   assert.deepEqual(await drainGuarded(context, client, liveBinding, {}), { started: false, reason: 'detached' });
   await withStore(context, store => { store.bindings[binding.alias].active = true; store.bindings[binding.alias].revision++; });
-  await assert.rejects(drainGuarded(context, client, liveBinding, {}), /binding changed/);
+  await assert.rejects(drainGuarded(context, client, liveBinding, {}), error => error.code === 'BINDING_CHANGED');
   await withStore(context, store => { store.bindings[binding.alias].revision = liveBinding.revision; });
   client.session = async () => ({ ...native, location: { directory: '/tmp/changed-project' } });
   await assert.rejects(drainGuarded(context, client, liveBinding, {}), /Native session\/project\/directory/);

@@ -8,7 +8,7 @@ v0.3 开发版增加节点签名、双向配对、共同 room 和 SSH stdio 传�
 
 **当前入口见[状态与支持总览](docs/STATUS.md)**，先区分稳定 `v0.2.0` 与 v0.3 开发快照。第一次多机使用按[中文操作手册](docs/QUICKSTART-ZH.md)完成安装、已有聊天接入、room 和对话查看；[操作者补充指南](docs/USAGE.md)解释逐 agent 分配说明。让其他 agent 知道怎么用时，先给项目加入[通用规则片段](config/AGENTS.snippet.md)，再用 `agent-dialogue agent-guide --room ID --from SELF [--to PEER]` 为每个聊天生成自己的准确上下文；不要让多个 agent 共用同一个 `--from` 身份。
 
-最新开发分支提供[统一预检](docs/INSPECT.md)：`agent-dialogue inspect --json` 默认只读本地已有元数据，未 setup 也可运行；明确 `--binding ALIAS --native` 才查询对应原生聊天。历史固定基线和 v0.2.0 不含此新命令。预检不自动修复、启动进程或唤醒模型；pause/resume 仍待后续实现。
+最新开发分支提供[统一预检](docs/INSPECT.md)：`agent-dialogue inspect --json` 默认只读本地已有元数据，未 setup 也可运行；明确 `--binding ALIAS --native` 才查询对应原生聊天。本轮又新增[保留绑定的暂停、恢复与 worker 停止](docs/LIFECYCLE.md)，首次须静止整个通信空间并显式 `state upgrade --offline` 升级 v1→v2。历史固定基线和 v0.2.0 不含这些命令；预检不自动修复或唤醒模型，pause 也不取消已受理的模型执行。
 
 ## 安装
 
@@ -153,7 +153,7 @@ agent-dialogue send codex-实际名称 \
 
 ## 消息与故障边界
 
-消息正文保存在所选本地账本（hcom 或 embedded），绑定和回执保存在当前通信空间。`collab send` 成功表示入账，worker 的 `admitted` 表示原生会话受理，实际模型回复另行核对。结果不确定时先查同一输入 ID；无法确认时保留待核对状态，不盲目重复提交。保留绑定的 pause/resume 命令仍待实现。残留锁需要检查进程与所有权后明确恢复。
+消息正文保存在所选本地账本（hcom 或 embedded），绑定和回执保存在当前通信空间。`collab send` 成功表示入账，worker 的 `admitted` 表示原生会话受理，实际模型回复另行核对。结果不确定时先查同一输入 ID；无法确认时保留待核对状态，不盲目重复提交。最新源码的 `bridge pause/resume` 保留准确绑定与进度，pending/未知结果会阻止安全恢复；`bridge stop` 只停所属 worker，enabled 时直接入口仍可工作。用法及与 detach 的区别见[生命周期指南](docs/LIFECYCLE.md)。残留锁恢复和 q→m 自动对账仍待实现。
 
 本机 alias 适用于同一用户的可信进程。跨节点签名固定发送节点，room 固定双方绑定；它们没有把每个模型变成独立的 OS 用户。网络中断或回执丢失时用 `node status` 和 `node flush --message m_UUID` 对账，同 ID 同内容返回原回执。`remote-stored` 只代表对方账本收妥，原生会话受理和实际模型回复分别核验。
 
@@ -203,4 +203,4 @@ ZCode 桌面工具收件开发入口见 [ZCODE.md](docs/ZCODE.md)：使用官方
 
 ## v0.3 稳定化与正式交付规划
 
-按[稳定化计划](docs/V0.3-STABILIZATION-PLAN.md)收口：统一预检与接入、保留绑定的暂停/恢复、分层对账、升级与回退、一次真实项目连续试用及固定发行包。该计划基于00295d7；ST-01 当前入口、ST-02 [操作设计](docs/STABILIZATION-DESIGN.md)和 ST-03 [统一预检](docs/INSPECT.md)已交付实现及本机验证；平台结果另以本次 CI 为准。pause/resume、分层恢复、跨机 ZCode 项目试用和新稳定 Release 仍待后续实施/验收。当前已实现能力统一见[状态总览](docs/STATUS.md)。既有通信实测保持有效，支持版本和边界仍见[兼容性说明](docs/COMPATIBILITY.md)。
+按[稳定化计划](docs/V0.3-STABILIZATION-PLAN.md)收口：统一预检与接入、保留绑定的暂停/恢复、分层对账、升级与回退、一次真实项目连续试用及固定发行包。该计划基于00295d7；ST-01 当前入口、ST-02 [操作设计](docs/STABILIZATION-DESIGN.md)和 ST-03 [统一预检](docs/INSPECT.md)已交付。ST-04 本轮源码已实现[生命周期命令与显式离线 v2 启用](docs/LIFECYCLE.md)，实际验收以本次运行及平台 CI 记录为准。分层恢复、通用升级回退、跨机 ZCode 项目试用和新稳定 Release 仍待后续实施/验收。当前已实现能力统一见[状态总览](docs/STATUS.md)。既有通信实测保持有效，支持版本和边界仍见[兼容性说明](docs/COMPATIBILITY.md)。

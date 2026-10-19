@@ -1,6 +1,6 @@
 # 从项目内安装迁移
 
-当前版本入口先看[状态总览](STATUS.md)。本文件保留项目内安装到独立安装的迁移说明；v0.3 保留绑定暂停、统一恢复和经验证的升级/回退仍在[稳定化计划](V0.3-STABILIZATION-PLAN.md)中，不能把下方手工核对步骤当作已验收的通用升级工具。
+当前版本入口先看[状态总览](STATUS.md)。本文件保留项目内安装到独立安装的迁移说明；2026-10-20 最新源码新增保留绑定的生命周期和显式 v1→v2 控制 store 入口，当前步骤见[生命周期指南](LIFECYCLE.md)及文末补充。统一恢复和经验证的通用升级/回退仍在[稳定化计划](V0.3-STABILIZATION-PLAN.md)中，不能把下方手工核对步骤当作已验收的通用升级工具。带日期的旧边界说明保留其历史语境。
 
 旧版本把程序、`.runtime` 与 `.state/local` 放在研究项目目录中。独立版本将程序安装、用户状态和依赖缓存分开；不会扫描并自动接管旧目录。
 
@@ -52,3 +52,24 @@ agent-dialogue bindings
 - 当前没有保留 binding 的 pause/resume。需要保留原身份时，先按确切旧 worker 所有权停止写入并完成离线备份；如果无法证明没有写入者或仍有 unknown/pending，先停留核对，不直接执行上述复制/升级步骤。`detach` 会停用旧 binding；它不是升级前无损暂停的替代。
 - 旧版 `v0.2.0` 程序不能自动视为可写 v0.3 跨节点状态的回退版本。回退仅在格式兼容已验证，或使用升级前旧二进制和完整离线备份时进行；升级后新消息不能被旧备份静默覆盖。两份复制 state 不得同时运行。通用兼容矩阵及回退验收仍待 ST-06。
 - 原 `m_UUID` 的传输不确定状态已有 `node flush --message m_UUID`，它不处理程序版本迁移，也不自动修复 `q_UUID`、原生 pending 或锁。保留原消息和输入证据，不清状态后换新 ID 重发。
+
+## 2026-10-20 生命周期 schema 启用补充
+
+最新开发源码新增 `bridge stop ALIAS` 保留 binding 停止所属 worker，以及 `bridge pause/resume ALIAS` 保留同一 binding 的通信准入。上述 2026-10-19“没有 pause/resume”描述对应当时版本；这些命令不在 `v0.2.0`、`00295d7` 或 `0aa51db` 中。完整顺序与 Windows 边界见 [LIFECYCLE.md](LIFECYCLE.md)。
+
+程序兼容读取 v1/v2，普通 v1 行为保持 enabled；pause/resume 遇到 v1 会拒绝，不在线自动迁移。首次开启生命周期要先静止该空间全部所属 worker：当前固定安装可严格核验所属的进程使用 `bridge stop`，其他旧安装先完成原安装退出维护。随后停止所有其他 CLI/MCP/SSH 入账写入者，再私有备份整个静止空间，最后用独立固定候选安装执行：
+
+```bash
+agent-dialogue state upgrade --offline --json
+agent-dialogue inspect --json
+```
+
+这里的 `bridge stop` 只适用于当前固定安装按绝对 worker 路径、binding ID 和原 token 确认所属的进程。另一个旧 prefix 中的活跃 worker，包括 POSIX worker，新候选也会标记为 unknown；旧 CLI 不具有新增的 stop 命令。必须先按已经验证的原安装退出维护流程静止这些 worker，无法证明退出就保持 needs-review。不要通过覆盖活动源码或放宽所属核验来接管它们；跨安装路径的通用迁移仍待 ST-06。
+
+`--offline` 是操作者对所有写入者已经静止的明确声明；程序无法自动发现每个远端调用，但仍独立检查已知 live/unknown worker、退出状态、残留锁、launch reservation 与 Windows launch descriptor。遇到这些证据会拒绝，不能靠该 flag 强制通过。旧 Windows 活 worker 缺 cooperative stop 时保持待核对，不自动杀进程。现有非私有目录权限也拒绝，不能通过迁移静默修复。
+
+成功只把控制 store 升为 v2，并为 lifecycle 建立独立 map；原 binding ID/revision、node、room、ledger backend 和 wire 身份保留。旧 writer 拒绝 v2，不能与新 writer 交替写此空间；复制 state 不得变成两个同时在线的相同 node。
+
+pause 仍允许远端入账和本地 queue；stop 仍允许 enabled binding 的直接入口。因此二者都不单独证明可离线备份。该命令也不负责生成备份、固定发行包、更新 peer/MCP 路径或迁移 harness 原生聊天。ST-06 的完整备份清单、版本兼容矩阵、升级/允许回退验收仍待完成。
+
+旧程序看不懂 v2 时，仅允许经验证兼容的新 state，或旧二进制配原升级前完整备份。升级后的新增消息应另保留，不得以旧备份静默覆盖；不要把 version 手改回 1，也不要自动重放差异来“补齐”。

@@ -1,6 +1,6 @@
 # 当前状态与使用入口
 
-更新日期：2026-10-19。本页汇总当前已实现能力和操作入口；逐版本合同及历史记录见[兼容性说明](COMPATIBILITY.md)，后续工作见[稳定化计划](V0.3-STABILIZATION-PLAN.md)。文档更新本身不代表完成计划中的新功能或重新执行历史验收。
+更新日期：2026-10-20。本页汇总当前已实现能力和操作入口；逐版本合同及历史记录见[兼容性说明](COMPATIBILITY.md)，后续工作见[稳定化计划](V0.3-STABILIZATION-PLAN.md)。文档更新本身不代表完成计划中的新功能或重新执行历史验收。
 
 ## 1. 先选择要安装的版本
 
@@ -8,7 +8,7 @@
 |---|---|---|
 | 稳定 Release `v0.2.0` | 用户级安装、独立通信空间、hcom 依赖安装、本机 OpenCode 已有聊天协作 | 需要该历史稳定范围时安装固定 Release；不包含下方 v0.3 多机、Windows、Kimi、ZCode、查看器等新增能力 |
 | 开发分支 `codex/multinode-adapters` | 本页 v0.3 已实现能力；源码 package version 为 `0.3.0`，尚未发行新的稳定 Release | 首轮试用最新功能使用该分支；两端固定同一完整提交，不把分支名当作不可变版本 |
-| 已有通信验证基线 `00295d77ab8660565e0772985a4387f9351ffb37` | 包含多机、多 harness、ZCode 工具收件和查看器；其后 `d861b5b` 为规划，最新开发分支又新增统一预检 | 复用本页历史通信实测范围可固定此提交；**此基线没有新的 inspect**，尚无稳定化 RC/升级验收 |
+| 已有通信验证基线 `00295d77ab8660565e0772985a4387f9351ffb37` | 包含多机、多 harness、ZCode 工具收件和查看器；其后 `d861b5b` 为规划，`0aa51db` 为统一预检；本轮最新源码新增生命周期 | 复用本页历史通信实测范围可固定此提交；**此基线没有新的 inspect/pause/resume/stop/upgrade**，尚无稳定化 RC/升级验收 |
 
 稳定包：
 
@@ -55,11 +55,14 @@ Node.js 要求为 22.13 或更新的受支持版本；Windows 实机和 CI 使�
 | ZCode 收件 | 在准确原聊天明确要求调用 `dialogue_inbox`；工具读取后按项目需要回复 | 自动 idle wake、原生 prompt 注入或 `native-admitted` |
 | 跨节点 `m_UUID` 待确认 | 核对原 ID 与证据后用已有 `node flush --message m_UUID`，重用原签名内容 | 新建另一条消息替代重试；自动清除未知状态 |
 | 本地 `q_UUID` / `outgoingPending` 或原生 pending | 保留原 ID、账本、输入及 worker 状态，分层人工核对 | 通用自动修复/清 pending 命令；按正文猜测关联；ZCode 工具读取套用 native admission |
-| 活跃绑定的 worker 未启动 | 核对准确服务、session 和 pending/锁后，按现有合同 `bridge start ALIAS` | 保留绑定的 pause/resume 已实现；它仍是 ST-04 待做项 |
+| 保留原 binding 暂停/恢复 | 最新源码 `bridge pause ALIAS` / `bridge resume ALIAS`；首次须离线升级 v1→v2，见[生命周期指南](LIFECYCLE.md) | pause 不取消已受理模型执行、不证明全空间离线；unknown/pending 不自动清除；本轮平台验证以对应运行记录为准 |
+| 停止所属 worker | `bridge stop ALIAS` 保留 binding；严格核对当前固定安装的绝对 worker 路径、binding ID/token 和退出证据 | 另一旧 prefix 的 worker（含 POSIX）保持 unknown，须经原安装退出维护；旧 Windows 缺协作协议也保持 needs-review；enabled 时 direct/flush/MCP 仍可能工作 |
+| 活跃绑定的 worker 未启动 | enabled 且准确服务、session 和 pending/锁核对通过时 `bridge start ALIAS` | start 不绕过 paused，也不自动启动原生 harness；paused 用 resume |
 | 结束绑定 | `detach ALIAS` 停用绑定并停止其所属 worker，原聊天/历史保留 | 无损暂停；已 detach alias 不能用 `bridge start` 复活，再接入须新 alias/room |
-| 升级、进程退出、残留锁 | 按[迁移说明](MIGRATION.md)离线保留完整状态，核对确切写入者及所有权 | 自动拉起原生进程、开机/注销恢复、自动破锁，或已经验收的通用升级/回退流程 |
+| 生命周期控制 schema 升级 | `state upgrade --offline`，声明全空间静止并检查已知 worker/锁/reservation；v1→v2 不改 node/room/wire 身份 | 自动发现所有 CLI/MCP/SSH 写入者、自动备份、通用 ST-06 升级/回退；旧 writer 不能写 v2 |
+| 进程退出、残留锁 | 按[迁移说明](MIGRATION.md)保留完整状态，核对确切写入者及所有权 | 自动拉起原生进程、开机/注销恢复、自动破锁 |
 
-统一预检已进入最新开发分支。保留绑定暂停、分层恢复、升级回退、一次连续真实项目试用和 RC 包仍是[稳定化计划](V0.3-STABILIZATION-PLAN.md)的后续工作；预检不提供自动修复。当前新阶段不能据已有通信测试标为整体完成。
+统一预检和本轮保留绑定的生命周期已进入最新开发源码；后者的 CLI、边界与离线启用步骤见[生命周期指南](LIFECYCLE.md)。分层恢复、通用升级回退、一次连续真实项目试用和 RC 包仍是[稳定化计划](V0.3-STABILIZATION-PLAN.md)的后续工作。当前新阶段不能据已有通信测试标为整体完成，历史通信实测也不能替代本轮生命周期平台验收。
 
 ## 4. 按目的选择操作入口
 
@@ -68,6 +71,7 @@ Node.js 要求为 22.13 或更新的受支持版本；Windows 实机和 CI 使�
 | 第一次从已有聊天开始，两机逐步配置 | [中文操作手册](QUICKSTART-ZH.md)，Mac V2 ↔ Windows V1 完整例子 |
 | 核对程序/state/cache/backend 与服务路径 | [配置说明](CONFIGURATION.md) |
 | 安装前后只读排错、显式核对准确聊天 | [统一预检](INSPECT.md) |
+| 保留同一 binding 暂停/恢复、停止 worker、离线启用 v2 | [生命周期指南](LIFECYCLE.md) |
 | 交换节点卡片、room 与原 ID 重试 | [节点通信](NODES.md) |
 | Windows 私有 Node、ACL、PowerShell 路由 | [Windows 指南](WINDOWS.md) |
 | Kimi Web 服务、会话允许清单与 global_user 布局 | [Kimi 指南](KIMI.md) |

@@ -193,7 +193,7 @@ test('foreign or permissive node identity fails closed without regeneration', as
 
 
 test('future control schema is rejected without guessing lifecycle or modifying source', async t => {
-  const f = await fixture(t); f.store.version = 2; f.store.lifecycle = { [f.binding.id]: { version: 1, bindingRevision: 1, desired: 'paused', generation: 1, updatedAt: fixed } }; await f.save();
+  const f = await fixture(t); f.store.version = 3; f.store.lifecycle = { [f.binding.id]: { version: 1, bindingRevision: 1, desired: 'paused', generation: 1, updatedAt: fixed } }; await f.save();
   const before = await snapshot(f.root), report = await inspect(f.context, { binding: f.binding.alias });
   assert.equal(report.exitCode, 1); assert.ok(codes(report).includes('STORE_SCHEMA_UNSUPPORTED')); assert.deepEqual(await snapshot(f.root), before);
 });

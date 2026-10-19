@@ -28,6 +28,9 @@ macOS/Linux 的默认目录：
 ~/.local/state/agent-dialogue/spaces/default/  当前通信空间
   dialogue/                                绑定、room、worker状态和回执
     node.json                              本逻辑节点身份/私钥，0600，不供多机共享
+    store.json                             控制schema v1/v2；v2独立保存lifecycle/启动reservation
+    b_UUID.worker.json                     cursor、receipts、pending和所属worker记录
+    b_UUID.dispatch.lock/                  每binding准入锁，私有owner/nonce，不自动清除
   ...                                      hcom消息数据库与运行状态
 
 ~/.cache/agent-dialogue/
@@ -80,6 +83,10 @@ v0.3开发版使用已有Codex共享daemon，不另启app-server。`sessions cod
 
 `detach ALIAS` 停用指定绑定、停止其 bridge 并保留原生聊天。它不停止整个 OpenCode 服务，也不影响其他未接入聊天。进程崩溃留下的 pending 或锁不自动清除；先确认输入是否已受理、是否仍有活跃 worker，再明确恢复，避免重复注入或并发占用。
 
+最新开发源码的 `bridge pause ALIAS` / `bridge resume ALIAS` 保留原 binding ID/revision、完整原生身份、room pins 和 cursor/receipts；`bridge stop ALIAS` 请求所属 worker 协作退出但不改生命周期。paused 时 `bridge start` 拒绝，须用 resume 重新核对；enabled 且仅停止过 worker 时可按原 start 合同启动。stop 不阻止 enabled binding 的直接发送/flush/MCP，pause 不取消已经原生受理的模型执行。ZCode 恢复后仍需原聊天主动工具收件。
+
+pause/resume 要求控制 schema v2；v1 返回明确升级门禁。首次须静止该空间所有 worker、CLI/MCP/SSH 写入者，离线保留完整备份后显式 `state upgrade --offline`。该 flag 是操作者声明，程序仍拒绝已知 live/unknown worker、未决 reservation 和锁；旧 Windows worker 缺协作 stop 时不能假定已经退出。详细流程与准确状态字段见 [LIFECYCLE.md](LIFECYCLE.md)，迁移限制见 [MIGRATION.md](MIGRATION.md)。
+
 
 ## ZCode 工具收件与独立配置文件
 
@@ -95,4 +102,4 @@ ZCode 的私有服务描述由 `zcode init --cwd ABS_NATIVE_PROJECT --file ABS_S
 
 现有 `doctor` 检查工具版本及基础环境，会运行相应程序；`bindings`、`bridge status`、`node status` 仍提供原有信息。不要把工具存在、doctor 通过或 inspect 的 `ready-local` 当作端到端聊天已连通。
 
-`node flush --message m_UUID` 已可重用原签名 ID 对账/重试；本地 q 请求和原生 pending 需各自核对。保留 binding 的 pause/resume、统一安全恢复与升级回退还待实现。`detach` 停用绑定，`bridge start` 不能恢复已 detach 的 alias；残留锁和未知结果不可直接清除。
+`node flush --message m_UUID` 已可重用原签名 ID 对账/重试；source paused 时不会开始 exchange。本地 q 请求和原生 pending 需各自核对；resume 不会清除未知结果或重置 cursor。保留 binding 的 pause/resume 见 [LIFECYCLE.md](LIFECYCLE.md)，分层安全恢复与通用升级回退仍待 ST-05/06。`detach` 停用绑定，`bridge start/resume` 不能恢复已 detach 的 alias；残留锁和未知结果不可直接清除。

@@ -35,9 +35,9 @@ jobs:
         run: node bin/agent-dialogue.mjs doctor --json
   windows-native:
     runs-on: windows-latest
-    # Real SID/ACL checks spawn Windows PowerShell; the full serial contract
-    # suite takes about ten minutes. Keep operation deadlines unchanged.
-    timeout-minutes: 15
+    # Lifecycle v2 exercises private dispatch/control locks with real SID/ACL
+    # checks and owned child workers. Keep per-operation deadlines unchanged.
+    timeout-minutes: 35
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
@@ -50,6 +50,11 @@ jobs:
           tests/embedded-ledger.test.mjs
           tests/inspect.test.mjs
           tests/inspect-cli.test.mjs
+          tests/lifecycle.test.mjs
+          tests/lifecycle-delivery.test.mjs
+          tests/lifecycle-observation.test.mjs
+          tests/lifecycle-bridge.test.mjs
+          tests/lifecycle-cli.test.mjs
           tests/windows-platform.test.mjs
           tests/windows-node-card.test.mjs
           tests/windows-transport.test.mjs

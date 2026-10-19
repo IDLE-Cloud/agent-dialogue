@@ -52,6 +52,9 @@ const HELP = `agent-dialogue — cross-node, cross-harness agent communication
        [--reply-to EVENT] [--expected-session ID] [--queue]
                                            Queue locally when the model shell has no network
   bridge start ALIAS | bridge status       Start/inspect the native-session bridge
+  bridge pause ALIAS | bridge resume ALIAS Preserve exact binding and delivery progress
+  bridge stop ALIAS                        Cooperatively stop an owned worker; keep binding
+  state upgrade --offline [--json]          Explicit quiescent control-store v1 to v2 upgrade
   detach ALIAS                            Stop bridge; preserve the original chat
   hcom <read-command> [arguments...]       Restricted read-only upstream access
 
@@ -315,6 +318,15 @@ export async function main(args = process.argv.slice(2), sourceEnv = process.env
     const { options, rest } = parseOptions(input, { '--json': 'boolean' }); noRest(rest);
     return await doctor(context, !!options['--json']);
   }
+  if (command === 'state') {
+    if (input[0] !== 'upgrade') fail('Use state upgrade --offline [--json].');
+    const { options, rest } = parseOptions(input.slice(1), { '--offline': 'boolean', '--json': 'boolean' }); noRest(rest);
+    if (!options['--offline']) fail('State upgrade requires --offline after all writers have been quiesced.');
+    const { upgradeStoreOffline } = await import('../lib/lifecycle.mjs');
+    const { assertOfflineWorkers } = await import('../lib/bridge.mjs');
+    console.log(JSON.stringify(await upgradeStoreOffline(context, { offline: true }, { assertQuiescent: assertOfflineWorkers }), null, 2));
+    return 0;
+  }
   if (command === 'node') {
     const nodes = await import('../lib/nodes.mjs');
     let result;
@@ -371,7 +383,11 @@ export async function main(args = process.argv.slice(2), sourceEnv = process.env
       const { options, rest } = parseOptions(input.slice(1), { '--room': 'value', '--from': 'value', '--to': 'value', '--message': 'value', '--reply-to': 'value', '--expected-session': 'value', '--queue': 'boolean' }); noRest(rest);
       const message = { room: options['--room'], from: options['--from'], to: options['--to'], text: options['--message'], replyTo: options['--reply-to'] || null, expectedSession: options['--expected-session'] };
       result = options['--queue'] ? await (await import('../lib/submissions.mjs')).queueSubmission(context, message) : await bridge.collabSend(context, message);
-    } else if (command === 'bridge' && input[0] === 'start' && input.length === 2) result = await bridge.startBridge(context, input[1]);
+    } else if (command === 'bridge' && ['start', 'pause', 'resume', 'stop'].includes(input[0])) {
+      if (!input[1] || input[1].startsWith('--')) fail('Bridge operation requires one exact binding alias.');
+      const { rest } = parseOptions(input.slice(2), { '--json': 'boolean' }); noRest(rest);
+      result = await bridge[{ start: 'startBridge', pause: 'pauseBridge', resume: 'resumeBridge', stop: 'stopBridge' }[input[0]]](context, input[1]);
+    }
     else if (command === 'detach' && input.length === 1) result = await bridge.detach(context, input[0]);
     else fail('Invalid collaboration command; see --help.');
     console.log(JSON.stringify(result, null, 2)); return 0;
