@@ -16,13 +16,24 @@ import { powershellCommand, powershellQuote } from '../lib/platform.mjs';
 
 const budget = { timeout: process.platform === 'win32' ? 300000 : 30000 };
 const hash = data => createHash('sha256').update(data).digest('hex');
+let reportedInitialDialogueOwner = false;
 async function fixture(t) {
   const root = await mkdtemp(join(tmpdir(), 'ad-migration-files-'));
   t.after(() => rm(root, { recursive: true, force: true }));
   if (process.platform === 'win32') await protectWindowsPrivatePath(root, { directory: true });
   const stateDir = join(root, 'state'); await mkdir(stateDir, { mode: 0o700 });
   if (process.platform === 'win32') await protectWindowsPrivatePath(stateDir, { directory: true });
-  await mkdir(join(stateDir, 'dialogue'), { mode: 0o700 });
+  const dialogue = join(stateDir, 'dialogue'); await mkdir(dialogue, { mode: 0o700 });
+  if (process.platform === 'win32') {
+    if (!reportedInitialDialogueOwner) {
+      const inherited = await inspectWindowsPrivatePath(dialogue, { directory: true });
+      t.diagnostic(JSON.stringify({ fixture: 'new-dialogue-before-provisioning', ownerSid: inherited.ownerSid, currentUserSid: inherited.currentUserSid, ownerMatchesCurrentUser: inherited.ownerSid === inherited.currentUserSid }));
+      reportedInitialDialogueOwner = true;
+    }
+    // Only this freshly created fixture directory is provisioned. Existing
+    // source directories remain subject to the production owner refusal.
+    await protectWindowsPrivatePath(dialogue, { directory: true });
+  }
   const file = async (name, data, mode = 0o600) => { const path = join(stateDir, name); await writeFile(path, data, { mode }); if (process.platform === 'win32') await protectWindowsPrivatePath(path); else await chmod(path, mode); return path; };
   const store = Buffer.from('{"version":4,"opaque":"retain all original bytes"}\n');
   await file('dialogue/store.json', store); await file('history.txt', 'full retained history\n', 0o644);

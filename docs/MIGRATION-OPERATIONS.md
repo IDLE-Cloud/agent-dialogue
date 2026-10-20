@@ -83,6 +83,8 @@ $migrationBundle = 'C:\private\maintenance\handoff-001'
 
 上述操作失败时先停下来核对；不要继续下一步。Windows 目录应事先使用所属用户私有 ACL 准备，命令只为新建的 bundle/文件设置私有权限，不会修已有源目录权限，也不会递归重置已有 state 或安装目录。生产 ACL 检查的每操作 8 秒期限保持。
 
+Windows 的源 state、子目录和文件还必须由当前用户 SID 持有；某个路径只有 Administrators 或 SYSTEM 所有权，即使其 ACL 已限制读取，迁移仍会拒绝并返回 needs-review。已有空间遇到这种情况，应保留原始权限与错误供人工核查；本入口不会自动变更其所有权。测试中对全新 fixture 设置 owner 的步骤不代表已有生产空间可直接通过迁移。
+
 ## 4. plan → prepare → apply → verify
 
 下面每一步都单独执行并检查退出码和结果。全部 migration 命令由新候选执行；state/backend/cache 始终保持原值。

@@ -7,10 +7,11 @@ import { join } from 'node:path';
 import { createBinding, readStore, withStore } from '../lib/bridge-store.mjs';
 import { initializeEmbedded } from '../lib/embedded-ledger.mjs';
 import { loadOrCreateNode } from '../lib/node-identity.mjs';
-import { protectWindowsPrivatePath } from '../lib/private-files.mjs';
+import { inspectWindowsPrivatePath, protectWindowsPrivatePath } from '../lib/private-files.mjs';
 import { applyMigration, prepareMigration, rollbackMigration, planMigration, verifyMigration } from '../lib/migration.mjs';
 
 const budget = { timeout: process.platform === 'win32' ? 300000 : 20000 };
+let reportedInitialStateOwner = false;
 async function fixture(t, { version = 3 } = {}) {
   const root = await mkdtemp(join(tmpdir(), 'ad-migration-handoff-'));
   if (process.platform === 'win32') await protectWindowsPrivatePath(root, { directory: true });
@@ -25,7 +26,29 @@ async function fixture(t, { version = 3 } = {}) {
   await cp(from, to, { recursive: true });
   await writeFile(nodePath, 'Synthetic artifact only; never execute.\n', { mode: 0o755 });
   const context = { stateDir: join(root, 'state'), cacheDir: join(root, 'cache'), ledgerBackend: 'embedded' };
-  const node = await loadOrCreateNode(context); await initializeEmbedded(context); let binding;
+  await mkdir(context.stateDir, { mode: 0o700 });
+  if (process.platform === 'win32') {
+    if (!reportedInitialStateOwner) {
+      const inherited = await inspectWindowsPrivatePath(context.stateDir, { directory: true });
+      t.diagnostic(JSON.stringify({ fixture: 'new-handoff-state-before-provisioning', ownerSid: inherited.ownerSid, currentUserSid: inherited.currentUserSid, ownerMatchesCurrentUser: inherited.ownerSid === inherited.currentUserSid }));
+      reportedInitialStateOwner = true;
+    }
+    // Only this new fixture is provisioned. Migration itself must continue to
+    // refuse a preexisting source whose owner is not the exact current SID.
+    await protectWindowsPrivatePath(context.stateDir, { directory: true });
+  }
+  const node = await loadOrCreateNode(context);
+  if (process.platform === 'win32') {
+    await protectWindowsPrivatePath(join(context.stateDir, 'dialogue'), { directory: true });
+    await protectWindowsPrivatePath(join(context.stateDir, 'dialogue/node.json'));
+  }
+  await initializeEmbedded(context);
+  if (process.platform === 'win32') for (const name of ['hcom.db', 'hcom.db-wal', 'hcom.db-shm', 'hcom.db-journal']) {
+    const path = join(context.stateDir, name);
+    try { await lstat(path); } catch (error) { if (error.code === 'ENOENT') continue; throw error; }
+    await protectWindowsPrivatePath(path);
+  }
+  let binding;
   const token = randomUUID(), pid = 987654;
   await withStore(context, store => {
     store.version = version; store.lifecycle = {};
@@ -35,6 +58,7 @@ async function fixture(t, { version = 3 } = {}) {
     store.lifecycle[binding.id] = { version: 1, bindingRevision: binding.revision, desired: 'paused', generation: 1, changeNonce: randomUUID(), changedAt: '2026-10-20T00:00:00.000Z', reason: 'operator-pause' };
     store.workerLaunches = { [binding.id]: { version: 1, bindingRevision: binding.revision, token, phase: 'stopped', pid } };
   });
+  if (process.platform === 'win32') await protectWindowsPrivatePath(join(context.stateDir, 'dialogue/store.json'));
   const privateWrite = async (path, bytes, { fresh = false } = {}) => {
     await writeFile(path, bytes, { mode: 0o600 });
     if (fresh && process.platform === 'win32') await protectWindowsPrivatePath(path);

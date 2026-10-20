@@ -8,12 +8,13 @@ import { createBinding, createRoom, readStore, withOwnedDirectoryLock, withStore
 import { hcom } from '../lib/bridge.mjs';
 import { initializeEmbedded } from '../lib/embedded-ledger.mjs';
 import { loadOrCreateNode } from '../lib/node-identity.mjs';
-import { protectWindowsPrivatePath } from '../lib/private-files.mjs';
+import { inspectWindowsPrivatePath, protectWindowsPrivatePath } from '../lib/private-files.mjs';
 import * as migration from '../lib/migration.mjs';
 
 // Only fixture totals are larger on Windows. Production ACL/PID deadlines stay unchanged.
 const budget = { timeout: process.platform === 'win32' ? 300000 : 30000 };
 const interrupted = stage => Object.assign(new Error('Owned migration checkpoint interruption: ' + stage), { code: 'FIXTURE_INTERRUPTED' });
+let reportedInitialOwners = false;
 
 async function fixture(t, { version = 3, mutate } = {}) {
   const root = await mkdtemp(join(tmpdir(), 'ad-migration-adversarial-'));
@@ -29,6 +30,14 @@ async function fixture(t, { version = 3, mutate } = {}) {
   await writeFile(selectedNode, 'Synthetic artifact for hashing only; must never execute.\n', { mode: 0o755 });
   await cp(oldPackage, newPackage, { recursive: true });
   const context = { stateDir: join(root, 'state'), cacheDir: join(root, 'cache'), ledgerBackend: 'embedded', env: { AGENT_DIALOGUE_LEDGER: 'embedded', PATH: '' } };
+  await mkdir(context.stateDir, { mode: 0o700 });
+  const reportInitialOwners = process.platform === 'win32' && !reportedInitialOwners;
+  if (reportInitialOwners) {
+    const inherited = await inspectWindowsPrivatePath(context.stateDir, { directory: true });
+    t.diagnostic(JSON.stringify({ fixture: 'new-state-before-provisioning', ownerSid: inherited.ownerSid, currentUserSid: inherited.currentUserSid, ownerMatchesCurrentUser: inherited.ownerSid === inherited.currentUserSid }));
+    reportedInitialOwners = true;
+  }
+  if (process.platform === 'win32') await protectWindowsPrivatePath(context.stateDir, { directory: true });
   await mkdir(context.cacheDir, { mode: 0o700 });
   if (process.platform === 'win32') await protectWindowsPrivatePath(context.cacheDir, { directory: true });
   const node = await loadOrCreateNode(context); await initializeEmbedded(context);
@@ -49,10 +58,33 @@ async function fixture(t, { version = 3, mutate } = {}) {
     if (fresh && process.platform === 'win32') await protectWindowsPrivatePath(path);
   };
   const history = join(context.stateDir, 'historical.note'); await privateWrite(history, 'Retain this complete original fixture note.\n', { fresh: true });
+  const provisionFixtureFiles = async ({ diagnostic = false } = {}) => {
+    if (process.platform !== 'win32') return;
+    // These exact files were created by this fixture. This is setup before its
+    // first snapshot, never normalization of an existing production state.
+    for (const relative of ['dialogue/node.json', 'dialogue/store.json', 'hcom.db', 'hcom.db-wal', 'hcom.db-shm', 'hcom.db-journal']) {
+      const path = join(context.stateDir, relative);
+      try { await lstat(path); }
+      catch (error) { if (error.code === 'ENOENT' && relative.startsWith('hcom.db-')) continue; throw error; }
+      if (diagnostic) {
+        const inherited = await inspectWindowsPrivatePath(path);
+        t.diagnostic(JSON.stringify({ fixture: 'new-file-before-provisioning', path: relative, ownerSid: inherited.ownerSid, currentUserSid: inherited.currentUserSid, ownerMatchesCurrentUser: inherited.ownerSid === inherited.currentUserSid }));
+      }
+      await protectWindowsPrivatePath(path);
+    }
+  };
+  await provisionFixtureFiles({ diagnostic: reportInitialOwners });
   const args = { fromPackage: oldPackage, fromNode: selectedNode }, bundle = join(root, 'private workflow bundle');
   // Installation identity is synthetic test scope. No installed CLI or model is executed.
   const options = { installationOptions: { sources: { packageRoot: newPackage, nodePath: selectedNode } } };
-  const prepare = extra => migration.prepareMigration(context, { ...args, bundle, offline: true }, { ...options, ...extra });
+  let sourceProvisioningClosed = false;
+  const prepare = async extra => {
+    // A test can add its synthetic stopped runtime through withStore during
+    // setup, replacing store.json. Provision that exact new fixture inode once;
+    // close this seam before prepare can create any snapshot or checkpoint.
+    if (!sourceProvisioningClosed) { sourceProvisioningClosed = true; await provisionFixtureFiles(); }
+    return migration.prepareMigration(context, { ...args, bundle, offline: true }, { ...options, ...extra });
+  };
   const apply = extra => migration.applyMigration(context, { bundle, offline: true }, { ...options, ...extra });
   const rollback = extra => migration.rollbackMigration(context, { bundle, offline: true }, { ...options, ...extra });
   const verify = () => migration.verifyMigration(context, { bundle }, options);

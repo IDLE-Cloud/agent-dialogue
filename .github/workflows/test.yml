@@ -27,6 +27,29 @@ jobs:
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: ${{ matrix.node }}
+      - name: Use an owned immutable Node copy for installation identity contracts
+        shell: bash
+        run: |
+          node --input-type=module <<'JS'
+          import { constants, createReadStream } from 'node:fs';
+          import { appendFile, chmod, copyFile, lstat, mkdir, realpath } from 'node:fs/promises';
+          import { createHash } from 'node:crypto';
+          import { join } from 'node:path';
+          const source = await realpath(process.execPath);
+          const before = await lstat(source, { bigint: true });
+          const fields = ['dev', 'ino', 'mode', 'uid', 'gid', 'nlink', 'size', 'mtimeNs', 'ctimeNs'];
+          const describe = info => Object.fromEntries(fields.map(key => [key, info[key].toString()]));
+          const digest = async path => { const hash = createHash('sha256'); for await (const bytes of createReadStream(path)) hash.update(bytes); return hash.digest('hex'); };
+          const sourceHash = await digest(source);
+          const directory = join(process.env.RUNNER_TEMP, 'agent-dialogue-owned-node');
+          await mkdir(directory, { mode: 0o700 });
+          const selected = join(directory, 'node');
+          await copyFile(source, selected, constants.COPYFILE_EXCL); await chmod(selected, 0o755);
+          const after = await lstat(source, { bigint: true }), copied = await lstat(selected, { bigint: true });
+          if (JSON.stringify(describe(before)) !== JSON.stringify(describe(after)) || await digest(source) !== sourceHash || await digest(selected) !== sourceHash || copied.uid !== BigInt(process.getuid()) || copied.nlink !== 1n || (copied.mode & 0o777n) !== 0o755n) throw Error('Node artifact copy changed or is not safely owned');
+          console.log(JSON.stringify({ sourceNode: describe(before), currentUid: process.getuid(), ownedNode: describe(copied), sha256: sourceHash }));
+          await appendFile(process.env.GITHUB_PATH, directory + '\n');
+          JS
       - run: npm test
       - run: npm run test:package
       - name: Install pinned native dependency
@@ -204,6 +227,7 @@ jobs:
           tests/migration-cli.test.mjs
           tests/migration-publication.test.mjs
           tests/migration-core-review.test.mjs
+          tests/migration-lock-owner-review.test.mjs
   windows-migration-transaction:
     runs-on: windows-latest
     timeout-minutes: 35

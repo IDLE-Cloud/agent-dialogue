@@ -58,7 +58,9 @@ test('compatibility uses fixed complete runtime digests rather than package vers
 });
 
 test('only the actual selected current-process Node path carries observed version evidence', budget, async t => {
-  const f = await fixture(t), descriptor = await inspectInstallation({ packageRoot: f.old, nodePath: process.execPath });
+  const f = await fixture(t), path = await realpath(process.execPath), info = await lstat(path, { bigint: true });
+  t.diagnostic(JSON.stringify({ currentNodeArtifact: { path, currentUid: process.getuid?.() ?? null, ...Object.fromEntries(['mode', 'uid', 'gid', 'nlink', 'ino', 'dev'].map(key => [key, info[key].toString()])) } }));
+  const descriptor = await inspectInstallation({ packageRoot: f.old, nodePath: process.execPath });
   assert.equal(descriptor.nodePath, await realpath(process.execPath)); assert.deepEqual(descriptor.nodeVersionEvidence, { kind: 'current-process', version: process.versions.node });
   assert.equal(descriptor.nodeSha256, hash(await readFile(await realpath(process.execPath))));
 });
