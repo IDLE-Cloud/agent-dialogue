@@ -12,6 +12,7 @@ import { loadOrCreateNode } from '../lib/node-identity.mjs';
 import { pauseBinding } from '../lib/lifecycle.mjs';
 import { pidEvidence, readLockRetirementPlan } from '../lib/lock-recovery.mjs';
 import { inspectWindowsPrivatePath, protectWindowsPrivatePath } from '../lib/private-files.mjs';
+import { windowsAclDiagnosticRunner } from './helpers/windows-acl-diagnostic.mjs';
 
 // CLI totals include real ACL subprocesses and repeated full-space evidence
 // reads on Windows. Individual production ACL/PID deadlines are unchanged.
@@ -22,11 +23,11 @@ async function privateFile(path, value) {
 }
 async function fixture(t, { initialize = true } = {}) {
   const root = await mkdtemp(join(tmpdir(), 'ad-lock-cli-')), children = [];
-  if (process.platform === 'win32') await protectWindowsPrivatePath(root, { directory: true });
   t.after(async () => {
     for (const child of children) if (child.exitCode === null && child.signalCode === null) { child.kill('SIGKILL'); await once(child, 'close'); }
     await rm(root, { recursive: true, force: true });
   });
+  if (process.platform === 'win32') await protectWindowsPrivatePath(root, { directory: true, runner: windowsAclDiagnosticRunner(t, 'lock-cli-fixture-root-protect') });
   const context = { stateDir: join(root, 'state'), cacheDir: join(root, 'cache'), ledgerBackend: 'embedded' };
   const env = { ...process.env, AGENT_DIALOGUE_STATE_DIR: context.stateDir, AGENT_DIALOGUE_CACHE_DIR: context.cacheDir, AGENT_DIALOGUE_LEDGER: 'embedded' };
   const call = args => run(process.execPath, [join(PROJECT_DIR, 'bin/agent-dialogue.mjs'), ...args], { cwd: root, env, capture: true, timeout: process.platform === 'win32' ? 120000 : 30000 });

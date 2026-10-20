@@ -76,3 +76,38 @@ test('explicit Windows protection changes only ACL metadata and rejects nonpriva
   const directory = join(f.root, 'directory'); await mkdir(directory);
   await protectWindowsPrivatePath(directory, { directory: true, runner: async () => ({ code: 0, stdout: JSON.stringify({ ...acl(), directory: true, ownerSid: sid, protected: true }) }) });
 });
+
+async function rejectedProvisioningDiagnostic(t, { directory, protected: protectedAcl, ownerSid, expected }) {
+  const f = await fixture(t), before = await readFile(f.path);
+  const path = directory ? join(f.root, 'PRIVATE-DIRECTORY-SENTINEL') : f.path;
+  if (directory) await mkdir(path);
+  const evidence = { ...acl(), directory, protected: protectedAcl, ownerSid };
+  assert.equal(validateWindowsPrivateAcl(evidence, { directory }), true);
+  let calls = 0;
+  await assert.rejects(protectWindowsPrivatePath(path, { directory, runner: async () => {
+    calls++;
+    return { code: 0, stdout: JSON.stringify(evidence) };
+  } }), error => {
+    assert.equal(error.message, 'Private path Windows ACL provisioning was not confirmed.');
+    assert.equal(typeof error.aclProtected, 'boolean');
+    assert.equal(typeof error.aclOwnerMatchesCurrentUser, 'boolean');
+    assert.deepEqual(Object.keys(error).sort(), ['aclOwnerMatchesCurrentUser', 'aclProtected']);
+    assert.deepEqual(JSON.parse(JSON.stringify(error)), expected);
+    for (const privateValue of [path, sid, ownerSid, 'PRIVATE-IDENTITY-SENTINEL', JSON.stringify(evidence)]) {
+      assert.equal(`${String(error)} ${JSON.stringify(error)}`.includes(privateValue), false);
+    }
+    return true;
+  });
+  assert.equal(calls, 1);
+  assert.deepEqual(await readFile(f.path), before);
+}
+
+test('Windows protection rejects an unprotected directory and exposes only the two safe diagnostic booleans', async t => {
+  await rejectedProvisioningDiagnostic(t, { directory: true, protected: false, ownerSid: sid,
+    expected: { aclProtected: false, aclOwnerMatchesCurrentUser: true } });
+});
+
+test('Windows protection rejects a trusted owner mismatch and exposes only the two safe diagnostic booleans', async t => {
+  await rejectedProvisioningDiagnostic(t, { directory: false, protected: true, ownerSid: 'S-1-5-32-544',
+    expected: { aclProtected: true, aclOwnerMatchesCurrentUser: false } });
+});

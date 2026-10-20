@@ -203,11 +203,21 @@ jobs:
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: 24
+      - name: Initialize Windows ACL writes in new owned empty objects
+        timeout-minutes: 2
+        shell: pwsh
+        run: |
+          $script = [IO.File]::ReadAllText((Join-Path $env:GITHUB_WORKSPACE '.github\scripts\initialize-windows-acl.ps1'))
+          $encoded = [Convert]::ToBase64String([Text.Encoding]::Unicode.GetBytes($script))
+          $executable = Join-Path $env:SystemRoot 'System32\WindowsPowerShell\v1.0\powershell.exe'
+          & $executable -NoLogo -NoProfile -NonInteractive -EncodedCommand $encoded
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       - name: Private v4 schema and explicit offline lock quarantine
         shell: pwsh
         run: >-
           node --test --test-concurrency=1
           tests/native-recovery-schema.test.mjs
+          tests/windows-acl-diagnostic.test.mjs
           tests/lock-recovery.test.mjs
           tests/lock-recovery-cli.test.mjs
   windows-migration-files:
@@ -227,6 +237,15 @@ jobs:
           $acl=[IO.Directory]::GetAccessControl($env:RUNNER_TEMP)
           if(-not $sid -or -not $acl){throw 'Windows metadata runtime unavailable'}
           '@
+          $encoded = [Convert]::ToBase64String([Text.Encoding]::Unicode.GetBytes($script))
+          $executable = Join-Path $env:SystemRoot 'System32\WindowsPowerShell\v1.0\powershell.exe'
+          & $executable -NoLogo -NoProfile -NonInteractive -EncodedCommand $encoded
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Initialize Windows ACL writes in new owned empty objects
+        timeout-minutes: 2
+        shell: pwsh
+        run: |
+          $script = [IO.File]::ReadAllText((Join-Path $env:GITHUB_WORKSPACE '.github\scripts\initialize-windows-acl.ps1'))
           $encoded = [Convert]::ToBase64String([Text.Encoding]::Unicode.GetBytes($script))
           $executable = Join-Path $env:SystemRoot 'System32\WindowsPowerShell\v1.0\powershell.exe'
           & $executable -NoLogo -NoProfile -NonInteractive -EncodedCommand $encoded

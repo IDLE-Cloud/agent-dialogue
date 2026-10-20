@@ -13,6 +13,7 @@ import { inspectWindowsPrivatePath, protectWindowsPrivatePath } from '../lib/pri
 import { scanStateFiles, writeBackupBlobs, verifyBackupBlobs, readBackupBlob, validateBackupLedger } from '../lib/migration-files.mjs';
 import * as migrationFiles from '../lib/migration-files.mjs';
 import { powershellCommand, powershellQuote } from '../lib/platform.mjs';
+import { windowsAclDiagnosticRunner } from './helpers/windows-acl-diagnostic.mjs';
 
 const budget = { timeout: process.platform === 'win32' ? 300000 : 30000 };
 const hash = data => createHash('sha256').update(data).digest('hex');
@@ -20,7 +21,7 @@ let reportedInitialDialogueOwner = false;
 async function fixture(t) {
   const root = await mkdtemp(join(tmpdir(), 'ad-migration-files-'));
   t.after(() => rm(root, { recursive: true, force: true }));
-  if (process.platform === 'win32') await protectWindowsPrivatePath(root, { directory: true });
+  if (process.platform === 'win32') await protectWindowsPrivatePath(root, { directory: true, runner: windowsAclDiagnosticRunner(t, 'migration-files-fixture-root-protect') });
   const stateDir = join(root, 'state'); await mkdir(stateDir, { mode: 0o700 });
   if (process.platform === 'win32') await protectWindowsPrivatePath(stateDir, { directory: true });
   const dialogue = join(stateDir, 'dialogue'); await mkdir(dialogue, { mode: 0o700 });
