@@ -109,3 +109,9 @@ ST-05第一批实现 `0f18966924f67b90a6df1d2d5a1019a857189644` 也已通过[七
 V2/Codex 的正常成功提交仍可用，未知提交的强证据恢复暂不支持；ZCode 仍是工具收件。worker 锁、未知 scheduled launch、完整 ST-06 迁移/回退、连续真实项目试用和 RC 尚未完成，ST-05 整体保持进行中。此增量的实际源码/包/平台验收随后独立追加，不能套用前文七组 CI 作为新代码通过证明；已有多机服务未因本批自动升级，稳定 Release 仍为 v0.2.0。
 
 本增量随后完成[九组平台CI](https://github.com/IDLE-Cloud/agent-dialogue/actions/runs/39428225797)，准确候选4108b08e41ba4ea77ed4e1f57f3605b9c62073aa（仅测试/CI修正），61运行文件与实现c44bc9d完全相同。四Unix各824/823pass/1Windows-only skip；五Windows分别native342/337pass/5skip、state47/46pass/1skip、forwarding33/33、native-recovery42/42、lock-recovery50/45pass/5skip，均0fail/0cancel，embedded setup/doctor成功。真实旧v3五writer fence143/143、独立264项和默认安装launcher103/103亦过，两ownedworker正常stop并确死；完整[最终报告](https://github.com/IDLE-Cloud/agent-dialogue/blob/codex/multinode-adapters/verification/native-recovery-20261020-v3/README.md)区分POSIX跳过、fake与OS实证、原失败及包快照。本批NR范围完成，ST05整体与上述后续边界保持，未部署已有远端/真实模型或发行新stable。
+
+## 2026-10-20 同机固定安装迁移增量
+
+ST-06首片提供固定旧/新安装与Node核验、完整state私有blob备份、副本SQLite校验、显式schema2/3/4→4、维护窗口内唯一store原字节回退。操作入口为[MIGRATION-OPERATIONS.md](MIGRATION-OPERATIONS.md)，设计与MG子项在[MIGRATION-DESIGN.md](MIGRATION-DESIGN.md)。必须先用旧安装正常暂停/停止准确worker并保持所有写入者offline；apply后只读核验，先accept永久关闭rollback，再显式恢复新安装。未知pending初始关闭回退资格；任何新增消息/receipt/文件/安装漂移拒绝覆盖。
+
+当前实现的本机/独审、真实安装和平台结果独立记录，不借用上述NR九CI作为迁移通过证明。跨机state搬迁、backend转换、自动重写运行服务、已有新作用后的自动回退仍不支持；既有Windows/VPS/RSI没有因开发自动迁移。稳定Release仍v0.2.0，ST05整体及ST08连续真实项目试用/RC未完成。

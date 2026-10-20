@@ -210,3 +210,5 @@ ZCode 桌面工具收件开发入口见 [ZCODE.md](docs/ZCODE.md)：使用官方
 ## v0.3 稳定化与正式交付规划
 
 按[稳定化计划](docs/V0.3-STABILIZATION-PLAN.md)收口：统一预检与接入、保留绑定的暂停/恢复、分层对账、升级与回退、一次真实项目连续试用及固定发行包。该计划基于00295d7；ST-01 当前入口、ST-02 [操作设计](docs/STABILIZATION-DESIGN.md)和 ST-03 [统一预检](docs/INSPECT.md)已交付。ST-04 本轮源码已实现[生命周期命令与显式离线 v2 启用](docs/LIFECYCLE.md)，实际验收以本次运行及平台 CI 记录为准。分层恢复、通用升级回退、跨机 ZCode 项目试用和新稳定 Release 仍待后续实施/验收。当前已实现能力统一见[状态总览](docs/STATUS.md)。既有通信实测保持有效，支持版本和边界仍见[兼容性说明](docs/COMPATIBILITY.md)。
+
+2026-10-20 开发增量：同机切换独立安装目录的`migration`维护命令与严格回退门禁见[迁移操作指南](docs/MIGRATION-OPERATIONS.md)。保持同一state/backend/cache，完整备份后升级固定兼容来源；先accept再恢复写入，已有pending或新增历史时不自动还原。该能力不代表现有多机部署已升级，稳定版仍v0.2.0。

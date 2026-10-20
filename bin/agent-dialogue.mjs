@@ -62,6 +62,11 @@ const HELP = `agent-dialogue — cross-node, cross-harness agent communication
                                            Repair a stopped worker from full native evidence
   lock plan [--binding ALIAS] [--output PRIVATE_FILE]
   lock retire --plan PRIVATE_FILE --offline  Quarantine one proven-dead control/dispatch lock
+  migration plan --from-package PATH --from-node PATH
+  migration prepare --from-package PATH --from-node PATH --bundle PATH --offline
+  migration status|verify --bundle PATH    Read maintenance metadata / exact file evidence
+  migration apply|accept --bundle PATH --offline
+  migration rollback --bundle PATH --offline  Restore only the eligible original store bytes
   detach ALIAS                            Stop bridge; preserve the original chat
   hcom <read-command> [arguments...]       Restricted read-only upstream access
 
@@ -272,6 +277,29 @@ export async function main(args = process.argv.slice(2), sourceEnv = process.env
   const context = runtimeEnvironment(sourceEnv);
   await protectPersonalState(context.stateDir);
   await protectPersonalState(context.cacheDir);
+  if (command === 'migration') {
+    try {
+      const action = input[0];
+      if (!['plan', 'prepare', 'status', 'verify', 'apply', 'accept', 'rollback'].includes(action)) fail('Invalid migration action.');
+      const source = ['plan', 'prepare'].includes(action), mutating = ['prepare', 'apply', 'accept', 'rollback'].includes(action);
+      const definitions = { '--json': 'boolean', ...(source ? { '--from-package': 'value', '--from-node': 'value' } : {}), ...(action !== 'plan' ? { '--bundle': 'value' } : {}), ...(mutating ? { '--offline': 'boolean' } : {}) };
+      const { options, rest } = parseOptions(input.slice(1), definitions); noRest(rest);
+      const selectedPath = key => {
+        const value = options[key];
+        if (typeof value !== 'string' || !value.trim() || /[\x00-\x1f\x7f]/.test(value)) fail('An exact migration path is required.');
+        return resolve(value);
+      };
+      if (mutating && !options['--offline']) fail('Migration requires offline writers.');
+      const selected = { ...(source ? { fromPackage: selectedPath('--from-package'), fromNode: selectedPath('--from-node') } : {}), ...(action !== 'plan' ? { bundle: selectedPath('--bundle') } : {}), ...(mutating ? { offline: true } : {}) };
+      const migration = await import('../lib/migration.mjs');
+      const fn = { plan: migration.planMigration, prepare: migration.prepareMigration, status: migration.migrationStatus, verify: migration.verifyMigration, apply: migration.applyMigration, accept: migration.acceptMigration, rollback: migration.rollbackMigration }[action];
+      const result = await fn(context, selected);
+      console.log(JSON.stringify(result, null, 2)); return result.status === 'needs-review' ? 1 : 0;
+    } catch {
+      console.error('agent-dialogue migration: invalid selection or changed maintenance evidence; preserve the old/new installations, backup and current state. Mutations require explicit --offline; see the migration guide.');
+      return 2;
+    }
+  }
   if (command === 'agent-guide') {
     const { options, rest } = parseOptions(input, { '--room': 'value', '--from': 'value', '--to': 'value' }); noRest(rest);
     console.log(await (await import('../lib/agent-guide.mjs')).generateAgentContext(context, {

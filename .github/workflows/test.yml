@@ -173,3 +173,86 @@ jobs:
           tests/native-recovery-schema.test.mjs
           tests/lock-recovery.test.mjs
           tests/lock-recovery-cli.test.mjs
+  windows-migration-files:
+    runs-on: windows-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 24
+      - name: Initialize Windows metadata runtime
+        shell: pwsh
+        run: |
+          $script = @'
+          $ErrorActionPreference='Stop'
+          $sid=[Security.Principal.WindowsIdentity]::GetCurrent().User.Value
+          $acl=[IO.Directory]::GetAccessControl($env:RUNNER_TEMP)
+          if(-not $sid -or -not $acl){throw 'Windows metadata runtime unavailable'}
+          '@
+          $encoded = [Convert]::ToBase64String([Text.Encoding]::Unicode.GetBytes($script))
+          $executable = Join-Path $env:SystemRoot 'System32\WindowsPowerShell\v1.0\powershell.exe'
+          & $executable -NoLogo -NoProfile -NonInteractive -EncodedCommand $encoded
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Private Windows backup, installation and publication
+        shell: pwsh
+        run: >-
+          node --test --test-concurrency=1
+          tests/migration-files.test.mjs
+          tests/migration-installation.test.mjs
+          tests/migration-transform.test.mjs
+          tests/migration-cli.test.mjs
+          tests/migration-publication.test.mjs
+          tests/migration-core-review.test.mjs
+  windows-migration-transaction:
+    runs-on: windows-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 24
+      - name: Initialize Windows metadata runtime
+        shell: pwsh
+        run: |
+          $script = @'
+          $ErrorActionPreference='Stop'
+          $sid=[Security.Principal.WindowsIdentity]::GetCurrent().User.Value
+          $acl=[IO.Directory]::GetAccessControl($env:RUNNER_TEMP)
+          if(-not $sid -or -not $acl){throw 'Windows metadata runtime unavailable'}
+          '@
+          $encoded = [Convert]::ToBase64String([Text.Encoding]::Unicode.GetBytes($script))
+          $executable = Join-Path $env:SystemRoot 'System32\WindowsPowerShell\v1.0\powershell.exe'
+          & $executable -NoLogo -NoProfile -NonInteractive -EncodedCommand $encoded
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Offline migration checkpoints and rollback adversaries
+        shell: pwsh
+        run: >-
+          node --test --test-concurrency=1
+          tests/migration-adversarial.test.mjs
+  windows-migration-handoff:
+    runs-on: windows-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 24
+      - name: Initialize Windows metadata runtime
+        shell: pwsh
+        run: |
+          $script = @'
+          $ErrorActionPreference='Stop'
+          $sid=[Security.Principal.WindowsIdentity]::GetCurrent().User.Value
+          $acl=[IO.Directory]::GetAccessControl($env:RUNNER_TEMP)
+          if(-not $sid -or -not $acl){throw 'Windows metadata runtime unavailable'}
+          '@
+          $encoded = [Convert]::ToBase64String([Text.Encoding]::Unicode.GetBytes($script))
+          $executable = Join-Path $env:SystemRoot 'System32\WindowsPowerShell\v1.0\powershell.exe'
+          & $executable -NoLogo -NoProfile -NonInteractive -EncodedCommand $encoded
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Fixed installation handoff and preimage retention
+        shell: pwsh
+        run: >-
+          node --test --test-concurrency=1
+          tests/migration-handoff-review.test.mjs

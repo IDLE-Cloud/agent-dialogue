@@ -2,6 +2,8 @@
 
 ## 0.3.0 (development)
 
+- Add fixed same-host installation handoff with full private data-only state backups, exact package/Node/backend/cache evidence, private-copy SQLite validation and explicit schema 2/3/4 to 4 transformation. Offline preimages, both publication artifacts and R/C owners are rechecked; interrupted transactions retain evidence. Rollback restores only the original store bytes before acceptance and only when the entire maintenance image is unchanged and had no unfinished work. See [migration operations](docs/MIGRATION-OPERATIONS.md); no cross-machine private-key copy, backend conversion or automatic process/service reconfiguration.
+
 - Add explicit offline schema v4 with durable original native prompt/event/frame/binding/route provenance, per-attempt submit phases and strict old-writer rejection. Full persisted user-input proof is currently available for Kimi Code and OpenCode V1; unknown outcomes never cause a second POST. Existing successful V2/Codex submissions remain usable, while their strong recovery is unsupported.
 - Add metadata-only `bridge native-evidence`, explicit native proof and paused, exact stopped-owner `bridge native-reconcile`. Preserve cursors and unrelated runtime fields with pre/postimage checkpoints; require explicit Kimi session-load permission before discovery. See [native recovery operations](docs/NATIVE-RECOVERY.md).
 - Add read-only C/D `lock plan` and explicit offline `lock retire`, with private bounded plan files, confirmed-dead owner checks, preserved same-volume quarantine and deterministic retry. Worker locks and uncertain scheduled launches remain needs-review; no age-based deletion, automatic resume or process restart.

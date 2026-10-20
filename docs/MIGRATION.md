@@ -73,3 +73,7 @@ agent-dialogue inspect --json
 pause 仍允许远端入账和本地 queue；stop 仍允许 enabled binding 的直接入口。因此二者都不单独证明可离线备份。该命令也不负责生成备份、固定发行包、更新 peer/MCP 路径或迁移 harness 原生聊天。ST-06 的完整备份清单、版本兼容矩阵、升级/允许回退验收仍待完成。
 
 旧程序看不懂 v2 时，仅允许经验证兼容的新 state，或旧二进制配原升级前完整备份。升级后的新增消息应另保留，不得以旧备份静默覆盖；不要把 version 手改回 1，也不要自动重放差异来“补齐”。
+
+## 2026-10-20 固定安装切换工具增量
+
+前文通用迁移待实现描述保留历史语境。最新开发源码的ST-06首片现在提供`migration plan/prepare/apply/verify/accept/rollback`，准确范围与操作见[MIGRATION-OPERATIONS.md](MIGRATION-OPERATIONS.md)，实现合同见[MIGRATION-DESIGN.md](MIGRATION-DESIGN.md)。它要求同机同用户、同一state/backend/cache与持续offline，只升级固定兼容来源到schema4；accept后或任何新增状态/外部作用时拒绝自动回退。它不是任意目录复制或完整多机迁移，已有稳定v0.2.0不含这些命令；平台验证以本批独立报告为准。
