@@ -72,6 +72,7 @@ jobs:
           node --test --test-concurrency=1
           tests/atomic-rename.test.mjs
           tests/bridge-store.test.mjs
+          tests/detach-race.test.mjs
           tests/embedded-ledger.test.mjs
           tests/inspect.test.mjs
           tests/inspect-cli.test.mjs

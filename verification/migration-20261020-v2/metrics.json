@@ -172,6 +172,16 @@
       "skip": 1,
       "rawSha256": "c3b7d8bf462dac42495a29ef4014450b837e8bda2ee5e0a0d0480500f8fc1b26",
       "failure": "First CLI test returned private ACL inspection failure at8347.9ms. Generic failure does not prove exact timeout/cold-start cause. A subsequent test-only CI change initializes metadata with read-only Windows SID/ACL calls; production8s remains unchanged."
+    },
+    {
+      "job": "windows-native",
+      "tests": 342,
+      "pass": 336,
+      "fail": 0,
+      "cancel": 1,
+      "skip": 5,
+      "rawSha256": "ebf6b255029d021e09897371661436af53a298efab366d4886953f75884b87a9",
+      "failure": "Same blocked-native-query whole-test cancellation at20006.7482ms; setup/doctor skipped. Test-only next candidate uses120s Windows whole-test budget plus stage diagnostics and drains owned operations before fixture removal; internal5s race unchanged."
     }
   ],
   "nextCiTestTopology": {
@@ -191,6 +201,42 @@
     "fixtureBudgetWindowsMs": 900000,
     "jobBudgetMinutes": 35,
     "productionAclBudgetMs": 8000,
-    "note": "Test-only grouping plans for next candidate, not Windows pass evidence. Receiver-causality race stays5s; only whole-test setup/cleanup budgets change."
+    "note": "Test-only grouping plans for next candidate, not Windows pass evidence. Receiver-causality race stays5s; only whole-test setup/cleanup budgets change.",
+    "fixtureBudgetScope": "The900s whole-test budget applies only to transaction/adversarial and handoff fixtures; migration-files stays300s, strict-lock-owner120s."
+  },
+  "clarifications": {
+    "statusAtSnapshotMeaning": "in_progress summarizes active jobs, not a verbatim GitHub overall-run status. Nearby raw snapshot003 records overall queued while3jobs completed,8active,1queued.",
+    "jobBudgetScope": "35minutes applies only to Windows jobs; Unix matrix jobs stay10minutes.",
+    "subsequentNative": "The ecbe native job later also cancelled the same20s whole-test case; it is not counted as passing."
+  },
+  "laterCiFinal": {
+    "runId": 39442467557,
+    "headSha": "ecbe7207d5b392f755e09cb30a41347dd276178e",
+    "jobs": 12,
+    "success": 7,
+    "failure": 3,
+    "cancelled": 2,
+    "allJobsTerminal": true,
+    "transactionPartial": {
+      "plannedTests": 15,
+      "reportedTests": 12,
+      "pass": 8,
+      "fail": 0,
+      "cancel": 4,
+      "skip": 0,
+      "rawSha256": "3336acfbe015a0b75090e7368127e4db1e8a0a18b1c5c8d627aceee22805ac87",
+      "threeNamedTestsHit300s": true,
+      "additionalFileLevelPendingCancellation": true
+    },
+    "handoffPartial": {
+      "plannedTests": 16,
+      "reportedTests": 14,
+      "pass": 13,
+      "fail": 0,
+      "cancel": 1,
+      "skip": 0,
+      "rawSha256": "b6f7ba8504631eca25b6bf361219c4699c5b2c2f2498665e5918add7b8f4c4d3"
+    },
+    "jobTerminationEvidence": "Both check-run annotations explicitly report exceeding35m0s. No observer cancelled them. Partial totals do not establish all15/16contracts ran."
   }
 }

@@ -4,11 +4,11 @@
 
 | 子项 | 目的和产物 | 状态 |
 |---|---|---|
-| MG-01 | 固定范围、版本矩阵、维护窗口与回退门禁 | 进行中 |
-| MG-02 | 安全完整state manifest、私有blob备份、副本SQLite校验 | 待开始 |
-| MG-03 | 旧新安装/Node/backend/cache身份与准确停止证据 | 待开始 |
-| MG-04 | prepare/apply/verify/accept/rollback、CLI和安装说明 | 待开始 |
-| MG-05 | 先红/独立审查、真实prefix/worker、平台CI与记录 | 待开始 |
+| MG-01 | 固定范围、版本矩阵、维护窗口与回退门禁 | 已完成（首片设计） |
+| MG-02 | 安全完整state manifest、私有blob备份、副本SQLite校验 | 进行中（实现、本机与独审完成；待最终平台） |
+| MG-03 | 旧新安装/Node/backend/cache身份与准确停止证据 | 进行中（实现、真实prefix与独审完成；待最终平台） |
+| MG-04 | prepare/apply/verify/accept/rollback、CLI和安装说明 | 进行中（CLI/指南完成；待停止竞态修正后的真实安装复验） |
+| MG-05 | 先红/独立审查、真实prefix/worker、平台CI与记录 | 进行中（独立审查与分片修正完成；待新源复验和最终平台） |
 
 ## 范围与边界
 

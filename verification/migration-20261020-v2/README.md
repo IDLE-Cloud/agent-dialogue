@@ -19,3 +19,9 @@
 本轮随后Windows files62/55pass/1fail/6skip，4个strict C/D身份合同全部通过；唯一WAL项失败为fixture在db.close hook之前rm源DB造成EBUSY，后续改用body的finally先关闭。Windows新目录owner实证为trusted Administrators组、不是当前SID，公开不展示机器SID。state组47/45pass/1fail/1skip，首CLI在8347.9ms返回统一ACL inspection failed；没有更细错误，不能确证timeout或冷启动原因。后续CI在该job先做独立只读SID/ACL元数据初始化，生产8秒操作保持fail-closed；原失败/raw不覆盖。
 
 下一test-only CI按实际Windows私有文件核验成本拆为15个job：transaction按5/6/4合同三片，handoff按8/8两片，每job35分钟；新维护测试的Windows单test fixture预算900秒，正确性断言与生产8秒单操作不改。Node24真实跑五个name-pattern选中31项、31个不同合同，每项恰一次，非漏跑或将过滤项冒称平台跳过；实际Windows结果另记。
+
+预算范围补充：上述900秒仅适用于transaction/adversarial与handoff两类整体fixture；migration-files仍300秒、strict-lock-owner仍120秒，不是所有维护测试统一增加期限。
+
+术语补充：35分钟是Windows job预算，Unix matrix仍10分钟。“CI执行中”及metrics的statusAtSnapshot用于概括active jobs，不是GitHub overall-run状态逐字引用；邻近原snapshot003在3completed/8active/1queued时，API整体仍queued。ecbe的native组随后也以342/336pass/0fail/1cancel/5skip结束，同一20秒整体期限取消（20006.7482ms），setup/doctor跳过；这份候选没有native通过结论，第三轮结果另记。
+
+第二轮最终12job全终态：7success/3failure/2cancelled。transaction只报告12项/8pass/4cancel（不是完整15），其中三项先触及300秒test期限，另有file-level pending取消；handoff只报告14项/13pass/1cancel（不是完整16）。两job的check-run annotation均直接说明超出35m0s，由CI上限终止，观察者没有cancel。原不完整汇总和raw保留，第三轮分片及900秒整体fixture预算的实际平台结果独立记录。
