@@ -35,3 +35,5 @@ readiness五项中四项通过；原pending/nativePending/outgoingPending三字�
 操作见[迁移指南](../../docs/MIGRATION-OPERATIONS.md)。选定范围为同机同用户/同state/backend/cache/固定新prefix与同卷私有bundle，必须持续offline；R/C不是所有旧writer的fence。rollback只在激活前准确完整后像匹配时恢复唯一原store，已有unknown/pending或accept永久关闭资格。ST06首片仍待完整平台验收，ST06整体、ST05剩余退休/强unknown恢复、连续真实项目试用与RC未完成；stable仍v0.2.0，无merge/tag/Release，未迁移既有Windows/VPS/RSI/原聊天。
 
 后续观察：第四轮5d0ffb5的Ubuntu/Node26.12.0全量报告923/920pass/1fail/2skip。唯一失败为POSIX ZCode worker测试的after清理，生产detach命令返回`kill ESRCH`；package/setup/doctor因全量失败未执行。原始日志SHA256为b176789f9870f5529c4888e62f6619aacd4d04f41d341e11bc9ab2ee205856b5。该次失败与第三轮两个未完成场景分开记账；其他job继续收集，不用旧结果冒充本轮通过。正在核查owned-live检查后进程退出的停止竞态，若修改运行代码必须重新生成runtime摘要、保留包和真实安装证据。
+
+后续终态另记：第四5d共19组16success/3failure；第五a2ee共19组17success/2failure，额外Windows首次权限执行及并发确认失败均保留原未知原因。第六准确f2ed实现最终19/19success、新实际包135通过，见[最终v4](../migration-20261020-v4/README.md)。该成功不倒写本快照或证明旧ACL错误根因；各轮source、包、raw摘要和平台边界继续独立。

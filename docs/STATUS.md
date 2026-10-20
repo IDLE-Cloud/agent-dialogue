@@ -115,3 +115,7 @@ V2/Codex 的正常成功提交仍可用，未知提交的强证据恢复暂不�
 ST-06首片提供固定旧/新安装与Node核验、完整state私有blob备份、副本SQLite校验、显式schema2/3/4→4、维护窗口内唯一store原字节回退。操作入口为[MIGRATION-OPERATIONS.md](MIGRATION-OPERATIONS.md)，设计与MG子项在[MIGRATION-DESIGN.md](MIGRATION-DESIGN.md)。必须先用旧安装正常暂停/停止准确worker并保持所有写入者offline；apply后只读核验，先accept永久关闭rollback，再显式恢复新安装。未知pending初始关闭回退资格；任何新增消息/receipt/文件/安装漂移拒绝覆盖。
 
 当前实现的本机/独审、真实安装和平台结果独立记录，不借用上述NR九CI作为迁移通过证明。跨机state搬迁、backend转换、自动重写运行服务、已有新作用后的自动回退仍不支持；既有Windows/VPS/RSI没有因开发自动迁移。稳定Release仍v0.2.0，ST05整体及ST08连续真实项目试用/RC未完成。
+
+本首片随后通过[十九组平台CI](https://github.com/IDLE-Cloud/agent-dialogue/actions/runs/39459128207)与最终双独审：准确实现f2edb4a的64运行摘要为5e8450edfc3bde20bcc8f6b017a8489c13356c85f60660475ff10c9314cd522d，四Unix和本机双Node各933/930pass/3平台skip。Windows native350/341pass9skip、lock52/47pass5skip、files62/56pass6skip，state47/46pass1skip、forwarding33/33、native-recovery42/42及33个迁移场景均通过，零fail/cancel；安装/doctor与Windows embedded检查成功。新实际包135/135、旧2新2worker正常stop并二次确死，完整93文件内容/mode与Git及安装前后精确相同。完整[验收报告](../verification/migration-20261020-v4/README.md)保留前五轮失败和取消；旧Windows权限失败原因仍未知，新诊断与CI初始化不被当作已证明修复。
+
+MG-01～05仅按本片边界完成；ST06整体仍进行中。Windows实际安装迁移与性能观察、持续真实项目试用、worker/未知scheduled token退休、V2/Codex强unknown恢复及RC继续待后续。此处不改变既有远端版本或原聊天，stable仍v0.2.0。
