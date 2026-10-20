@@ -13,3 +13,5 @@ Node24.19.0与26.10.0各917项，915pass、2Windows-only skip、0fail/cancel。�
 本轮另保留未知C计划、发布后程序漂移、journal/store双端前像、首次foreign journal、Rowner、rollback中断verify与0644候选重试的先红修正。缺模块API红与fixture漏lifecycleProtocol分开，不算同类生产失败。完整raw日志仅存私有证据，公开材料不含node私钥、正文、session/token或私有连接。
 
 操作见[迁移指南](../../docs/MIGRATION-OPERATIONS.md)和[设计](../../docs/MIGRATION-DESIGN.md)。同机同用户同state/backend/cache、持续offline和准确旧进程退出不可省；既有pending/unknown、新增历史/作用或accept后不得自动回退。Windows合同与Mac installed worker分别记账，不外推为已有Windows/VPS/RSI部署已迁移。当前ST06首片尚待最终候选及平台收口，stable仍v0.2.0，未merge/tag/Release。
+
+术语补充：本快照中的“Ubuntu22/24”指 ubuntu-latest 上的 Node22/24 测试矩阵，不是 Ubuntu 发行版号；原始计数与失败快照保持。

@@ -122,6 +122,19 @@ jobs:
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: 24
+      - name: Initialize Windows metadata runtime
+        shell: pwsh
+        run: |
+          $script = @'
+          $ErrorActionPreference='Stop'
+          $sid=[Security.Principal.WindowsIdentity]::GetCurrent().User.Value
+          $acl=[IO.Directory]::GetAccessControl($env:RUNNER_TEMP)
+          if(-not $sid -or -not $acl){throw 'Windows metadata runtime unavailable'}
+          '@
+          $encoded = [Convert]::ToBase64String([Text.Encoding]::Unicode.GetBytes($script))
+          $executable = Join-Path $env:SystemRoot 'System32\WindowsPowerShell\v1.0\powershell.exe'
+          & $executable -NoLogo -NoProfile -NonInteractive -EncodedCommand $encoded
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       - name: Native Windows recovery state and fixed submissions
         shell: pwsh
         run: >-
@@ -229,6 +242,17 @@ jobs:
           tests/migration-core-review.test.mjs
           tests/migration-lock-owner-review.test.mjs
   windows-migration-transaction:
+    name: windows-migration-transaction (${{ matrix.slice }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - slice: readiness
+            pattern: '^(default migration|a plan observing|allowed rollback|historical legacy|each stopped)'
+          - slice: publication
+            pattern: '^(a newly stored|drift after|journal drift|a previously confirmed|changes after|an installation changed)'
+          - slice: recovery
+            pattern: '^(a different source|lost responses|accept permanently|modified external)'
     runs-on: windows-latest
     timeout-minutes: 35
     steps:
@@ -253,8 +277,18 @@ jobs:
         shell: pwsh
         run: >-
           node --test --test-concurrency=1
+          --test-name-pattern '${{ matrix.pattern }}'
           tests/migration-adversarial.test.mjs
   windows-migration-handoff:
+    name: windows-migration-handoff (${{ matrix.slice }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - slice: preimages
+            pattern: '^(raw journal|source store|prepare does|a control lock|losing the exact|handoff refuses)'
+          - slice: checkpoints
+            pattern: '^(schema-only|a new worker|schema 2|schema 4|read-only verify)'
     runs-on: windows-latest
     timeout-minutes: 35
     steps:
@@ -279,4 +313,5 @@ jobs:
         shell: pwsh
         run: >-
           node --test --test-concurrency=1
+          --test-name-pattern '${{ matrix.pattern }}'
           tests/migration-handoff-review.test.mjs

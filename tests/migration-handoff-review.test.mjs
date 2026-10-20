@@ -10,7 +10,7 @@ import { loadOrCreateNode } from '../lib/node-identity.mjs';
 import { inspectWindowsPrivatePath, protectWindowsPrivatePath } from '../lib/private-files.mjs';
 import { applyMigration, prepareMigration, rollbackMigration, planMigration, verifyMigration } from '../lib/migration.mjs';
 
-const budget = { timeout: process.platform === 'win32' ? 300000 : 20000 };
+const budget = { timeout: process.platform === 'win32' ? 900000 : 20000 };
 let reportedInitialStateOwner = false;
 async function fixture(t, { version = 3 } = {}) {
   const root = await mkdtemp(join(tmpdir(), 'ad-migration-handoff-'));

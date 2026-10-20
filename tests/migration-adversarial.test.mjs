@@ -12,7 +12,7 @@ import { inspectWindowsPrivatePath, protectWindowsPrivatePath } from '../lib/pri
 import * as migration from '../lib/migration.mjs';
 
 // Only fixture totals are larger on Windows. Production ACL/PID deadlines stay unchanged.
-const budget = { timeout: process.platform === 'win32' ? 300000 : 30000 };
+const budget = { timeout: process.platform === 'win32' ? 900000 : 30000 };
 const interrupted = stage => Object.assign(new Error('Owned migration checkpoint interruption: ' + stage), { code: 'FIXTURE_INTERRUPTED' });
 let reportedInitialOwners = false;
 

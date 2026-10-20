@@ -120,5 +120,8 @@
     "Initial pending/unknown closes rollback; acceptance permanently closes it before any activation.",
     "Same machine/user/state/backend/cache and same-volume bundle only; no backend conversion, cross-host private-key copy or whole-state restore.",
     "Production runtime is undergoing a justified new strict-lock owner fix; this snapshot is not final acceptance."
-  ]
+  ],
+  "clarifications": {
+    "ubuntuMatrixLabels": "Ubuntu22/24 denotes ubuntu-latest jobs using Node22/24, not Ubuntu release versions."
+  }
 }

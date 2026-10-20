@@ -1,0 +1,196 @@
+{
+  "schemaVersion": 1,
+  "timestamp": "2026-10-20T14:52:40.765214+00:00",
+  "phase": "corrected-local-installed-pass-platform-pending",
+  "candidateCommit": "ecbe7207d5b392f755e09cb30a41347dd276178e",
+  "runtimeFiles": 64,
+  "runtimeSha256": "f8932727b87c6e5554624fb4264a28d8965faa7b486de87fba325afacbec738d",
+  "local": {
+    "node24": {
+      "version": "24.19.0",
+      "tests": 921,
+      "pass": 919,
+      "skip": 2,
+      "fail": 0,
+      "cancel": 0
+    },
+    "node26": {
+      "version": "26.10.0",
+      "tests": 921,
+      "pass": 919,
+      "skip": 2,
+      "fail": 0,
+      "cancel": 0
+    },
+    "newTests": 97
+  },
+  "installedHandoff": {
+    "assertions": 135,
+    "oldWorkers": 2,
+    "newWorkers": 2,
+    "normalStopsConfirmedDead": 4,
+    "schema3To4ThenExactRawRollback": true,
+    "acceptBeforeActivation": true,
+    "qEvents": 1,
+    "formalEvents": 1,
+    "nativeIntentsAdmitted": 1,
+    "fakeNativePosts": 1,
+    "persistedFakeInputs": 1,
+    "duplicatePosts": 0,
+    "allPackageBytesAndModesUnchanged": true,
+    "entryModeSamples": 62,
+    "packageWatchEvents": 0,
+    "runtimeMatchesGit": true,
+    "platform": "macOS arm64",
+    "node": "24.19.0",
+    "allTarFilesMatchGitAndInstalled": true
+  },
+  "retainedPackage": {
+    "sha256": "fcb147988348fc5c097e05a91e76f8cce7a9fbbbf179405847bba906b74af4b8",
+    "bytes": 350009,
+    "unpackedBytes": 1139728,
+    "packedFiles": 93,
+    "modes": {
+      "644": 91,
+      "755": 2
+    }
+  },
+  "ci": {
+    "runId": 39442467557,
+    "url": "https://github.com/IDLE-Cloud/agent-dialogue/actions/runs/39442467557",
+    "headSha": "ecbe7207d5b392f755e09cb30a41347dd276178e",
+    "statusAtSnapshot": "in_progress",
+    "completedKnown": [
+      {
+        "job": "test (ubuntu-latest, 22)",
+        "node": "22.23.3",
+        "tests": 921,
+        "pass": 919,
+        "skip": 2,
+        "fail": 0,
+        "cancel": 0
+      },
+      {
+        "job": "test (ubuntu-latest, 24)",
+        "node": "24.22.0",
+        "tests": 921,
+        "pass": 919,
+        "skip": 2,
+        "fail": 0,
+        "cancel": 0
+      },
+      {
+        "job": "test (ubuntu-latest, 26)",
+        "node": "26.12.0",
+        "tests": 921,
+        "pass": 919,
+        "skip": 2,
+        "fail": 0,
+        "cancel": 0
+      }
+    ]
+  },
+  "corrections": {
+    "strictLockOwner": {
+      "independentTests": 4,
+      "pass": 4,
+      "entryRed": {
+        "tests": 3,
+        "pass": 2,
+        "fail": 1
+      },
+      "releaseRed": {
+        "tests": 4,
+        "pass": 3,
+        "fail": 1
+      },
+      "entryAndReleaseOriginalInodeRawBytesRequired": true,
+      "onlyFreshStrictWindowsOwnerFileProvisioned": true
+    },
+    "fixtureProvisioning": "Only exact newly created isolated fixture state/dialogue/node/store/DB paths, before first snapshot; production current-SID gate unchanged.",
+    "unixNode": "New run records setup-node Node22/24 artifacts mode0100777 and current UID, Node26 mode0100755. The job verifies a new current-user independent0755 copy using source double-stat and both hashes; shared cache remains unchanged. Original failed run did not record stat; these are new-run observations, not retroactive original-run evidence."
+  },
+  "evidenceSha256": {
+    "node24Full": "47d15234857a8d30525b10d63513ef520d9df0bd9644f1e7f044a0ff168782d7",
+    "node26Full": "d6f2360a5c93abd8f0905ade084d86f2e088f69fe2ad740a40c00fdde2882b15",
+    "node24Package": "a11b17fcc2b4ff3cc5aa6c8c8d03e98d9aa9661f6663799adc70932a99666c09",
+    "strictLockOwnerFocused": "d1d108a0f1b090acf373b0bf9c41ad34f24a6859b817afe7291e06804280a3b6",
+    "installedResult": "2985e78c386a779b6821787dd76f8665a334d3ad4aade0ae0ca5c376bad90324",
+    "installedSummary": "533d29147ca5bb2443fa8f7e808bd161df52a3715089a55e12866aab051d1ea4"
+  },
+  "effects": {
+    "realHarnessCalls": 0,
+    "modelTurns": 0,
+    "sshCalls": 0,
+    "downloads": 0,
+    "realUserStateTouched": false
+  },
+  "limits": [
+    "Installed migration/default launcher uses real owned macOS workers plus an owned synthetic OpenCode V2 loopback service, not real harness/model or Windows launcher proof.",
+    "Fixture synthetic installation/PID tests are distinct from the installed worker result.",
+    "No full-writer fence; continuous offline attestation remains mandatory.",
+    "Initial pending/unknown closes rollback; acceptance permanently closes it before any activation.",
+    "Same machine/user/state/backend/cache and same-volume bundle only; no backend conversion, cross-host private-key copy or whole-state restore.",
+    "This corrected candidate still awaits all actual platform job conclusions; no Windows launcher or existing deployment migration is established."
+  ],
+  "previousCiFinal": {
+    "runId": 39439900151,
+    "headSha": "a2653bdb414598953326c69470b63fea54a5f89d",
+    "jobs": 12,
+    "success": 6,
+    "failure": 6,
+    "allCompleted": true,
+    "nativeJob": {
+      "tests": 342,
+      "pass": 336,
+      "fail": 0,
+      "cancel": 1,
+      "skip": 5,
+      "cancelledTest": "a blocked native source query leaves the receiver control path available",
+      "timeoutMs": 20000
+    },
+    "followUp": "Subsequent test-only candidate raises only Windows whole-test fixture budget to120s and records stages; the internal5s receiver race and production8s ACL deadlines remain unchanged."
+  },
+  "subsequentWindowsObservations": [
+    {
+      "job": "windows-migration-files",
+      "tests": 62,
+      "pass": 55,
+      "fail": 1,
+      "cancel": 0,
+      "skip": 6,
+      "rawSha256": "590746345d518a33977052dd9da296fdb1f7142855ab655033ec4453270b9839",
+      "failure": "WAL test teardown tried removing a source database before its t.after close hook; EBUSY unlink. Subsequent test-only change closes that owned DB in finally before fixture cleanup.",
+      "currentSidAndStrictLockEvidence": "Fresh fixture directory owner observed as trusted Administrators group, differs from current SID; after explicit fixture provisioning all four strict lock owner contracts passed. No actual machine SID is published."
+    },
+    {
+      "job": "windows-recovery-state",
+      "tests": 47,
+      "pass": 45,
+      "fail": 1,
+      "cancel": 0,
+      "skip": 1,
+      "rawSha256": "c3b7d8bf462dac42495a29ef4014450b837e8bda2ee5e0a0d0480500f8fc1b26",
+      "failure": "First CLI test returned private ACL inspection failure at8347.9ms. Generic failure does not prove exact timeout/cold-start cause. A subsequent test-only CI change initializes metadata with read-only Windows SID/ACL calls; production8s remains unchanged."
+    }
+  ],
+  "nextCiTestTopology": {
+    "jobs": 15,
+    "transactionSlices": [
+      5,
+      6,
+      4
+    ],
+    "handoffSlices": [
+      8,
+      8
+    ],
+    "localPatternSelected": 31,
+    "localPatternDistinct": 31,
+    "eachContractSelectedExactlyOnce": true,
+    "fixtureBudgetWindowsMs": 900000,
+    "jobBudgetMinutes": 35,
+    "productionAclBudgetMs": 8000,
+    "note": "Test-only grouping plans for next candidate, not Windows pass evidence. Receiver-causality race stays5s; only whole-test setup/cleanup budgets change."
+  }
+}

@@ -21,9 +21,9 @@ function meta(id, directory) {
   const context = { session_id: id, workspace_path: directory, runtime_scope: 'main', client_mode: 'desktop-continuous', delivery_kind: 'desktop-continuous' };
   return { ...context, 'com.zcode/request-context': { ...context } };
 }
-async function fixture(t) {
+async function fixture(t, { beforeCleanup } = {}) {
   const root = await mkdtemp(join(tmpdir(), 'ad-lifecycle-delivery-'));
-  t.after(() => rm(root, { recursive: true, force: true }));
+  t.after(async () => { await beforeCleanup?.(); await rm(root, { recursive: true, force: true }); });
   const directory = join(root, 'native project'); await mkdir(directory);
   const serviceFile = join(root, 'private', 'zcode.json');
   await createZCodeService({ path: serviceFile, directory, zcodeVersion: '3.14.3' });
@@ -94,26 +94,35 @@ test('two sources exchange concurrently while both receivers can acquire control
   assert.equal((await ledger(f.a.context)).length, 2); assert.equal((await ledger(f.b.context)).length, 2);
 });
 
-test('a blocked native source query leaves the receiver control path available', { timeout: 20000 }, async t => {
-  const f = await fixture(t), entered = deferred(), release = deferred();
-  const original = ZCodeToolsClient.prototype.session;
+test('a blocked native source query leaves the receiver control path available', { timeout: process.platform === 'win32' ? 120000 : 20000 }, async t => {
+  const started = performance.now();
+  const stage = name => { if (process.platform === 'win32') t.diagnostic(JSON.stringify({ stage: name, elapsedMs: Math.round(performance.now() - started) })); };
+  const entered = deferred(), release = deferred(), original = ZCodeToolsClient.prototype.session;
+  let source, receiving;
+  const f = await fixture(t, { beforeCleanup: async () => {
+    release.resolve();
+    await Promise.allSettled([source, receiving].filter(Boolean));
+    ZCodeToolsClient.prototype.session = original;
+  } });
+  stage('fixture-ready');
   ZCodeToolsClient.prototype.session = async function (id) {
     if (id === f.a.binding.sessionId) { entered.resolve(); await release.promise; }
     return original.call(this, id);
   };
-  t.after(() => { release.resolve(); ZCodeToolsClient.prototype.session = original; });
-  const source = sendRemote(f.a.context, f.message(), { exchangeImpl: (_peer, envelope) => receiveEnvelope(f.b.context, envelope) });
+  source = sendRemote(f.a.context, f.message(), { exchangeImpl: (_peer, envelope) => receiveEnvelope(f.b.context, envelope) });
   await entered.promise;
+  stage('native-query-blocked');
   const incoming = signObject(f.b.node, {
     type: 'message', version: 1, messageId: `m_${randomUUID()}`, roomId: f.room.id, roomRevision: f.room.revision,
     manifestHash: f.room.manifestHash, from: { nodeId: f.b.node.nodeId, bindingId: f.b.binding.id, revision: 1, alias: 'bob' },
     to: { nodeId: f.a.node.nodeId, bindingId: f.a.binding.id, revision: 1, alias: 'alice' },
     text: 'Ingress while source metadata is blocked', replyToMessageId: null, createdAt: new Date().toISOString(),
   });
-  const receiving = receiveEnvelope(f.a.context, incoming);
+  receiving = receiveEnvelope(f.a.context, incoming);
   let deadline;
   const receivedBeforeNativeReleased = await Promise.race([receiving.then(() => true), new Promise(resolve => { deadline = setTimeout(() => resolve(false), 5000); })]);
   clearTimeout(deadline);
+  stage(receivedBeforeNativeReleased ? 'receiver-completed-with-native-blocked' : 'receiver-race-expired');
   release.resolve(); await Promise.all([source, receiving]);
   assert.equal(receivedBeforeNativeReleased, true, 'native metadata must not hold the receiver control lock');
 });

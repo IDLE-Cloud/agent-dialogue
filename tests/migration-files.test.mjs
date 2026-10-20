@@ -119,13 +119,14 @@ test('corrupt UTF8 and nonclosed or traversing manifests cannot be treated as co
 });
 test('backup ledger validation sees uncheckpointed WAL commits only in a private working copy and preserves source and blobs', budget, async t => {
   const f = await fixture(t), db = new DatabaseSync(join(f.stateDir, 'hcom.db'));
-  t.after(() => db.close());
-  db.exec("PRAGMA journal_mode=WAL; PRAGMA wal_autocheckpoint=0; PRAGMA application_id=1094995015; PRAGMA user_version=1; CREATE TABLE events(id INTEGER PRIMARY KEY AUTOINCREMENT,timestamp TEXT NOT NULL,type TEXT NOT NULL,data TEXT NOT NULL); CREATE TABLE ad_endpoints(name TEXT PRIMARY KEY,registered_at TEXT NOT NULL); INSERT INTO events(timestamp,type,data)VALUES('fixed','message','{}');");
-  if (process.platform === 'win32') for (const suffix of ['', '-wal', '-shm']) await protectWindowsPrivatePath(join(f.stateDir, 'hcom.db'+suffix));
-  const before = await scanStateFiles(f.context), result = await writeBackupBlobs(f.context, f.destination, { expected: before });
-  const checked = await validateBackupLedger(f.destination, { expectedManifestHash: result.manifestHash, backend: 'embedded' });
-  assert.equal(checked.status, 'verified'); assert.equal(checked.events, 1); assert.deepEqual(await scanStateFiles(f.context), before);
-  assert.deepEqual(await verifyBackupBlobs(f.destination), result);
+  try {
+    db.exec("PRAGMA journal_mode=WAL; PRAGMA wal_autocheckpoint=0; PRAGMA application_id=1094995015; PRAGMA user_version=1; CREATE TABLE events(id INTEGER PRIMARY KEY AUTOINCREMENT,timestamp TEXT NOT NULL,type TEXT NOT NULL,data TEXT NOT NULL); CREATE TABLE ad_endpoints(name TEXT PRIMARY KEY,registered_at TEXT NOT NULL); INSERT INTO events(timestamp,type,data)VALUES('fixed','message','{}');");
+    if (process.platform === 'win32') for (const suffix of ['', '-wal', '-shm']) await protectWindowsPrivatePath(join(f.stateDir, 'hcom.db'+suffix));
+    const before = await scanStateFiles(f.context), result = await writeBackupBlobs(f.context, f.destination, { expected: before });
+    const checked = await validateBackupLedger(f.destination, { expectedManifestHash: result.manifestHash, backend: 'embedded' });
+    assert.equal(checked.status, 'verified'); assert.equal(checked.events, 1); assert.deepEqual(await scanStateFiles(f.context), before);
+    assert.deepEqual(await verifyBackupBlobs(f.destination), result);
+  } finally { db.close(); }
 });
 test('foreign backend, invalid DB and nonempty rollback journal cannot pass private-copy validation', budget, async t => {
   for (const mode of ['invalid', 'journal']) {
