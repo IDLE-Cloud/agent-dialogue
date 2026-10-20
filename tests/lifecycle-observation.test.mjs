@@ -78,9 +78,9 @@ test('inspect v2 missing lifecycle row is enabled and v1 stays readable without 
   }
 });
 
-test('inspect rejects unknown v4 and mismatched lifecycle pins without copying secrets or changing state', async t => {
+test('inspect rejects unknown v5 and mismatched lifecycle pins without copying secrets or changing state', async t => {
   const f = await inspectFixture(t);
-  for (const change of [() => { f.store.version = 4; }, () => { f.store.version = 2; f.store.lifecycle[f.binding.id].bindingRevision = 2; }]) {
+  for (const change of [() => { f.store.version = 5; }, () => { f.store.version = 2; f.store.lifecycle[f.binding.id].bindingRevision = 2; }]) {
     change(); f.store.lifecycle[f.binding.id].token = 'LIFECYCLE_PRIVATE_SECRET'; await f.save();
     const before = await readFile(f.path), report = await inspect(f.context, { binding: f.binding.alias });
     assert.equal(report.exitCode, 1); assert.equal(report.overall, 'blocked');
@@ -162,8 +162,8 @@ test('local viewer reads v2 lifecycle through an allowlist and preserves exact s
   assert.equal(source.workers[0].status, 'paused'); assert.deepEqual(await disk.hashes(), before);
 });
 
-test('local viewer rejects unknown v4 instead of showing a guessed v2 pause or losing the diagnostic', async t => {
-  const f = observedFixture(); f.source.store.version = 4; const disk = await viewerFixture(t, f.source), before = await disk.hashes();
+test('local viewer rejects unknown v5 instead of showing a guessed v2 pause or losing the diagnostic', async t => {
+  const f = observedFixture(); f.source.store.version = 5; const disk = await viewerFixture(t, f.source), before = await disk.hashes();
   const source = await readSource({ id: f.source.id, label: f.source.label, path: disk.path });
   assert.ok(source.diagnostics.some(row => row.code === 'invalid-store'));
   assert.equal(Object.keys(source.store.bindings).length, 0); assert.deepEqual(await disk.hashes(), before);
@@ -193,7 +193,7 @@ test('SSH observation never asserts lifecycle for peer copies and rejects unknow
   f.source.store.lifecycle[peer.id] = lifecycle(peer);
   const accepted = acceptObservation(exportObservation(f.source, f.request), f.request);
   assert.equal(accepted.store.lifecycle[peer.id], undefined);
-  f.source.store.version = 4; assert.throws(() => exportObservation(f.source, f.request), /Invalid viewer observation/);
+  f.source.store.version = 5; assert.throws(() => exportObservation(f.source, f.request), /Invalid viewer observation/);
 });
 
 test('SSH source rejects malformed private lifecycle pins and received public fields remain closed', () => {

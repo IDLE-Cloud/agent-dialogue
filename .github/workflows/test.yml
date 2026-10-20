@@ -123,3 +123,35 @@ jobs:
           tests/recovery-nodes.test.mjs
           tests/recovery-forwarding.test.mjs
           tests/recovery-runtime.test.mjs
+  windows-native-recovery:
+    runs-on: windows-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 24
+      - name: Exact persisted native input and stopped owner recovery
+        shell: pwsh
+        run: >-
+          node --test --test-concurrency=1
+          tests/native-proof.test.mjs
+          tests/native-recovery.test.mjs
+          tests/native-recovery-adversarial.test.mjs
+          tests/native-recovery-cli.test.mjs
+          tests/native-worker-review.test.mjs
+  windows-lock-recovery:
+    runs-on: windows-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 24
+      - name: Private v4 schema and explicit offline lock quarantine
+        shell: pwsh
+        run: >-
+          node --test --test-concurrency=1
+          tests/native-recovery-schema.test.mjs
+          tests/lock-recovery.test.mjs
+          tests/lock-recovery-cli.test.mjs

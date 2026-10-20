@@ -60,3 +60,7 @@ agent-dialogue bridge reconcile alice --submission q_12345678-1234-4234-8234-123
 主store.json读写均有16MiB上限，按完整UTF-8字节计算。写入超限会在发布前失败，原store保持，不自动裁剪历史记录；若作用已发生而后续记录不能提交，则保留待核对，不能重发。默认inspect另有4MiB及每map1000条的只读预算，超预算表示本次检查不完整，不能据此认定合法大store已损坏。
 
 查看器继续观察room实际消息、回执和工具读取。inspect仅展示forwarding阶段计数及待修复诊断，raw provenance、nonce和token不会进入公开DTO。完整私有证据与阶段验证另按[稳定化计划](V0.3-STABILIZATION-PLAN.md)记录，不能将本机或fake服务合同外推为真实模型/多机实测。
+
+## 2026-10-20 后续增量
+
+上文保留 ST-05 第一批 v3 合同与当时未实现项。最新源码另有[原生输入与离线锁指南](NATIVE-RECOVERY.md)：显式 offline v4 记录实际原 prompt 摘要，Kimi/OpenCode V1 的完整持久输入才可修复准确 native pending；本页 q/MCP/outgoing 功能也支持 v4。C/D 遗留锁的只读计划与 offline quarantine 可在 v3/v4 使用。worker 锁、未知 scheduled launch 和 V2/Codex 强输入恢复仍 needs-review。恢复不发 prompt、不推进 cursor、不自动 resume，缺来源的历史请求不补猜；完整迁移/回退继续待 ST-06。

@@ -14,7 +14,7 @@ async function fixture(t) {
 }
 test('CLI v3 is explicit, rejects invalid targets before creating state, and preserves v3 on default downgrade refusal', async t => {
   const f = await fixture(t), before = await readdir(f.root);
-  for (const target of ['4', '03', '3\n']) { assert.notEqual((await f.call(['state', 'upgrade', '--offline', '--target', target])).code, 0); assert.deepEqual(await readdir(f.root), before); }
+  for (const target of ['5', '03', '3\n']) { assert.notEqual((await f.call(['state', 'upgrade', '--offline', '--target', target])).code, 0); assert.deepEqual(await readdir(f.root), before); }
   const upgraded = await f.call(['state', 'upgrade', '--offline', '--target', '3']); assert.equal(upgraded.code, 0, upgraded.stderr); assert.equal(JSON.parse(upgraded.stdout).version, 3);
   const path = join(f.stateDir, 'dialogue', 'store.json'), bytes = await readFile(path);
   assert.notEqual((await f.call(['state', 'upgrade', '--offline'])).code, 0); assert.deepEqual(await readFile(path), bytes);

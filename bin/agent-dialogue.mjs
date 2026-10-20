@@ -54,8 +54,14 @@ const HELP = `agent-dialogue — cross-node, cross-harness agent communication
   bridge start ALIAS | bridge status       Start/inspect the native-session bridge
   bridge pause ALIAS | bridge resume ALIAS Preserve exact binding and delivery progress
   bridge stop ALIAS                        Cooperatively stop an owned worker; keep binding
-  state upgrade --offline [--target 2|3]    Explicit quiescent control-store upgrade
+  state upgrade --offline [--target 2|3|4]  Explicit quiescent control-store upgrade
   bridge reconcile ALIAS --submission q_UUID  Evidence-only stopped-worker repair; no resend
+  bridge native-evidence ALIAS --event N [--native [--allow-session-load]]
+                                           Read metadata; exact native query is explicit
+  bridge native-reconcile ALIAS --event N [--allow-session-load]
+                                           Repair a stopped worker from full native evidence
+  lock plan [--binding ALIAS] [--output PRIVATE_FILE]
+  lock retire --plan PRIVATE_FILE --offline  Quarantine one proven-dead control/dispatch lock
   detach ALIAS                            Stop bridge; preserve the original chat
   hcom <read-command> [arguments...]       Restricted read-only upstream access
 
@@ -319,10 +325,40 @@ export async function main(args = process.argv.slice(2), sourceEnv = process.env
     const { options, rest } = parseOptions(input, { '--json': 'boolean' }); noRest(rest);
     return await doctor(context, !!options['--json']);
   }
+  if (command === 'lock') {
+    const { planLockRetirement, readLockRetirementPlan, retireLock } = await import('../lib/lock-recovery.mjs');
+    if (input[0] === 'plan') {
+      const { options, rest } = parseOptions(input.slice(1), { '--binding': 'value', '--output': 'value', '--json': 'boolean' }); noRest(rest);
+      for (const key of ['--binding', '--output']) if (options[key] !== undefined && !options[key].trim()) fail('Lock plan requires a nonempty binding alias or output path when selected.');
+      if (options['--output'] !== undefined && /[\x00-\x1f\x7f]/.test(options['--output'])) fail('Lock plan requires a safe private output path.');
+      const { report, plan } = await planLockRetirement(context, options['--binding'] !== undefined ? { role: 'dispatch', alias: options['--binding'] } : { role: 'control' });
+      let planSaved = false;
+      if (plan && options['--output']) {
+        const path = resolve(options['--output']), parent = dirname(path), info = await lstat(parent);
+        if (!info.isDirectory() || info.isSymbolicLink()) fail('Lock plan requires an existing private output directory.');
+        if (platform() === 'win32') await (await import('../lib/private-files.mjs')).inspectWindowsPrivatePath(parent, { directory: true });
+        else if ((info.mode & 0o077) !== 0 || process.getuid && info.uid !== process.getuid()) fail('Lock plan requires a private output directory owned by the current user.');
+        const text = JSON.stringify(plan, null, 2) + '\n';
+        if (Buffer.byteLength(text, 'utf8') > 128 * 1024) fail('Lock plan exceeds its private file limit.');
+        await writeFile(path, text, { flag: 'wx', mode: 0o600 });
+        if (platform() === 'win32') await (await import('../lib/private-files.mjs')).protectWindowsPrivatePath(path);
+        planSaved = true;
+      }
+      console.log(JSON.stringify({ ...report, planSaved }, null, 2));
+      return report.status === 'ready' ? 0 : 1;
+    }
+    if (input[0] === 'retire') {
+      const { options, rest } = parseOptions(input.slice(1), { '--plan': 'value', '--offline': 'boolean', '--json': 'boolean' }); noRest(rest);
+      if (!options['--plan'] || !options['--offline']) fail('Lock retirement requires an exact private --plan and explicit --offline.');
+      const result = await retireLock(context, await readLockRetirementPlan(resolve(options['--plan'])), { offline: true });
+      console.log(JSON.stringify(result, null, 2)); return 0;
+    }
+    fail('Use lock plan [--binding ALIAS] [--output PRIVATE_FILE] or lock retire --plan PRIVATE_FILE --offline.');
+  }
   if (command === 'state') {
-    if (input[0] !== 'upgrade') fail('Use state upgrade --offline [--target 2|3] [--json].');
+    if (input[0] !== 'upgrade') fail('Use state upgrade --offline [--target 2|3|4] [--json].');
     const { options, rest } = parseOptions(input.slice(1), { '--offline': 'boolean', '--json': 'boolean', '--target': 'value' }); noRest(rest);
-    if (options['--target'] !== undefined && !['2', '3'].includes(options['--target'])) fail('State upgrade target must be exactly 2 or 3.');
+    if (options['--target'] !== undefined && !['2', '3', '4'].includes(options['--target'])) fail('State upgrade target must be exactly 2, 3 or 4.');
     if (!options['--offline']) fail('State upgrade requires --offline after all writers have been quiesced.');
     const { upgradeStoreOffline } = await import('../lib/lifecycle.mjs');
     const { assertOfflineWorkers } = await import('../lib/bridge.mjs');
@@ -385,6 +421,22 @@ export async function main(args = process.argv.slice(2), sourceEnv = process.env
       const { options, rest } = parseOptions(input.slice(1), { '--room': 'value', '--from': 'value', '--to': 'value', '--message': 'value', '--reply-to': 'value', '--expected-session': 'value', '--queue': 'boolean' }); noRest(rest);
       const message = { room: options['--room'], from: options['--from'], to: options['--to'], text: options['--message'], replyTo: options['--reply-to'] || null, expectedSession: options['--expected-session'] };
       result = options['--queue'] ? await (await import('../lib/submissions.mjs')).queueSubmission(context, message) : await bridge.collabSend(context, message);
+    } else if (command === 'bridge' && ['native-evidence', 'native-reconcile'].includes(input[0])) {
+      if (!input[1] || input[1].startsWith('--')) fail('Native recovery requires one exact binding alias.');
+      const allowed = { '--event': 'value', '--allow-session-load': 'boolean', '--json': 'boolean', ...(input[0] === 'native-evidence' ? { '--native': 'boolean' } : {}) };
+      const { options, rest } = parseOptions(input.slice(2), allowed); noRest(rest);
+      const eventId = Number(options['--event']);
+      if (!Number.isSafeInteger(eventId) || eventId < 1 || String(eventId) !== options['--event']) fail('Native recovery requires an exact positive --event ID.');
+      if (input[0] === 'native-evidence' && options['--allow-session-load'] && !options['--native']) fail('--allow-session-load requires an explicit native evidence query.');
+      const recovery = await import('../lib/native-recovery.mjs');
+      try {
+        result = await recovery[input[0] === 'native-evidence' ? 'nativeEvidence' : 'reconcileNative'](context, input[1], eventId, {
+          ...(input[0] === 'native-evidence' ? { native: !!options['--native'] } : {}),
+          allowSessionLoad: !!options['--allow-session-load'],
+        });
+      } catch {
+        fail('Native recovery could not verify exact evidence. Preserve the original pending input; check the selected binding, paused/stopped owner, pins and private state.');
+      }
     } else if (command === 'bridge' && input[0] === 'reconcile') {
       if (!input[1] || input[1].startsWith('--')) fail('Reconciliation requires one exact binding alias.');
       const { options, rest } = parseOptions(input.slice(2), { '--submission': 'value', '--json': 'boolean' }); noRest(rest);

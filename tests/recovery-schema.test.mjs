@@ -94,7 +94,7 @@ test('a preexisting legacy provenance field is a feature conflict rather than si
 test('offline target validation and existing lock/launch/worker evidence cannot be bypassed by target 3', async t => {
   const f = await fixture(t), bytes = await readFile(f.path);
   await assert.rejects(upgradeStoreOffline(f.context, { targetVersion: 3 }), { code: 'OFFLINE_REQUIRED' });
-  for (const targetVersion of [1, 4, '3', null]) await assert.rejects(upgradeStoreOffline(f.context, { offline: true, targetVersion }), { code: 'INVALID_UPGRADE_TARGET' });
+  for (const targetVersion of [1, 5, '3', null]) await assert.rejects(upgradeStoreOffline(f.context, { offline: true, targetVersion }), { code: 'INVALID_UPGRADE_TARGET' });
   for (const suffix of ['worker.lock', 'dispatch.lock']) {
     const path = join(f.directory, `${f.binding.id}.${suffix}`); await mkdir(path);
     await assert.rejects(upgradeStoreOffline(f.context, { offline: true, targetVersion: 3 }), { code: 'STATE_NOT_QUIESCENT' });

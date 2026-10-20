@@ -128,3 +128,64 @@ test('invalid control metadata and missing persistence callback fail before HTTP
   ]) await assert.rejects(admit({ ...args, ...change }));
   assert.deepEqual(calls, []);
 });
+
+test('fresh admission orders the durable pending and beforeSubmit hook before the sole prompt', async () => {
+  const { args, calls } = fixture();
+  await admit({ ...args, beforeSubmit: async value => { assert.equal(value.inputId, inputId(binding, 42)); assert.equal(value.eventId, 42); assert.equal(value.text, args.text); calls.push(['beforeSubmit']); } });
+  assert.deepEqual(calls.map(value => value[0]), ['persist', 'beforeSubmit', 'prompt']);
+});
+
+test('a failed beforeSubmit hook preserves pending and never prompts or reconciles', async () => {
+  let posts = 0, reads = 0;
+  const { args, calls } = fixture({ prompt: async () => { posts++; }, inbox: async () => { reads++; return []; } });
+  await assert.rejects(admit({ ...args, beforeSubmit: async () => { throw new Error('PRIVATE_HOOK_BODY'); } }), error => error.uncertain === true && !error.message.includes('PRIVATE_HOOK_BODY'));
+  assert.equal(posts, 0); assert.equal(reads, 0);
+  assert.equal(calls.length, 1); assert.equal(calls[0][1].status, 'submitting');
+});
+
+test('known non-submission persists its control hook before clearing pending', async () => {
+  const rejection = Object.assign(new Error('known native preflight rejection'), { notSubmitted: true });
+  const { args, calls } = fixture({ prompt: async () => { calls.push(['prompt']); throw rejection; } });
+  await assert.rejects(admit({ ...args, onNotSubmitted: async value => { assert.equal(value.inputId, inputId(binding, 42)); calls.push(['notSubmitted']); } }), error => error === rejection);
+  assert.deepEqual(calls.map(value => value[0]), ['persist', 'prompt', 'notSubmitted', 'persist']);
+  assert.equal(calls.at(-1)[1], null);
+});
+
+test('failed known-not-submitted persistence keeps pending and withholds the original hook exception', async () => {
+  const rejection = Object.assign(new Error('known not submitted'), { notSubmitted: true });
+  const { args, calls } = fixture({ prompt: async () => { throw rejection; } });
+  await assert.rejects(admit({ ...args, onNotSubmitted: async () => { throw new Error('PRIVATE_HOOK_SECRET'); } }), error => error.uncertain === true && !error.message.includes('PRIVATE_HOOK_SECRET'));
+  assert.equal(calls.length, 1); assert.equal(calls[0][1].status, 'submitting');
+});
+
+test('pending admission uses only the explicit exact reconciler and never prompts or runs fresh hooks', async () => {
+  let reconciles = 0;
+  const id = inputId(binding, 42);
+  const { args, calls } = fixture({ prompt: async () => assert.fail('pending must not prompt'), inbox: async () => assert.fail('no legacy fallback') });
+  const result = await admit({ ...args, pending: { eventId: 42, inputId: id }, beforeSubmit: async () => assert.fail('pending must not run fresh hook'), onNotSubmitted: async () => assert.fail('pending has no prompt'), reconcileInput: async value => { reconciles++; assert.equal(value.client, args.client); assert.equal(value.binding, binding); assert.equal(value.inputId, id); assert.equal(value.text, args.text); return true; } });
+  assert.deepEqual(result, { inputId: id, reconciled: true }); assert.equal(reconciles, 1); assert.deepEqual(calls, []);
+});
+
+test('unknown prompt response uses the exact reconciler once and never a second prompt', async () => {
+  let prompts = 0, reconciles = 0;
+  const { args } = fixture({ prompt: async () => { prompts++; throw new Error('lost response'); }, inbox: async () => assert.fail('no legacy ID fallback') });
+  const result = await admit({ ...args, reconcileInput: async () => { reconciles++; return true; } });
+  assert.equal(result.reconciled, true); assert.equal(prompts, 1); assert.equal(reconciles, 1);
+});
+
+test('only strict true from an explicit reconciler authorizes a pending receipt; unavailable or truthy values do not', async () => {
+  const id = inputId(binding, 42), pending = { eventId: 42, inputId: id };
+  for (const response of [false, null, undefined, {}, { status: 'needs-review' }, { status: 'verified' }, 'true', 1]) {
+    const { args, calls } = fixture({ inbox: async () => [{ id }], prompt: async () => assert.fail('must never prompt') });
+    await assert.rejects(admit({ ...args, pending, reconcileInput: async () => response }), error => error.uncertain === true);
+    assert.deepEqual(calls, []);
+  }
+  const { args } = fixture({ inbox: async () => assert.fail('unavailable exact proof cannot fall back') });
+  await assert.rejects(admit({ ...args, pending, reconcileInput: async () => { throw new Error('PRIVATE_QUERY_BODY'); } }), error => error.uncertain === true && !error.message.includes('PRIVATE_QUERY_BODY'));
+});
+
+test('invalid optional admission hooks fail before any native or pending side effect', async () => {
+  const { args, calls } = fixture();
+  for (const name of ['beforeSubmit', 'onNotSubmitted', 'reconcileInput']) await assert.rejects(admit({ ...args, [name]: true }));
+  assert.deepEqual(calls, []);
+});

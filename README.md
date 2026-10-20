@@ -12,6 +12,8 @@ v0.3 开发版增加节点签名、双向配对、共同 room 和 SSH stdio 传�
 
 后续ST-05第一批已实现[显式v3、固定q来源、MCP同key恢复和停止worker后的receipt对账](docs/RECOVERY.md)，并通过[七组平台验收](https://github.com/IDLE-Cloud/agent-dialogue/blob/codex/multinode-adapters/verification/recovery-20261020-v2/README.md)。ST-05仍进行中；原生pending修复、残留锁处理、通用升级回退和新稳定Release继续待完成。
 
+2026-10-20 后续源码又增加[显式 v4 原生输入来源、完整输入核验、停止后 pending 修复及有限 C/D 锁离线隔离](docs/NATIVE-RECOVERY.md)。强输入证明目前支持 Kimi/OpenCode V1；V2/Codex 未知结果和 worker/未决 scheduled 锁保持 needs-review。默认读取不联系原生服务，恢复不重发、不推进 cursor、不自动 resume。前段是第一批验收快照；本增量的平台与安装证据独立记录，ST-05 整体、完整迁移回退及新 stable 状态继续按[当前总览](docs/STATUS.md)核对。
+
 ## 安装
 
 需要 Node.js 22.13 或更新的受支持版本，以及准备使用的 harness；从 Git 安装还需要 Git。模型账号和权限继续由各 harness 自己管理。本包没有 npm 运行依赖，也没有自动下载或联网的 `postinstall`；hcom 通过显式 `setup` 安装。

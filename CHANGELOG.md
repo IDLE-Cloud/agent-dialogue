@@ -2,6 +2,10 @@
 
 ## 0.3.0 (development)
 
+- Add explicit offline schema v4 with durable original native prompt/event/frame/binding/route provenance, per-attempt submit phases and strict old-writer rejection. Full persisted user-input proof is currently available for Kimi Code and OpenCode V1; unknown outcomes never cause a second POST. Existing successful V2/Codex submissions remain usable, while their strong recovery is unsupported.
+- Add metadata-only `bridge native-evidence`, explicit native proof and paused, exact stopped-owner `bridge native-reconcile`. Preserve cursors and unrelated runtime fields with pre/postimage checkpoints; require explicit Kimi session-load permission before discovery. See [native recovery operations](docs/NATIVE-RECOVERY.md).
+- Add read-only C/D `lock plan` and explicit offline `lock retire`, with private bounded plan files, confirmed-dead owner checks, preserved same-volume quarantine and deterministic retry. Worker locks and uncertain scheduled launches remain needs-review; no age-based deletion, automatic resume or process restart.
+
 - Add explicit offline schema v3 and durable queued q→formal→remote m provenance. Contextual MCP sends allocate a fixed q before append; repeated request keys preserve identity, and unknown outcomes use complete bounded evidence scans without a second append. See [recovery operations](docs/RECOVERY.md).
 - Add selected `bridge reconcile ALIAS --submission q_UUID` for a paused binding with its exact stopped, confirmed-dead worker. A deterministic two-file checkpoint repairs only the original outgoing receipt, preserves the cursor and unrelated pending state, and supports interrupted retries. General native-pending repair, stale-lock handling, upgrade/rollback and a stable v0.3 release remain pending.
 - Add packaged operator and agent guides, a portable project rules snippet, and read-only `agent-guide --room ID --from ALIAS [--to ALIAS]` contexts with owning-node checks, exact peer sessions and quoted queue commands.

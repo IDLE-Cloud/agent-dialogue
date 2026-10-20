@@ -67,6 +67,17 @@ try {
   const repeatedUpgrade = JSON.parse(await call(command, ['state', 'upgrade', '--offline', '--target', '3', '--json'], { cwd, env }));
   assert.equal(repeatedUpgrade.upgraded, false);
   assert.deepEqual(await readFile(join(state, 'dialogue', 'store.json')), recoveryStore);
+  const nativeUpgrade = JSON.parse(await call(command, ['state', 'upgrade', '--offline', '--target', '4', '--json'], { cwd, env }));
+  assert.equal(nativeUpgrade.version, 4); assert.equal(nativeUpgrade.upgraded, true);
+  const nativeStore = await readFile(join(state, 'dialogue', 'store.json'));
+  assert.deepEqual(JSON.parse(nativeStore).nativeIntents, {});
+  assert.deepEqual(await readFile(join(state, 'dialogue', 'node.json')), identityBefore);
+  const nativeInspection = JSON.parse(await call(command, ['inspect', '--json'], { cwd, env }));
+  assert.equal(nativeInspection.node.nodeId, node.nodeId);
+  const repeatedNative = JSON.parse(await call(command, ['state', 'upgrade', '--offline', '--target', '4', '--json'], { cwd, env }));
+  assert.equal(repeatedNative.upgraded, false);
+  assert.deepEqual(await readFile(join(state, 'dialogue', 'store.json')), nativeStore);
+  for (const path of ['lib/native-record.mjs', 'lib/native-proof.mjs', 'lib/native-recovery.mjs', 'lib/lock-recovery.mjs', 'docs/NATIVE-RECOVERY.md', 'docs/NATIVE-RECOVERY-DESIGN.md']) assert.ok(paths.includes(path), path);
   const doctor = JSON.parse(await call(command, ['doctor', '--json'], { cwd, env }));
   assert.equal(doctor.stateDir, state); assert.equal(doctor.cacheDir, cache); assert.equal(doctor.hcom.version, 'hcom 0.7.30');
   const sourceBefore = await readdir(state);
@@ -113,5 +124,5 @@ try {
   assert.deepEqual(await readdir(pkg), before, 'Running installed CLI must not create state/cache inside package');
   const installed = JSON.parse(await readFile(join(pkg, 'package.json'), 'utf8'));
   assert.equal(installed.version, JSON.parse(await readFile(join(root, 'package.json'), 'utf8')).version);
-  console.log(JSON.stringify({ status: 'passed', name: installed.name, version: installed.version, packedFiles: paths.length, packedBytes: packed.size, checks: ['package allowlist including recovery runtime/design and onboarding guides', 'isolated prefix install', 'global executable', 'agent guide before setup', 'pre-setup read-only inspect', 'arbitrary working directory', 'external state/cache', 'signed public node export', 'explicit offline v2 upgrade preserves node identity', 'installed inspect preserves v2 store bytes', 'explicit offline v3 upgrade and repeat preserve node identity and store bytes', 'installed inspect preserves v3 store bytes', 'installed viewer assets/API with config-relative source', 'viewer leaves missing ledger absent', 'no package mutation'] }, null, 2));
+  console.log(JSON.stringify({ status: 'passed', name: installed.name, version: installed.version, packedFiles: paths.length, packedBytes: packed.size, checks: ['package allowlist including recovery runtime/design and onboarding guides', 'isolated prefix install', 'global executable', 'agent guide before setup', 'pre-setup read-only inspect', 'arbitrary working directory', 'external state/cache', 'signed public node export', 'explicit offline v2 upgrade preserves node identity', 'installed inspect preserves v2 store bytes', 'explicit offline v3 upgrade and repeat preserve node identity and store bytes', 'installed inspect preserves v3 store bytes', 'explicit offline v4 upgrade/repeat and inspect preserve node identity/store bytes', 'packaged native proof/recovery/lock modules and guides', 'installed viewer assets/API with config-relative source', 'viewer leaves missing ledger absent', 'no package mutation'] }, null, 2));
 } finally { await rm(temp, { recursive: true, force: true }); }
