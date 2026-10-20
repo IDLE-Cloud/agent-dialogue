@@ -1,12 +1,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createHash } from 'node:crypto';
+import { resolve } from 'node:path';
 import { payloadHash } from '../lib/node-identity.mjs';
 import * as proof from '../lib/native-proof.mjs';
 import { OpenCodeV1Client } from '../lib/opencode-v1.mjs';
 import { KimiClient } from '../lib/kimi.mjs';
 
-const binding = { id: 'b_11111111-1111-4111-8111-111111111111', revision: 1, alias: 'alice', harness: 'kimi-code', sessionId: 'session_exact', projectId: 'project', directory: '/work/project', serviceId: 'selected-service', origin: 'http://127.0.0.1:4871', active: true };
+const binding = { id: 'b_11111111-1111-4111-8111-111111111111', revision: 1, alias: 'alice', harness: 'kimi-code', sessionId: 'session_exact', projectId: 'project', directory: resolve('/work/project'), serviceId: 'selected-service', origin: 'http://127.0.0.1:4871', active: true };
 const inputId = 'msg_exact_proof', text = 'The full rendered prompt\nincluding commands and 中文 content.', promptHash = payloadHash(text);
 const session = () => ({ id: binding.sessionId, projectID: binding.projectId, location: { directory: binding.directory } });
 function fixture({ evidence, sessionImpl } = {}) {
@@ -46,7 +46,7 @@ test('service, session, project and directory mismatch remain closed needs-revie
     assert.deepEqual(await proof.nativeInputEvidence(f.client, { ...binding, ...patch }, { inputId, promptHash }), { status: 'needs-review', reason: 'binding-mismatch' });
     assert.deepEqual(f.calls, []);
   }
-  for (const patch of [{ id: 'session_other' }, { projectID: 'other-project' }, { location: { directory: '/other' } }, { time: { archived: 1 } }]) {
+  for (const patch of [{ id: 'session_other' }, { projectID: 'other-project' }, { location: { directory: resolve('/other') } }, { time: { archived: 1 } }]) {
     const f = fixture({ sessionImpl: async () => ({ ...session(), ...patch }) });
     assert.equal((await proof.nativeInputEvidence(f.client, binding, { inputId, promptHash })).status, 'needs-review');
     assert.equal(f.calls.some(call => call[0] === 'inputEvidence'), false);
@@ -102,7 +102,7 @@ test('Kimi strong proof traverses the real adapter GET contract and never accept
     if (url.pathname === `/api/v1/sessions/${binding.sessionId}/messages/${inputId}`) return { ok: true, status: 200, json: async () => ({ code: stored ? 0 : 40403, data: stored }) };
     assert.fail('Strong Kimi proof may not read the queue or last-N history.');
   } });
-  const selected = { ...binding, projectId: 'kimi_' + createHash('sha256').update(binding.directory).digest('hex').slice(0, 32) };
+  const selected = { ...binding, projectId: (await client.session(binding.sessionId)).projectID };
   assert.equal((await proof.nativeInputEvidence(client, selected, { inputId, promptHash })).status, 'verified');
   stored.content.push({ type: 'text', text: 'Extra hidden segment' });
   assert.equal((await proof.nativeInputEvidence(client, selected, { inputId, promptHash })).status, 'needs-review');

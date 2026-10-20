@@ -131,6 +131,24 @@ jobs:
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: 24
+      - name: Initialize Windows PowerShell metadata runtime
+        shell: pwsh
+        run: |
+          # Isolate runner cold-start cost before the contracts. Every actual
+          # product ACL operation still uses its unchanged 8-second deadline.
+          $script = @'
+          $ErrorActionPreference='Stop'
+          $sid=[Security.Principal.WindowsIdentity]::GetCurrent().User.Value
+          $acl=[IO.Directory]::GetAccessControl($env:RUNNER_TEMP)
+          if(-not $sid -or -not $acl){throw 'Windows metadata runtime unavailable'}
+          [Console]::Out.WriteLine('Windows identity and ACL metadata runtime ready')
+          '@
+          $encoded = [Convert]::ToBase64String([Text.Encoding]::Unicode.GetBytes($script))
+          $executable = Join-Path $env:SystemRoot 'System32\WindowsPowerShell\v1.0\powershell.exe'
+          $clock = [Diagnostics.Stopwatch]::StartNew()
+          & $executable -NoLogo -NoProfile -NonInteractive -EncodedCommand $encoded
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          Write-Output "Metadata runtime initialization elapsed ms: $($clock.ElapsedMilliseconds)"
       - name: Exact persisted native input and stopped owner recovery
         shell: pwsh
         run: >-
