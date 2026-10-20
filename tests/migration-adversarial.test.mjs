@@ -134,18 +134,31 @@ test('historical legacy MCP preparing and unknown outbox independently seal roll
   }
 });
 
-test('each stopped runtime pending class independently seals rollback and is never silently cleared by migration', budget, async t => {
-  for (const field of ['pending', 'nativePending', 'outgoingPending']) {
+for (const field of ['pending', 'nativePending', 'outgoingPending']) {
+  test(`stopped runtime ${field} independently seals rollback and is never silently cleared by migration`, budget, async t => {
+    const started = performance.now();
+    const stage = name => t.diagnostic(JSON.stringify({ scenario: `stopped-runtime-${field}`, stage: name, elapsedMs: Math.round(performance.now() - started) }));
+    stage('setup-start');
     const f = await fixture(t), token = randomUUID(), pid = 912346;
     // Synthetic confirmed-dead seam: no OS worker is created at this PID.
     await withStore(f.context, store => { store.workerLaunches = { [f.binding.id]: { version: 1, bindingRevision: f.binding.revision, token, pid, phase: 'stopped' } }; });
     const runtime = { pid, token, lifecycleProtocol: 1, status: 'stopped', cursor: 0, receipts: {}, [field]: { eventId: 17, inputId: 'msg_legacy_unknown', status: 'prepared' } }, path = join(f.context.stateDir, 'dialogue', f.binding.id + '.worker.json');
     await f.privateWrite(path, JSON.stringify(runtime), { fresh: true });
     const options = { probe: async () => 'confirmed-dead' };
-    assert.equal((await f.prepare(options)).rollbackEligible, false, field); await f.apply(options);
-    assert.deepEqual(JSON.parse(await readFile(path)), runtime); await assert.rejects(f.rollback(options));
-  }
-});
+    stage('setup-complete');
+    stage('prepare-start');
+    const prepared = await f.prepare(options);
+    stage('prepare-complete');
+    assert.equal(prepared.rollbackEligible, false, field);
+    stage('apply-start');
+    await f.apply(options);
+    stage('apply-complete');
+    assert.deepEqual(JSON.parse(await readFile(path)), runtime);
+    stage('negative-rollback-start');
+    await assert.rejects(f.rollback(options));
+    stage('negative-rollback-complete');
+  });
+}
 
 test('a newly stored ledger message after prepare prevents apply without deleting or replacing its evidence', budget, async t => {
   const f = await fixture(t); await f.prepare();

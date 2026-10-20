@@ -248,7 +248,13 @@ jobs:
       matrix:
         include:
           - slice: readiness
-            pattern: '^(default migration|a plan observing|allowed rollback|historical legacy|each stopped)'
+            pattern: '^(default migration|a plan observing|allowed rollback|historical legacy)'
+          - slice: runtime-pending
+            pattern: '^stopped runtime pending '
+          - slice: runtime-native-pending
+            pattern: '^stopped runtime nativePending '
+          - slice: runtime-outgoing-pending
+            pattern: '^stopped runtime outgoingPending '
           - slice: publication
             pattern: '^(a newly stored|drift after|journal drift|a previously confirmed|changes after|an installation changed)'
           - slice: recovery
@@ -287,8 +293,10 @@ jobs:
         include:
           - slice: preimages
             pattern: '^(raw journal|source store|prepare does|a control lock|losing the exact|handoff refuses)'
-          - slice: checkpoints
-            pattern: '^(schema-only|a new worker|schema 2|schema 4|read-only verify)'
+          - slice: schema-and-owners
+            pattern: '^(schema-only|a new worker|schema 2|schema 4)'
+          - slice: interrupted-images
+            pattern: '^read-only verify'
     runs-on: windows-latest
     timeout-minutes: 35
     steps:
