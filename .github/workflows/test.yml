@@ -91,3 +91,35 @@ jobs:
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           node bin/agent-dialogue.mjs doctor --json
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+  windows-recovery-state:
+    runs-on: windows-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 24
+      - name: Native Windows recovery state and fixed submissions
+        shell: pwsh
+        run: >-
+          node --test --test-concurrency=1
+          tests/recovery-schema.test.mjs
+          tests/recovery-evidence.test.mjs
+          tests/recovery-submissions.test.mjs
+          tests/recovery-mcp.test.mjs
+          tests/recovery-cli.test.mjs
+  windows-recovery-forwarding:
+    runs-on: windows-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 24
+      - name: Native Windows exact forwarding and stopped runtime recovery
+        shell: pwsh
+        run: >-
+          node --test --test-concurrency=1
+          tests/recovery-nodes.test.mjs
+          tests/recovery-forwarding.test.mjs
+          tests/recovery-runtime.test.mjs

@@ -54,12 +54,13 @@ Node.js 要求为 22.13 或更新的受支持版本；Windows 实机和 CI 使�
 | 工作中的原生 adapter | 服务和准确聊天可受理时，worker 按其能力投递；busy/审批/队列由原 harness 处理 | 模型任务完成、审批获准或所有桌面自动唤醒 |
 | ZCode 收件 | 在准确原聊天明确要求调用 `dialogue_inbox`；工具读取后按项目需要回复 | 自动 idle wake、原生 prompt 注入或 `native-admitted` |
 | 跨节点 `m_UUID` 待确认 | 核对原 ID 与证据后用已有 `node flush --message m_UUID`，重用原签名内容 | 新建另一条消息替代重试；自动清除未知状态 |
-| 本地 `q_UUID` / `outgoingPending` 或原生 pending | 保留原 ID、账本、输入及 worker 状态，分层人工核对 | 通用自动修复/清 pending 命令；按正文猜测关联；ZCode 工具读取套用 native admission |
+| v3本地 `q_UUID` / `outgoingPending` | 最新源码按固定q→formal→m来源核对；paused且准确worker停止后 `bridge reconcile ALIAS --submission q_UUID`，见[对账指南](RECOVERY.md) | 缺证据或多候选保持needs-review；不重新发送、不推进cursor、不自动resume；旧历史不猜关联 |
+| 原生 pending | 保留原 ID、账本、输入及 worker 状态，按准确input核对 | 通用操作者修复入口仍待实现；ZCode工具读取不能套用native admission |
 | 保留原 binding 暂停/恢复 | 最新源码 `bridge pause ALIAS` / `bridge resume ALIAS`；首次须离线升级 v1→v2，见[生命周期指南](LIFECYCLE.md) | pause 不取消已受理模型执行、不证明全空间离线；unknown/pending 不自动清除；本轮平台验证以对应运行记录为准 |
 | 停止所属 worker | `bridge stop ALIAS` 保留 binding；严格核对当前固定安装的绝对 worker 路径、binding ID/token 和退出证据 | 另一旧 prefix 的 worker（含 POSIX）保持 unknown，须经原安装退出维护；旧 Windows 缺协作协议也保持 needs-review；enabled 时 direct/flush/MCP 仍可能工作 |
 | 活跃绑定的 worker 未启动 | enabled 且准确服务、session 和 pending/锁核对通过时 `bridge start ALIAS` | start 不绕过 paused，也不自动启动原生 harness；paused 用 resume |
 | 结束绑定 | `detach ALIAS` 停用绑定并停止其所属 worker，原聊天/历史保留 | 无损暂停；已 detach alias 不能用 `bridge start` 复活，再接入须新 alias/room |
-| 生命周期控制 schema 升级 | `state upgrade --offline`，声明全空间静止并检查已知 worker/锁/reservation；v1→v2 不改 node/room/wire 身份 | 自动发现所有 CLI/MCP/SSH 写入者、自动备份、通用 ST-06 升级/回退；旧 writer 不能写 v2 |
+| 控制 schema 升级 | `state upgrade --offline` 默认目标v2；启用来源对账须显式 `--target 3`，见[对账指南](RECOVERY.md)；全空间静止、身份保持、旧writer拒读新schema | 自动发现所有CLI/MCP/SSH写入者、自动备份、v3降级或通用ST-06升级/回退 |
 | 进程退出、残留锁 | 按[迁移说明](MIGRATION.md)保留完整状态，核对确切写入者及所有权 | 自动拉起原生进程、开机/注销恢复、自动破锁 |
 
 统一预检和保留绑定的生命周期已进入开发源码，ST-04实现提交 `fbca2f12af442e3f145edd2eb6281fc65d2ac4c6` 已通过五组CI，包含Windows真实SID/ACL、334项合同和embedded setup/doctor；本机Node24/26各644项、旧writer fence43/43、安装包默认launcher40/40也通过。[最终验收](https://github.com/IDLE-Cloud/agent-dialogue/blob/codex/multinode-adapters/verification/lifecycle-20261020-v6/README.md)给出精确计数和限制；CLI、边界与离线启用步骤见[生命周期指南](LIFECYCLE.md)。分层恢复、通用升级回退、一次连续真实项目试用和RC包仍是[稳定化计划](V0.3-STABILIZATION-PLAN.md)的后续工作。当前稳定Release仍为v0.2.0，历史通信实测与本轮无模型生命周期验收分别保留。
@@ -72,6 +73,7 @@ Node.js 要求为 22.13 或更新的受支持版本；Windows 实机和 CI 使�
 | 核对程序/state/cache/backend 与服务路径 | [配置说明](CONFIGURATION.md) |
 | 安装前后只读排错、显式核对准确聊天 | [统一预检](INSPECT.md) |
 | 保留同一 binding 暂停/恢复、停止 worker、离线启用 v2 | [生命周期指南](LIFECYCLE.md) |
+| 启用v3、固定q来源、MCP同key恢复、停止worker后证据对账 | [来源与对账指南](RECOVERY.md)、[实施合同](RECOVERY-DESIGN.md)；ST-05进行中 |
 | 交换节点卡片、room 与原 ID 重试 | [节点通信](NODES.md) |
 | Windows 私有 Node、ACL、PowerShell 路由 | [Windows 指南](WINDOWS.md) |
 | Kimi Web 服务、会话允许清单与 global_user 布局 | [Kimi 指南](KIMI.md) |

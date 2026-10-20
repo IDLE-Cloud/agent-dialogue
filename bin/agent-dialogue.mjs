@@ -54,7 +54,8 @@ const HELP = `agent-dialogue — cross-node, cross-harness agent communication
   bridge start ALIAS | bridge status       Start/inspect the native-session bridge
   bridge pause ALIAS | bridge resume ALIAS Preserve exact binding and delivery progress
   bridge stop ALIAS                        Cooperatively stop an owned worker; keep binding
-  state upgrade --offline [--json]          Explicit quiescent control-store v1 to v2 upgrade
+  state upgrade --offline [--target 2|3]    Explicit quiescent control-store upgrade
+  bridge reconcile ALIAS --submission q_UUID  Evidence-only stopped-worker repair; no resend
   detach ALIAS                            Stop bridge; preserve the original chat
   hcom <read-command> [arguments...]       Restricted read-only upstream access
 
@@ -319,12 +320,13 @@ export async function main(args = process.argv.slice(2), sourceEnv = process.env
     return await doctor(context, !!options['--json']);
   }
   if (command === 'state') {
-    if (input[0] !== 'upgrade') fail('Use state upgrade --offline [--json].');
-    const { options, rest } = parseOptions(input.slice(1), { '--offline': 'boolean', '--json': 'boolean' }); noRest(rest);
+    if (input[0] !== 'upgrade') fail('Use state upgrade --offline [--target 2|3] [--json].');
+    const { options, rest } = parseOptions(input.slice(1), { '--offline': 'boolean', '--json': 'boolean', '--target': 'value' }); noRest(rest);
+    if (options['--target'] !== undefined && !['2', '3'].includes(options['--target'])) fail('State upgrade target must be exactly 2 or 3.');
     if (!options['--offline']) fail('State upgrade requires --offline after all writers have been quiesced.');
     const { upgradeStoreOffline } = await import('../lib/lifecycle.mjs');
     const { assertOfflineWorkers } = await import('../lib/bridge.mjs');
-    console.log(JSON.stringify(await upgradeStoreOffline(context, { offline: true }, { assertQuiescent: assertOfflineWorkers }), null, 2));
+    console.log(JSON.stringify(await upgradeStoreOffline(context, { offline: true, ...(options['--target'] ? { targetVersion: Number(options['--target']) } : {}) }, { assertQuiescent: assertOfflineWorkers }), null, 2));
     return 0;
   }
   if (command === 'node') {
@@ -383,6 +385,10 @@ export async function main(args = process.argv.slice(2), sourceEnv = process.env
       const { options, rest } = parseOptions(input.slice(1), { '--room': 'value', '--from': 'value', '--to': 'value', '--message': 'value', '--reply-to': 'value', '--expected-session': 'value', '--queue': 'boolean' }); noRest(rest);
       const message = { room: options['--room'], from: options['--from'], to: options['--to'], text: options['--message'], replyTo: options['--reply-to'] || null, expectedSession: options['--expected-session'] };
       result = options['--queue'] ? await (await import('../lib/submissions.mjs')).queueSubmission(context, message) : await bridge.collabSend(context, message);
+    } else if (command === 'bridge' && input[0] === 'reconcile') {
+      if (!input[1] || input[1].startsWith('--')) fail('Reconciliation requires one exact binding alias.');
+      const { options, rest } = parseOptions(input.slice(2), { '--submission': 'value', '--json': 'boolean' }); noRest(rest);
+      result = await (await import('../lib/recovery.mjs')).reconcileSubmission(context, input[1], options['--submission']);
     } else if (command === 'bridge' && ['start', 'pause', 'resume', 'stop'].includes(input[0])) {
       if (!input[1] || input[1].startsWith('--')) fail('Bridge operation requires one exact binding alias.');
       const { rest } = parseOptions(input.slice(2), { '--json': 'boolean' }); noRest(rest);

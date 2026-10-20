@@ -153,7 +153,7 @@ agent-dialogue send codex-实际名称 \
 
 ## 消息与故障边界
 
-消息正文保存在所选本地账本（hcom 或 embedded），绑定和回执保存在当前通信空间。`collab send` 成功表示入账，worker 的 `admitted` 表示原生会话受理，实际模型回复另行核对。结果不确定时先查同一输入 ID；无法确认时保留待核对状态，不盲目重复提交。最新源码的 `bridge pause/resume` 保留准确绑定与进度，pending/未知结果会阻止安全恢复；`bridge stop` 只停所属 worker，enabled 时直接入口仍可工作。用法及与 detach 的区别见[生命周期指南](docs/LIFECYCLE.md)。残留锁恢复和 q→m 自动对账仍待实现。
+消息正文保存在所选本地账本（hcom 或 embedded），绑定和回执保存在当前通信空间。`collab send` 成功表示入账，worker 的 `admitted` 表示原生会话受理，实际模型回复另行核对。结果不确定时先查同一输入 ID；无法确认时保留待核对状态，不盲目重复提交。最新源码的 `bridge pause/resume` 保留准确绑定与进度，pending/未知结果会阻止安全恢复；`bridge stop` 只停所属 worker，enabled 时直接入口仍可工作。用法及与 detach 的区别见[生命周期指南](docs/LIFECYCLE.md)。ST-05第一批增加[显式v3、固定q来源与停止worker后的证据对账](docs/RECOVERY.md)，证据不足保持needs-review；通用native pending修复、残留锁恢复及升级回退仍待完成。
 
 本机 alias 适用于同一用户的可信进程。跨节点签名固定发送节点，room 固定双方绑定；它们没有把每个模型变成独立的 OS 用户。网络中断或回执丢失时用 `node status` 和 `node flush --message m_UUID` 对账，同 ID 同内容返回原回执。`remote-stored` 只代表对方账本收妥，原生会话受理和实际模型回复分别核验。
 
