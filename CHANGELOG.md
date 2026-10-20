@@ -2,6 +2,8 @@
 
 ## 0.3.0 (development)
 
+- Add explicit offline schema v3 and durable queued q→formal→remote m provenance. Contextual MCP sends allocate a fixed q before append; repeated request keys preserve identity, and unknown outcomes use complete bounded evidence scans without a second append. See [recovery operations](docs/RECOVERY.md).
+- Add selected `bridge reconcile ALIAS --submission q_UUID` for a paused binding with its exact stopped, confirmed-dead worker. A deterministic two-file checkpoint repairs only the original outgoing receipt, preserves the cursor and unrelated pending state, and supports interrupted retries. General native-pending repair, stale-lock handling, upgrade/rollback and a stable v0.3 release remain pending.
 - Add packaged operator and agent guides, a portable project rules snippet, and read-only `agent-guide --room ID --from ALIAS [--to ALIAS]` contexts with owning-node checks, exact peer sessions and quoted queue commands.
 - Add explicit SSH observer configuration and a fixed read-only export entry. Verify node and sealed-room pins, nonce and wire signatures at both ends; collect bounded room snapshots asynchronously and retain stale history across disconnects.
 - Add a loopback-only read-only browser viewer for explicit local sources, exact session identities, protocol-linked replies, queue/result folding, signed wire-copy deduplication and delivery evidence.

@@ -61,17 +61,21 @@ ZCode 的深查只验证本地已观察的准确宿主注册。`ZCODE_REGISTRATI
 
 已有 `m_UUID` 对账继续使用 `node flush --message m_UUID`；预检自身不执行 flush。`q_UUID`、原生 pending 和 MCP requestKey 仍需各自证据，不根据正文相同推断。
 
-最新源码已增加[保留 binding 的生命周期和显式离线 v1→v2 启用](LIFECYCLE.md)。安全残留锁恢复、q→m 自动对账与通用升级回退仍是[稳定化计划](V0.3-STABILIZATION-PLAN.md)后续任务。`inspect` 没有 `--fix`，也不自动升级、删除锁、修权限或恢复进程。
+最新源码已增加[保留binding的生命周期和显式离线v2启用](LIFECYCLE.md)，以及[显式v3、固定q来源和停止worker后的receipt对账](RECOVERY.md)。ST-05仍进行中，原生pending操作者恢复、安全残留锁处理及通用升级回退仍是[稳定化计划](V0.3-STABILIZATION-PLAN.md)后续任务。`inspect`没有`--fix`，也不自动升级、删除锁、修权限或恢复进程。
 
 ## 5. 读取生命周期与启动证据
 
-默认 inspect 兼容控制 store v1/v2。v1 或 v2 中没有独立 lifecycle row 的本地 binding 按默认 enabled 解释；v2 有 row 时只公开 `bindingRevision / desired / generation / changedAt`，不输出 changeNonce。远端 peer 的暂停状态须由所属节点提供，本地副本不冒充远端实时状态。
+默认inspect兼容控制store v1/v2/v3。没有独立lifecycle row的本地binding按默认enabled解释；v2/v3有row时只公开`bindingRevision / desired / generation / changedAt`，不输出changeNonce。远端peer的暂停状态须由所属节点提供，本地副本不冒充远端实时状态。
 
 | 原因码 | 含义 |
 |---|---|
 | `BINDING_PAUSED` | 同一 active binding 的新 dispatch 已被持久暂停；这只是控制记录，不证明原生模型已停止 |
 | `BINDING_DETACHED` | 历史绑定已停用，不能按 resumable pause 处理 |
-| `LIFECYCLE_INVALID` | v2 lifecycle 格式或 binding revision 对不上，保留原字节并核对版本/状态 |
+| `LIFECYCLE_INVALID` | v2/v3 lifecycle格式或binding revision对不上，保留原字节并核对版本/状态 |
+| `FORWARDING_INVALID` / `MCP_SEND_INVALID` | v3严格来源或固定q记录格式不合法，不能按旧格式继续工作 |
+| `FORWARDING_PENDING` | 来源记录仍有未完成转发阶段，只展示计数；原ID须按来源证据核对 |
+| `FORWARDING_RECOVERY_PENDING` | 结果已核验但runtime receipt checkpoint尚未完成；检查不代为清pending |
+| `MCP_SEND_PENDING` | 有未完成的MCP固定q准备或追加阶段，保留原requestKey |
 | `WORKER_LAUNCH_INVALID` | 启动记录格式或所属 binding 不符，不能据此 spawn/stop |
 | `WORKER_LAUNCH_PENDING` | 启动、协作停止或结果核对仍未完成，保留原 reservation |
 | `OUTBOX_UNKNOWN` | 原出站 m 结果未确认，不能换新 ID 发送；source paused 时不能直接 flush |

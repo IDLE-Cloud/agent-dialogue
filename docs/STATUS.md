@@ -65,6 +65,8 @@ Node.js 要求为 22.13 或更新的受支持版本；Windows 实机和 CI 使�
 
 统一预检和保留绑定的生命周期已进入开发源码，ST-04实现提交 `fbca2f12af442e3f145edd2eb6281fc65d2ac4c6` 已通过五组CI，包含Windows真实SID/ACL、334项合同和embedded setup/doctor；本机Node24/26各644项、旧writer fence43/43、安装包默认launcher40/40也通过。[最终验收](https://github.com/IDLE-Cloud/agent-dialogue/blob/codex/multinode-adapters/verification/lifecycle-20261020-v6/README.md)给出精确计数和限制；CLI、边界与离线启用步骤见[生命周期指南](LIFECYCLE.md)。分层恢复、通用升级回退、一次连续真实项目试用和RC包仍是[稳定化计划](V0.3-STABILIZATION-PLAN.md)的后续工作。当前稳定Release仍为v0.2.0，历史通信实测与本轮无模型生命周期验收分别保留。
 
+ST-05第一批实现 `0f18966924f67b90a6df1d2d5a1019a857189644` 也已通过[七组CI](https://github.com/IDLE-Cloud/agent-dialogue/actions/runs/39357388203)：四组Unix各724项/723pass/1Windows-only skip，Windows三组分别334/329pass/5skip、47/46pass/1POSIXskip、33/33pass；均零失败/取消，embedded setup/doctor成功。真实旧5ea→v3 writer fence138/138、安装包默认launcher84/84和两ownedworker正常退出也通过。[来源与对账验收](https://github.com/IDLE-Cloud/agent-dialogue/blob/codex/multinode-adapters/verification/recovery-20261020-v2/README.md)固定源码、包身份及边界；用法见[RECOVERY.md](RECOVERY.md)。ST-05整体仍进行中，通用native pending操作者恢复、真实残留锁及ST-06迁移回退没有完成；本批未重新部署已有多机服务或运行真实模型。
+
 ## 4. 按目的选择操作入口
 
 | 你要做什么 | 入口 |

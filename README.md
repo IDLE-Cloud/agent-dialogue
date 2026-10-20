@@ -10,6 +10,8 @@ v0.3 开发版增加节点签名、双向配对、共同 room 和 SSH stdio 传�
 
 最新开发分支提供[统一预检](docs/INSPECT.md)：`agent-dialogue inspect --json` 默认只读本地已有元数据，未 setup 也可运行；明确 `--binding ALIAS --native` 才查询对应原生聊天。本轮又新增[保留绑定的暂停、恢复与 worker 停止](docs/LIFECYCLE.md)，首次须静止整个通信空间并显式 `state upgrade --offline` 升级 v1→v2。历史固定基线和 v0.2.0 不含这些命令；预检不自动修复或唤醒模型，pause 也不取消已受理的模型执行。
 
+后续ST-05第一批已实现[显式v3、固定q来源、MCP同key恢复和停止worker后的receipt对账](docs/RECOVERY.md)，并通过[七组平台验收](https://github.com/IDLE-Cloud/agent-dialogue/blob/codex/multinode-adapters/verification/recovery-20261020-v2/README.md)。ST-05仍进行中；原生pending修复、残留锁处理、通用升级回退和新稳定Release继续待完成。
+
 ## 安装
 
 需要 Node.js 22.13 或更新的受支持版本，以及准备使用的 harness；从 Git 安装还需要 Git。模型账号和权限继续由各 harness 自己管理。本包没有 npm 运行依赖，也没有自动下载或联网的 `postinstall`；hcom 通过显式 `setup` 安装。
