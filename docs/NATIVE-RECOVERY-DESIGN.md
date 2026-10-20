@@ -10,7 +10,7 @@
 | NR-02 | 原生完整证据、先持久intent、停止后receipt修复 | 已完成 |
 | NR-03 | 遗留C/D锁只读计划与显式offline证据转存 | 已完成 |
 | NR-04 | CLI、预检摘要、包与使用说明接入 | 已完成 |
-| NR-05 | 独立审查、先红/绿、真实子进程故障与平台CI | 进行中 |
+| NR-05 | 独立审查、先红/绿、真实子进程故障与平台CI | 已完成 |
 
 复用现有binding、ledger、原生adapter、D→短C、精确文件身份、immutable发布和前后像checkpoint。worker锁及不明Windows scheduled launch第一期保持needs-review；开放它们之前须有原token不可复用和准确运行instance证明。本批不接管活动TUI、更改模型/审批或自动拉起原生服务。
 
@@ -75,3 +75,11 @@ apply用独立R恢复互斥，R只串行恢复者，普通writer不检查R，所
 必要合同：完整输入与同ID错误正文/session/role、旧pending缺来源、Kimi加载授权、unsupported fallback、准备失败零POST、notSubmitted重试与未知零重发、owner/pins漂移、checkpoint中断和第三像、容量/rename失败、原字段保持。锁另覆盖live/unknown、坏owner、权限/symlink、plan后替换、R竞争、quarantine后新owner与幂等。
 
 新模块按职责为native-record、native-proof、native-recovery、lock-recovery，复用tests与包smoke。私有证据新建.state/recovery-native-20261020-vN，公开新建verification对应版本；研究action/exploration/index/session只追加、结果JSON新建，旧失败与任务结构不改。阶段、平台和真实部署分别记账。
+
+## 实现核验补充：2026-10-20
+
+默认native-evidence的精确读取范围是store元数据，不读取runtime；主动native查询才核停止runtime/owner。获得D后重复阶段preflight，query后对原intent完整outcome及签名inbox关联做CAS；本地instance/request/ack与跨机external/inform各按已有准确wrapper核验。CLI evidence采用闭合DTO，不输出promptHash；异常固定脱敏，私有锁plan只写操作者指定的既有私有目录。
+
+验证环境修正与生产源码分开：Windows proof fixture使用平台规范路径和Kimi实际canonical projectID，首个ACL setup失败保留原因不确定性；CI新增独立只读WindowsPowerShell元数据初始化和计时，生产8秒期限不变。私有记录脚本曾递归影响并行测试安装权限，原FAILED保留，禁止对共享证据父树chmod；同一tgz另起prefix核内容/权限与正常stop。完整阶段结果见各独立verification快照，不覆盖初始设计与失败。
+
+本批NR-01～05已完成选定范围验收，准确候选4108b08e41ba4ea77ed4e1f57f3605b9c62073aa的九组CI全success，运行源码等于c44bc9d实现。[最终报告](https://github.com/IDLE-Cloud/agent-dialogue/blob/codex/multinode-adapters/verification/native-recovery-20261020-v3/README.md)分别记录平台skip、旧writer fence与实际安装证据；ST05整体仍进行中，worker/scheduled token退休、V2/Codex强未知恢复与ST06后续边界不变。
