@@ -35,7 +35,7 @@ npm install -g --prefix "$HOME/.local" https://github.com/IDLE-Cloud/agent-dialo
 export PATH="$HOME/.local/bin:$PATH"
 ```
 
-也可以从仓库安装当前稳定 main：
+也可以从仓库的 `main` 安装源码快照。`main` 会随开发推进；本次 v0.3 开发分支合并后，该入口包含下文的新功能，稳定 Release 仍为上面的 `v0.2.0`：
 
 ```bash
 npm install -g git+https://github.com/IDLE-Cloud/agent-dialogue.git
@@ -43,7 +43,7 @@ agent-dialogue setup
 agent-dialogue doctor
 ```
 
-本页的节点、Codex 原生队列、Windows、Kimi、ZCode 和查看器功能位于 v0.3 开发分支，稳定 `v0.2.0` 不包含这些能力。测试最新开发状态可明确安装：
+本页的节点、Codex 原生队列、Windows、Kimi、ZCode 和查看器功能属于 v0.3 开发版，稳定 `v0.2.0` 不包含这些能力。原开发分支也保留以下安装入口；多机使用时应固定同一完整提交：
 
 ```bash
 npm install -g 'git+https://github.com/IDLE-Cloud/agent-dialogue.git#codex/multinode-adapters'

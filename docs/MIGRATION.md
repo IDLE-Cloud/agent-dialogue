@@ -19,7 +19,7 @@ agent-dialogue doctor
 agent-dialogue bindings
 ```
 
-将示例路径替换为实际旧目录。公开仓库和 Release 可直接下载，无需 GitHub 登录；上述 URL 固定的是历史稳定 v0.2.0；无 fragment 的 `git+https://github.com/IDLE-Cloud/agent-dialogue.git` 选择 main，不能据此获得 v0.3 新能力。要使用开发版，明确选择 `#codex/multinode-adapters`，或按[状态总览](STATUS.md)固定已验证的完整提交，两端版本一致。`setup` 使用新缓存安装固定依赖，不需要搬运旧 `.runtime`。
+将示例路径替换为实际旧目录。公开仓库和 Release 可直接下载，无需 GitHub 登录；上述 URL 固定的是历史稳定 v0.2.0。无 fragment 的 `git+https://github.com/IDLE-Cloud/agent-dialogue.git` 选择 `main` 的移动源码快照；本次开发分支合并后，该入口也包含 v0.3 新能力。原 `#codex/multinode-adapters` 入口继续保留。可复现的多机安装应按[状态总览](STATUS.md)固定已验证的同一完整提交，不能用移动分支代替版本核对。`setup` 使用新缓存安装固定依赖，不需要搬运旧 `.runtime`。
 
 **先停止旧 bridge，再让新程序使用相同空间。** 不能同时运行两份 worker 处理同一绑定。`detach` 可用于结束不再使用的绑定，但会将其停用，不是保留活跃绑定的无损暂停命令。若希望保留原绑定继续使用，需要先根据旧 `bridge status` 核对并正常停止确切旧 worker；不要按程序名批量终止其他进程。
 

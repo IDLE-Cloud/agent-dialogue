@@ -7,6 +7,7 @@
 | 版本入口 | 包含什么 | 怎么选择 |
 |---|---|---|
 | 稳定 Release `v0.2.0` | 用户级安装、独立通信空间、hcom 依赖安装、本机 OpenCode 已有聊天协作 | 需要该历史稳定范围时安装固定 Release；不包含下方 v0.3 多机、Windows、Kimi、ZCode、查看器等新增能力 |
+| 默认源码分支 `main` | 本次开发分支合并后包含本页 v0.3 已实现能力；源码 package version 为 `0.3.0`，仍是开发快照 | 可从默认分支获取最新源码；多机安装固定同一完整提交，稳定安装继续选择上面的 Release |
 | 开发分支 `codex/multinode-adapters` | 本页 v0.3 已实现能力；源码 package version 为 `0.3.0`，尚未发行新的稳定 Release | 首轮试用最新功能使用该分支；两端固定同一完整提交，不把分支名当作不可变版本 |
 | 已有通信验证基线 `00295d77ab8660565e0772985a4387f9351ffb37` | 包含多机、多 harness、ZCode 工具收件和查看器；其后 `d861b5b` 为规划，`0aa51db` 为统一预检；本轮最新源码新增生命周期 | 复用本页历史通信实测范围可固定此提交；**此基线没有新的 inspect/pause/resume/stop/upgrade**，尚无稳定化 RC/升级验收 |
 
@@ -22,7 +23,7 @@ npm install -g https://github.com/IDLE-Cloud/agent-dialogue/releases/download/v0
 npm install -g 'git+https://github.com/IDLE-Cloud/agent-dialogue.git#00295d77ab8660565e0772985a4387f9351ffb37'
 ```
 
-需要跟踪后续开发时，可将上述 fragment 换为 `codex/multinode-adapters`；安装前记录实际提交，所有参与节点核对同一版本。不要在活动 worker 使用的源码 checkout 上直接切版本。安装命令不运行模型；`setup`、接入和迁移另按对应指南执行。无 Git 的 Windows 私有 runtime/源码部署见 [WINDOWS.md](WINDOWS.md)，不要据此安装尚未发布的 v0.3 Release URL。
+需要跟踪后续开发时，可将上述 fragment 换为 `main`；原 `codex/multinode-adapters` 分支保留为已有安装及历史链接的入口。安装前记录实际提交，所有参与节点核对同一版本。不要在活动 worker 使用的源码 checkout 上直接切版本。安装命令不运行模型；`setup`、接入和迁移另按对应指南执行。无 Git 的 Windows 私有 runtime/源码部署见 [WINDOWS.md](WINDOWS.md)，不要据此安装尚未发布的 v0.3 Release URL。
 
 Node.js 要求为 22.13 或更新的受支持版本；Windows 实机和 CI 使用独立 Node 24。公开源码与 Release 下载无需 GitHub 登录，模型账号及工具批准继续由原 harness 管理。
 
