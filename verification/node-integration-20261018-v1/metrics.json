@@ -1,0 +1,72 @@
+{
+  "run_id": "node-project-2026-10-17T16-28-04-474Z-40d26a75",
+  "started_at": "2026-10-17T16:28:04.476Z",
+  "status": "failed",
+  "transport": "local-process",
+  "scope": "two independent local nodes, one existing OpenCode service; no two-host claim",
+  "model": {
+    "providerID": "opencode",
+    "id": "deepseek-v4.1-flash-free",
+    "zero_cost_verified": true,
+    "service_version": "2.0.20"
+  },
+  "stages": [
+    {
+      "name": "zero_cost_model_verified",
+      "at": "2026-10-17T16:28:04.521Z"
+    },
+    {
+      "name": "normal_project_chat_seeded",
+      "at": "2026-10-17T16:28:08.986Z",
+      "role": "a"
+    },
+    {
+      "name": "existing_project_chat_attached",
+      "at": "2026-10-17T16:28:09.431Z",
+      "role": "a"
+    },
+    {
+      "name": "normal_project_chat_seeded",
+      "at": "2026-10-17T16:28:12.617Z",
+      "role": "b"
+    },
+    {
+      "name": "existing_project_chat_attached",
+      "at": "2026-10-17T16:28:12.959Z",
+      "role": "b"
+    },
+    {
+      "name": "public_cards_paired_and_room_imported",
+      "at": "2026-10-17T16:28:13.699Z"
+    },
+    {
+      "name": "project_collaboration_triggered",
+      "at": "2026-10-17T16:28:13.857Z"
+    },
+    {
+      "name": "scenario_failed",
+      "at": "2026-10-17T16:28:28.080Z",
+      "failure_phase": "project_collaboration_triggered"
+    }
+  ],
+  "assertions": {
+    "seeded_before_attach": true
+  },
+  "permissions": {
+    "once": 1,
+    "rejected": 1
+  },
+  "cleanup": [
+    {
+      "role": "a",
+      "detached": true
+    },
+    {
+      "role": "b",
+      "detached": true
+    }
+  ],
+  "failure_phase": "project_collaboration_triggered",
+  "error": "Owned integration failed; inspect its private diagnosis.",
+  "finished_at": "2026-10-17T16:28:28.285Z"
+}

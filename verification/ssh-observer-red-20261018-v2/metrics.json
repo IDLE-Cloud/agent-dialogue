@@ -1,0 +1,30 @@
+{
+  "version": 1,
+  "phase": "tests-first-red-before-implementation",
+  "recordedAt": "2026-10-18T04:37:39.608Z",
+  "baseCommit": "292afdc",
+  "node": "v26.10.0",
+  "modelCalls": 0,
+  "actualSshConnections": 0,
+  "tests": [
+    "tests/viewer-observation.test.mjs",
+    "tests/viewer-ssh.test.mjs",
+    "tests/viewer-remote-cli.test.mjs",
+    "tests/viewer-ssh-integration.test.mjs"
+  ],
+  "declaredContractCases": 48,
+  "exitCode": 1,
+  "runnerCounts": {
+    "tests": 8,
+    "passed": 2,
+    "failed": 6
+  },
+  "expectedMissingFeatures": [
+    "observation module",
+    "SSH reader module",
+    "view-export",
+    "--config",
+    "reader.close lifecycle"
+  ],
+  "note": "Forces TAP to parse runner counts; v1 default reporter counts were unavailable and incorrectly recorded zero. Both preserve the same expected missing-feature red result."
+}

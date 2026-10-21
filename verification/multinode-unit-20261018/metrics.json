@@ -1,0 +1,18 @@
+{
+  "status": "passed",
+  "version": "0.3.0-development",
+  "implementation_commit": "07a57965f33d31b6e4c73eb70030938d2314109f",
+  "unit_tests": { "passed": 146, "failed": 0, "skipped": 0 },
+  "package": {
+    "status": "passed",
+    "packed_files": 25,
+    "checks": ["allowlist", "isolated global prefix", "arbitrary cwd", "external state and cache", "signed public node export", "no package mutation"]
+  },
+  "ci": {
+    "status": "success",
+    "run": "https://github.com/IDLE-Cloud/agent-dialogue/actions/runs/39049968905",
+    "jobs": ["ubuntu Node 22", "ubuntu Node 24", "ubuntu Node 26", "macOS Node 24"],
+    "checks_per_job": ["unit tests", "package installation smoke", "real pinned hcom download and SHA-256 verification", "doctor"]
+  },
+  "limits": ["CI does not call models", "real two-host SSH remains unverified", "native Windows remains unsupported", "native Codex model roundtrip used an explicitly started local validation server, not an active desktop window"]
+}

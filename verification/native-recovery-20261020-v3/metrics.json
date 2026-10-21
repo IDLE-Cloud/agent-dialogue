@@ -1,0 +1,262 @@
+{
+  "schemaVersion": 1,
+  "phase": "accepted-native-and-cd-slice",
+  "implementationCommit": "c44bc9d117b455b692a7ac5229e05dd69e08fe74",
+  "candidateCommit": "4108b08e41ba4ea77ed4e1f57f3605b9c62073aa",
+  "runtimeFiles": 61,
+  "runtimeSha256": "7ec88027e61bba31be457b5ed05c17863d214e2ed4a4f7878a8844ce08efd19d",
+  "local": {
+    "node24": {
+      "version": "24.19.0",
+      "tests": 824,
+      "pass": 823,
+      "skip": 1,
+      "fail": 0,
+      "cancel": 0
+    },
+    "node26": {
+      "version": "26.10.0",
+      "tests": 824,
+      "pass": 823,
+      "skip": 1,
+      "fail": 0,
+      "cancel": 0
+    },
+    "newTests": 100,
+    "fixtureCorrectionFocusedPerVersion": 66
+  },
+  "supplemental": {
+    "nativeReview": {
+      "tests": 32,
+      "pass": 32,
+      "actualOwnedWorkerTests": 2
+    },
+    "adversarial": {
+      "tests": 15,
+      "pass": 15
+    },
+    "lockCliReview": {
+      "tests": 37,
+      "pass": 37
+    },
+    "realLockChildren": {
+      "children": 2,
+      "assertions": 27,
+      "confirmedDead": 2
+    },
+    "oldWriterFence": {
+      "oldCommit": "63fba039df59c2d23b230722ad2e8b2aaf254508",
+      "writers": 5,
+      "assertions": 143,
+      "independentChecks": 264
+    },
+    "installedLauncher": {
+      "assertions": 103,
+      "workers": 2,
+      "spawns": 2,
+      "normalStopsConfirmedDead": 2,
+      "qEvents": 1,
+      "formalEvents": 1,
+      "forwardedRows": 1,
+      "nativeIntentsAdmitted": 1,
+      "nativePosts": 1,
+      "persistedFakeInputs": 1,
+      "duplicatePosts": 0,
+      "allPackageBytesAndModesUnchanged": true,
+      "entryModeSamples": 30
+    }
+  },
+  "retainedPackage": {
+    "files": 88,
+    "bytes": 315900,
+    "unpackedBytes": 1016381,
+    "sha256": "b8ad8a39a6a01dac1d41a7ea6bb6a61c953d51b2bc40624c6efe9126e357169d",
+    "modes": {
+      "0644": 86,
+      "0755": 2
+    },
+    "runtimeMatchesGit": true,
+    "documentationSnapshotIsNotFinalRelease": true
+  },
+  "firstFailures": {
+    "launcher": {
+      "assertionsBeforeFailure": 77,
+      "cause": "evidence script recursively removed executable permissions from shared test prefix",
+      "preserved": true,
+      "ownedWorkersNormalStopped": 2,
+      "sameTarballFreshPrefixPass": true
+    },
+    "windowsNative": {
+      "runId": 39426418555,
+      "jobId": 118640014452,
+      "tests": 42,
+      "pass": 36,
+      "fail": 6,
+      "fixturePathFailures": 5,
+      "firstAclSetupFailures": 1,
+      "firstAclElapsedMs": 8080.8972,
+      "coldStartCauseProven": false,
+      "productionDeadlineMs": 8000
+    }
+  },
+  "ci": {
+    "id": 39428225797,
+    "headSha": "4108b08e41ba4ea77ed4e1f57f3605b9c62073aa",
+    "status": "completed",
+    "conclusion": "success",
+    "jobs": [
+      {
+        "name": "windows-lock-recovery",
+        "jobId": 118646114835,
+        "url": "https://github.com/IDLE-Cloud/agent-dialogue/actions/runs/39428225797/job/118646114835",
+        "conclusion": "success",
+        "node": "24.21.0",
+        "tests": 50,
+        "pass": 45,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 5,
+        "duration_ms": 853480.4317,
+        "rawLogSha256": "fdc82fbceb50dc552ed1d99970e08bca8d4902f60cfb76c96122ca1424b14069"
+      },
+      {
+        "name": "windows-native-recovery",
+        "jobId": 118646115180,
+        "url": "https://github.com/IDLE-Cloud/agent-dialogue/actions/runs/39428225797/job/118646115180",
+        "conclusion": "success",
+        "node": "24.21.0",
+        "tests": 42,
+        "pass": 42,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "duration_ms": 460795.2154,
+        "rawLogSha256": "e3c73bdcbf9ba777cd3bcfe71e80295e990487d81965a080c111ca4291a96575",
+        "metadataInitializationElapsedMs": 3333
+      },
+      {
+        "name": "windows-native",
+        "jobId": 118646115189,
+        "url": "https://github.com/IDLE-Cloud/agent-dialogue/actions/runs/39428225797/job/118646115189",
+        "conclusion": "success",
+        "node": "24.21.0",
+        "tests": 342,
+        "pass": 337,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 5,
+        "duration_ms": 1241019.0312,
+        "rawLogSha256": "7ac72921e1a605bcae8da749c1e67f8ffedf20e501de9185794a6c05f6aa5c8f"
+      },
+      {
+        "name": "test (ubuntu-latest, 26)",
+        "jobId": 118646115196,
+        "url": "https://github.com/IDLE-Cloud/agent-dialogue/actions/runs/39428225797/job/118646115196",
+        "conclusion": "success",
+        "node": "26.12.0",
+        "tests": 824,
+        "pass": 823,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 1,
+        "duration_ms": 35605.415588,
+        "rawLogSha256": "ecbf0f485b78d5adb78a464b75bf7e3b0e2ef7444f247296e8750b7874e87112",
+        "packageSmokeBytes": 315896,
+        "packageSmokeFiles": 88
+      },
+      {
+        "name": "test (ubuntu-latest, 22)",
+        "jobId": 118646115280,
+        "url": "https://github.com/IDLE-Cloud/agent-dialogue/actions/runs/39428225797/job/118646115280",
+        "conclusion": "success",
+        "node": "22.23.3",
+        "tests": 824,
+        "pass": 823,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 1,
+        "duration_ms": 36858.63223,
+        "rawLogSha256": "5b44d55f5ffa74759a0db9b5551c4978cd8267bfde024caf62cc34b6390560d6",
+        "packageSmokeBytes": 315896,
+        "packageSmokeFiles": 88
+      },
+      {
+        "name": "windows-recovery-state",
+        "jobId": 118646115312,
+        "url": "https://github.com/IDLE-Cloud/agent-dialogue/actions/runs/39428225797/job/118646115312",
+        "conclusion": "success",
+        "node": "24.21.0",
+        "tests": 47,
+        "pass": 46,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 1,
+        "duration_ms": 538005.5218,
+        "rawLogSha256": "003d633a8279969d62ec1abbc92e3ac0dfe176855426ff9430c68830e1b0f877"
+      },
+      {
+        "name": "test (macos-latest, 24)",
+        "jobId": 118646115395,
+        "url": "https://github.com/IDLE-Cloud/agent-dialogue/actions/runs/39428225797/job/118646115395",
+        "conclusion": "success",
+        "node": "24.21.0",
+        "tests": 824,
+        "pass": 823,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 1,
+        "duration_ms": 56515.567708,
+        "rawLogSha256": "7c88174de139a23bc9b3705c3a29d0c88e16f9e17aba53cd9aaf69b4686b0dc2",
+        "packageSmokeBytes": 315896,
+        "packageSmokeFiles": 88
+      },
+      {
+        "name": "windows-recovery-forwarding",
+        "jobId": 118646115459,
+        "url": "https://github.com/IDLE-Cloud/agent-dialogue/actions/runs/39428225797/job/118646115459",
+        "conclusion": "success",
+        "node": "24.21.0",
+        "tests": 33,
+        "pass": 33,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "duration_ms": 750073.3843,
+        "rawLogSha256": "b8e9e86af226431d600a8836b3367c7e448d477e4d720f24c12332d1bf1e7c2c"
+      },
+      {
+        "name": "test (ubuntu-latest, 24)",
+        "jobId": 118646115582,
+        "url": "https://github.com/IDLE-Cloud/agent-dialogue/actions/runs/39428225797/job/118646115582",
+        "conclusion": "success",
+        "node": "24.22.0",
+        "tests": 824,
+        "pass": 823,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 1,
+        "duration_ms": 37007.399256,
+        "rawLogSha256": "3f3838a3afc4ae179f8ce40b334401045527da09f45bdb78308b452cd4120dea",
+        "packageSmokeBytes": 315896,
+        "packageSmokeFiles": 88
+      }
+    ],
+    "embeddedSetupDoctor": "success in windows-native; Unix pinned setup/doctor also success"
+  },
+  "limits": [
+    "No real model/native user service/SSH/remote deployment changes",
+    "Full proof currently Kimi/OpenCode V1; unknown V2/Codex unsupported; ZCode tool-pull",
+    "worker/scheduled token retirement, ST06 migration/rollback, continuous real project trial and RC remain pending",
+    "ST05 overall in progress; stable v0.2.0; no merge/tag/new release"
+  ],
+  "evidencePrivacyReview": "ready",
+  "st05Overall": "in-progress",
+  "st06": "not-started",
+  "closedPackageSmoke": {
+    "status": "passed",
+    "packedFiles": 88,
+    "packedBytes": 315176,
+    "retained": false,
+    "scope": "documentation/link close snapshot; same61 runtime; not retained315900 tarball/CI315896 package/RC"
+  }
+}

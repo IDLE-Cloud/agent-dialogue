@@ -1,0 +1,102 @@
+{
+  "schemaVersion": 1,
+  "stage": "ST-04 runtime publication correction; local acceptance, new platform CI pending",
+  "observedAt": "2026-10-19T16:44:27.058975+00:00",
+  "sourceBaseCommit": "73791a3cb40be0125823b329b3535d7ae020ab08",
+  "runtimeFiles": 52,
+  "runtimeFilesSha256": "955471e43f499c22a6c7f91bd4ae543727f4d0cd7a3e018ea10439d1ef6d6126",
+  "digestFormat": "SHA256 of UTF-8 compact JSON array sorted by POSIX path, each object has path then sha256; no trailing newline",
+  "sourceSnapshot": "working-tree runtime content committed with this report",
+  "environment": {
+    "physicalHosts": 1,
+    "platform": "darwin-arm64",
+    "nodeVersions": [
+      "v24.19.0",
+      "v26.10.0"
+    ]
+  },
+  "tests": {
+    "newContractsFromInspectBase": 64,
+    "lifecycleContracts": 58,
+    "storeSnapshotContracts": 3,
+    "runtimeSnapshotContracts": 3,
+    "perNodeVersion": {
+      "total": 632,
+      "passed": 631,
+      "failed": 0,
+      "skipped": 1
+    },
+    "skipReason": "Windows-only ACL test on POSIX",
+    "priorCiLinux24FailureRetained": {
+      "source": "73791a3",
+      "runId": 39286533285,
+      "jobId": 118174443474,
+      "total": 629,
+      "passed": 627,
+      "failed": 1,
+      "skipped": 1,
+      "cause": "readRuntime rejected a normal atomic publication before open"
+    },
+    "runtimeReaderRed": {
+      "tests": 3,
+      "passed": 2,
+      "failed": 1,
+      "readersReportingInvalid": 16
+    },
+    "runtimeAndOwnedWorkerCliFocused": {
+      "total": 15,
+      "passed": 15
+    },
+    "independentRuntimeNode24": {
+      "total": 3,
+      "passed": 3
+    },
+    "independentRuntimeStress": {
+      "runs": 5,
+      "passed": 5,
+      "readers": 80,
+      "snapshots": 3200,
+      "atomicRenames": 400
+    },
+    "priorStoreStress": {
+      "runs": 20,
+      "passed": 20,
+      "readers": 320,
+      "snapshots": 12800,
+      "atomicRenames": 1600
+    }
+  },
+  "package": {
+    "status": "passed-on-both-node-versions",
+    "files": 75,
+    "bytes": 267254,
+    "isolatedPrefix": true,
+    "arbitraryCwd": true,
+    "v2UpgradePreservesNode": true,
+    "inspectPreservesStore": true
+  },
+  "review": {
+    "independentSafetyReview": "ready",
+    "openBlockingFindings": 0,
+    "runtimeRecordedMissingOwnerDistinctionPreserved": true,
+    "unsafeMutationRejectionPreserved": true
+  },
+  "workflow": {
+    "windowsStoreContracts": 13,
+    "windowsRuntimeSnapshotContracts": 3,
+    "platformCi": "pending for this correction; inspect associated PR checks"
+  },
+  "safety": {
+    "modelTurns": 0,
+    "realHarnessApiCalls": 0,
+    "remoteHostChanges": 0,
+    "loopbackFixtures": true,
+    "ownedChildWorkers": true
+  },
+  "boundaries": [
+    "local runtime versions are not Windows/Linux platform acceptance",
+    "ST-05 reconciliation and lock recovery not implemented",
+    "ST-06 generic cross-prefix migration not implemented",
+    "no merge/tag/release"
+  ]
+}

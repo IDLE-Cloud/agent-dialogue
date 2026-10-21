@@ -1,0 +1,18 @@
+{
+  "status": "passed",
+  "version": "0.3.0-development",
+  "implementation_commit": "be23e966ab6b61e37ba0dc2329c7f776fcc56e0b",
+  "unit_tests": { "passed": 130, "failed": 0, "skipped": 0 },
+  "package": {
+    "status": "passed",
+    "packed_files": 24,
+    "checks": ["allowlist", "isolated global prefix", "arbitrary cwd", "external state and cache", "signed public node export", "no package mutation"]
+  },
+  "ci": {
+    "status": "success",
+    "run": "https://github.com/IDLE-Cloud/agent-dialogue/actions/runs/39040659553",
+    "jobs": ["ubuntu Node 22", "ubuntu Node 24", "ubuntu Node 26", "macOS Node 24"],
+    "checks_per_job": ["unit tests", "package installation smoke", "real pinned hcom download and SHA-256 verification", "doctor"]
+  },
+  "limits": ["CI does not call models", "real two-host SSH remains unverified", "native Windows remains unsupported"]
+}

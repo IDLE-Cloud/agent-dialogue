@@ -1,0 +1,38 @@
+{
+  "status": "idle",
+  "owned_turns": [
+    {
+      "status": "completed",
+      "errorPresent": false,
+      "errorCategory": null,
+      "itemTypes": [
+        "userMessage",
+        "reasoning",
+        "agentMessage"
+      ]
+    },
+    {
+      "status": "completed",
+      "errorPresent": false,
+      "errorCategory": null,
+      "itemTypes": [
+        "userMessage",
+        "reasoning",
+        "agentMessage"
+      ]
+    }
+  ],
+  "auth": {
+    "configuredAccountDetected": true,
+    "requiresOpenaiAuth": true
+  },
+  "peer_ledger_request_observed": false,
+  "assistant_reported_local_command_eperm": true,
+  "models_or_permissions_changed": false,
+  "interpretation": {
+    "noNativeTurnErrorObserved": true,
+    "modelReportedLocalCommandEperm": true,
+    "toolFailureIndependentlyVerified": false,
+    "providerOrPermissionCauseNotEstablished": true
+  }
+}

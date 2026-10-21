@@ -1,0 +1,112 @@
+{
+  "run_id": "codex-room-2026-10-17T16-28-19-358Z-dd4692f6",
+  "started_at": "2026-10-17T16:28:19.359Z",
+  "status": "passed",
+  "scope": "one existing explicitly selected owned Codex test thread and one new owned normal OpenCode chat, one local room",
+  "codex": {
+    "explicit_resume_requested": true,
+    "model_changed": false,
+    "permissions_changed": false,
+    "approvals_granted": 0,
+    "connection_kind": "separately-started-local-validation-server",
+    "outbound_delivery": "local-submission-queue-then-owning-worker-forward",
+    "transport_version": "0.162.1",
+    "was_loaded": false
+  },
+  "opencode": {
+    "model": {
+      "providerID": "opencode",
+      "id": "deepseek-v4.1-flash-free"
+    },
+    "zero_cost_verified": true,
+    "approvals_once": 1
+  },
+  "stages": [
+    {
+      "name": "explicit_owned_codex_thread_verified",
+      "at": "2026-10-17T16:28:19.377Z",
+      "loaded_before": false
+    },
+    {
+      "name": "exact_threads_attached_to_one_strict_room",
+      "at": "2026-10-17T16:28:25.780Z",
+      "codex_resumed_explicitly": true
+    },
+    {
+      "name": "waiting_for_owned_native_response",
+      "at": "2026-10-17T16:28:41.528Z",
+      "role": "codex",
+      "elapsed_seconds": 16
+    },
+    {
+      "name": "waiting_for_owned_native_response",
+      "at": "2026-10-17T16:28:57.014Z",
+      "role": "codex",
+      "elapsed_seconds": 31
+    },
+    {
+      "name": "waiting_for_owned_native_response",
+      "at": "2026-10-17T16:29:12.527Z",
+      "role": "codex",
+      "elapsed_seconds": 47
+    },
+    {
+      "name": "waiting_for_owned_native_response",
+      "at": "2026-10-17T16:29:28.046Z",
+      "role": "codex",
+      "elapsed_seconds": 62
+    },
+    {
+      "name": "waiting_for_owned_native_response",
+      "at": "2026-10-17T16:29:43.544Z",
+      "role": "codex",
+      "elapsed_seconds": 78
+    },
+    {
+      "name": "waiting_for_owned_native_response",
+      "at": "2026-10-17T16:29:59.050Z",
+      "role": "codex",
+      "elapsed_seconds": 93
+    },
+    {
+      "name": "waiting_for_owned_native_response",
+      "at": "2026-10-17T16:30:14.518Z",
+      "role": "codex",
+      "elapsed_seconds": 109
+    },
+    {
+      "name": "waiting_for_owned_native_response",
+      "at": "2026-10-17T16:30:30.019Z",
+      "role": "codex",
+      "elapsed_seconds": 124
+    },
+    {
+      "name": "codex_to_opencode_linked_model_exchange_verified",
+      "at": "2026-10-17T16:30:36.774Z"
+    }
+  ],
+  "assertions": {
+    "codex_model_origin_request": true,
+    "opencode_model_origin_linked_reply": true,
+    "codex_native_tool_queued_local_submission": true,
+    "codex_owning_worker_forwarded_submission": true,
+    "peer_preexisting_context_returned": true,
+    "codex_original_model_preserved": true,
+    "both_exact_native_sessions_preserved": true
+  },
+  "cleanup": [
+    {
+      "target": "opencode-binding",
+      "detached": true,
+      "native_chat_preserved": true
+    },
+    {
+      "target": "codex-binding",
+      "detached": true,
+      "native_chat_preserved": true
+    }
+  ],
+  "active_cli_only": true,
+  "communication_state_in_selected_workspace": true,
+  "finished_at": "2026-10-17T16:30:37.085Z"
+}

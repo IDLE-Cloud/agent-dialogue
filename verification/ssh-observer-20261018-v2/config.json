@@ -1,0 +1,57 @@
+{
+  "version": 1,
+  "scenario": "local-fake-ssh-readonly-observer",
+  "recordedAt": "2026-10-18T07:33:06.680Z",
+  "baseCommit": "4603c22b1ec76433d212641109658e05a62a394e",
+  "implementationSha256": "5ae0b4b531dacd5ed9d4c0259c6c345ddf17b7a4b39646e83819ff4d5968dd25",
+  "implementationFiles": {
+    "bin/agent-dialogue.mjs": "c20963ed4565476e47c6156d766474544628584f59cb7beef05f6692e25aa529",
+    "lib/viewer/cli.mjs": "05b2a7cf0396ad56c97ce8cb20b37002ec21f41172b07813fe30a3599fc6eff4",
+    "lib/viewer/config.mjs": "00d952056da70c5a58f213a393267fdb1a8625cdc258d3b7bfcb5dca84b22b3f",
+    "lib/viewer/export-cli.mjs": "60e3106055c945f5ffd8b511a0e7996c61bf0797f258f3508279b6fd97838742",
+    "lib/viewer/observation.mjs": "fb6cddbae5a0ef7e20c59a2beb9e353583cb37660301d9f91a53ccaf0764a2cb",
+    "lib/viewer/projection.mjs": "e5ae659a4d085ccc2baf4b31eae85a70fd220e98644186446f9cfa0a63d88526",
+    "lib/viewer/readers/local.mjs": "33888d7d4301df8bebfb96902ca25e8a9c7daea7864badfbf69deba15972e8f9",
+    "lib/viewer/readers/ssh.mjs": "7aafc91ec2d2cc182f3ea999427239c63f0cbd7f93ba61ad3ecc239bdd0138ab",
+    "lib/viewer/server.mjs": "f9a954dd3529d1d726955b7c869dc1176d568598ffc9cef0f60ec781f3c4655a",
+    "lib/viewer/stream.mjs": "9dc10542031dcc870ac9f6b1f988db043ecd57e2b3c8e8a88b51a67b4f8bbffa",
+    "scripts/ssh-observer-verify.mjs": "637281a40c4ddbd537e951e9edc6f0391139c22d111b57b68da903c4bcfb9c63",
+    "tests/fixtures/viewer-fixture.mjs": "c6e61da43514ca726af87910226ab3bc21a05ecef4b0c5d1217576d4ab30e0e4",
+    "tests/fixtures/viewer-observation-fixture.mjs": "b415f98b802728d355f272c2ef9c631564546d40930ecb39be0395dc0e1777c5",
+    "tests/viewer-observation.test.mjs": "b168ab63f644f97c4db36596dc06f75d19eb677e0df8e0b6ca8edfb86d4a04ba",
+    "tests/viewer-remote-cli.test.mjs": "e3e2be4681ad019d40e9f1f03d77dfe7d590c8978d6fdd93a99d63ec68b13712",
+    "tests/viewer-ssh-integration.test.mjs": "a32181a69514ad78ca77dd7b42656e1fccae645c21106f7263e98ee8e8905f87",
+    "tests/viewer-ssh.test.mjs": "67eb633e7fe284db947c0ffa20088e946b233c04b319afc0404a28c7611eb7f2"
+  },
+  "command": [
+    "node",
+    "--test",
+    "--test-reporter=tap",
+    "tests/viewer-observation.test.mjs",
+    "tests/viewer-ssh.test.mjs",
+    "tests/viewer-remote-cli.test.mjs",
+    "tests/viewer-ssh-integration.test.mjs"
+  ],
+  "runtime": {
+    "node": "v26.10.0",
+    "platform": "darwin",
+    "arch": "arm64"
+  },
+  "fakeSSH": true,
+  "actualSshConnections": 0,
+  "modelCalls": 0,
+  "realModelTraffic": false,
+  "connectionCountBasis": "The fixed test suite uses injected runners or PATH-local fake SSH executables; no actual SSH server is contacted. This is a fixture property, not a network-monitor measurement.",
+  "scope": "Synthetic sealed room snapshots, local SQLite WAL writers, fixed remote export CLI executed locally, and loopback viewer HTTP only.",
+  "coverage": [
+    "exact node and immutable room manifest scope with remote/client validation",
+    "minimal metadata and secret-field exclusion, including malicious responses",
+    "fixed SSH quoting, known-host verification, stdin request and bounded output",
+    "12-second child deadline, abort, throttle and independent local progress",
+    "actual export CLI with active WAL and before/after DB/WAL/SHM/control-file hashes",
+    "queued request folding, signed wire copy deduplication, exact sessions and linked replies",
+    "disconnect stale retention, fresh-nonce recovery and late receipt updates",
+    "source replacement, event deletion/rewrite reset and observer shutdown"
+  ],
+  "rawOutputPolicy": "Only sanitized counts and timing are published. Raw test output is written to an ignored private 0600 log."
+}

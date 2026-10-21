@@ -1,0 +1,103 @@
+{
+  "version": 1,
+  "scenario": "synthetic-local-read-only-viewer",
+  "recordedAt": "2026-10-18T02:08:58.410Z",
+  "realModelTraffic": false,
+  "modelCalls": 0,
+  "baseCommit": "19d96e45cdc4947b605c17f605bfd173366c85c3",
+  "implementationSha256": "f40e08b7ea56f2b565afeabf7295f4c4d8a69709c070324720a50fd1872a604d",
+  "passed": 8,
+  "failed": 0,
+  "completed": true,
+  "targets": {
+    "startupMs": 3000,
+    "updateMs": 2000
+  },
+  "observed": {
+    "startupFirstPageMs": 251.87,
+    "receiptLatencyMs": 876.35,
+    "messageLatencyMs": 754.11
+  },
+  "assertions": [
+    {
+      "name": "actual_reader_startup_first_page_with_10002_logical_messages",
+      "passed": true,
+      "durationMs": 251.98,
+      "detail": {
+        "logicalMessages": 10002,
+        "firstPageMessages": 100,
+        "elapsedMs": 251.87
+      }
+    },
+    {
+      "name": "cross_source_wire_dedup_queue_mapping_reply_and_exact_identity",
+      "passed": true,
+      "durationMs": 1.43,
+      "detail": {
+        "logicalMessages": 2,
+        "sourceCopies": 4
+      }
+    },
+    {
+      "name": "scoped_json_markdown_export_and_secret_field_exclusion",
+      "passed": true,
+      "durationMs": 2.45,
+      "detail": {
+        "exportedLogicalMessages": 2,
+        "scope": "selected-room-and-participant"
+      }
+    },
+    {
+      "name": "full_source_hashes_unchanged_after_observation_and_export",
+      "passed": true,
+      "durationMs": 5.81,
+      "detail": {
+        "sources": 2,
+        "includes": [
+          "main-db",
+          "wal",
+          "shm",
+          "control-store",
+          "worker-receipts",
+          "worker-cursors",
+          "node-identity"
+        ]
+      }
+    },
+    {
+      "name": "receipt_only_update_visible_without_new_ledger_event",
+      "passed": true,
+      "durationMs": 879.18,
+      "detail": {
+        "elapsedMs": 876.35,
+        "newLedgerEvents": 0
+      }
+    },
+    {
+      "name": "new_committed_wal_message_visible_without_duplicate_history",
+      "passed": true,
+      "durationMs": 757.81,
+      "detail": {
+        "elapsedMs": 754.11,
+        "logicalMessages": 10003
+      }
+    },
+    {
+      "name": "SSE_reconnect_replays_known_revision_and_resets_unknown_server",
+      "passed": true,
+      "durationMs": 7.88,
+      "detail": {
+        "replay": "change",
+        "unknownHistory": "explicit-reset"
+      }
+    },
+    {
+      "name": "database_replacement_resets_observer_generation",
+      "passed": true,
+      "durationMs": 1691.78,
+      "detail": {
+        "reset": "source-replaced"
+      }
+    }
+  ]
+}

@@ -1,0 +1,45 @@
+{
+  "provenance": "Previously executed controlled development probes, 2026-10-18; this verifier records their findings. The source-hash/WAL assertions in metrics.json are freshly executed by this run.",
+  "hcomVersion": "0.7.30",
+  "platform": "darwin-arm64",
+  "command": "hcom events --full --type message --last 1",
+  "controlledTempSourcesOnly": true,
+  "observed": [
+    {
+      "source": "empty",
+      "exitCode": 0,
+      "created": [
+        "hcom.db",
+        ".tmp/flags/update_check.attempt",
+        ".tmp/logs/hcom.log"
+      ]
+    },
+    {
+      "source": "copied-existing",
+      "exitCode": 0,
+      "changedMainDatabaseHash": true,
+      "created": [
+        ".tmp/flags/update_check.attempt",
+        ".tmp/logs/hcom.log"
+      ]
+    },
+    {
+      "source": "active-WAL-copy",
+      "exitCode": 0,
+      "returnedLatestCommittedWalMessage": true,
+      "changedMainDatabaseHash": true,
+      "removed": [
+        "hcom.db-wal",
+        "hcom.db-shm"
+      ]
+    }
+  ],
+  "directReadOnlySqliteProbe": {
+    "dbHashUnchanged": true,
+    "walHashUnchanged": true,
+    "shmHashUnchanged": false
+  },
+  "chosenReader": "stable byte copies of DB/WAL into disposable private temp directory; read-only SQLite only on copied ledger; source opened O_RDONLY and never SQLite-opened",
+  "activeRollbackJournalPolicy": "source temporarily unavailable until a stable snapshot can be copied",
+  "modelCalls": 0
+}

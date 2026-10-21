@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "run_id": "vps-integration-20261018-v5",
+  "recorded_at": "2026-10-18T13:05:42.089Z",
+  "controller_commit": "074603e6d38d60e438fb3fc18e9be40953980a2f",
+  "status": "passed",
+  "native_user_turns": 5,
+  "codex_command_executions": 2,
+  "codex_file_patches": 1,
+  "assertions": {
+    "owned_codex_idle_or_not_loaded": true,
+    "only_two_exact_successful_communication_shell_commands": true,
+    "only_one_patch_to_the_verified_fixture": true,
+    "no_other_native_external_tool_execution": true
+  }
+}

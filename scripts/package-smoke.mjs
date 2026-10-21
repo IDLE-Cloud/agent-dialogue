@@ -23,21 +23,109 @@ try {
   for (const path of paths) assert.ok(!/(^|\/)(\.state|\.runtime|research|verification|node_modules|tests)(\/|$)/.test(path), path);
   assert.ok(paths.includes('bin/agent-dialogue.mjs')); assert.ok(paths.includes('config/hcom.lock.json'));
   assert.ok(paths.includes('lib/paths.mjs')); assert.ok(!paths.includes('docs/NEXT_STEPS.source.md'));
+  for (const path of ['lib/inspect.mjs', 'lib/lifecycle.mjs', 'lib/recovery.mjs', 'lib/recovery-evidence.mjs', 'lib/forwarding-record.mjs', 'lib/mcp-send-record.mjs', 'docs/STATUS.md', 'docs/INSPECT.md', 'docs/LIFECYCLE.md', 'docs/RECOVERY.md', 'docs/RECOVERY-DESIGN.md', 'docs/STABILIZATION-DESIGN.md', 'docs/V0.3-STABILIZATION-PLAN.md']) assert.ok(paths.includes(path), path);
+  for (const path of ['lib/adapters.mjs', 'lib/kimi.mjs', 'lib/zcode.mjs', 'lib/mcp-tools.mjs', 'lib/mcp-stdio.mjs', 'lib/viewer/tool-inbox.mjs', 'docs/ZCODE.md', 'config/zcode-plugin/marketplace.json', 'config/zcode-plugin/plugins/agent-dialogue/.zcode-plugin/plugin.json', 'config/zcode-plugin/plugins/agent-dialogue/.mcp.json', 'config/zcode-plugin/plugins/agent-dialogue/hooks/context.mjs', 'lib/embedded-ledger.mjs', 'lib/opencode-v1.mjs', 'lib/platform.mjs', 'lib/private-files.mjs', 'lib/windows-worker.mjs', 'docs/WINDOWS.md', 'lib/codex.mjs', 'lib/nodes.mjs', 'lib/node-identity.mjs', 'lib/node-transport.mjs', 'lib/submissions.mjs', 'docs/NODES.md', 'lib/viewer/server.mjs', 'lib/viewer/readers/local.mjs', 'lib/viewer/readers/ssh.mjs', 'lib/viewer/observation.mjs', 'lib/viewer/export-cli.mjs', 'lib/viewer/config.mjs', 'lib/agent-guide.mjs', 'web/viewer/index.html', 'web/viewer/app.js', 'web/viewer/style.css', 'docs/VIEWER.md', 'docs/USAGE.md', 'docs/AGENT-GUIDE.md', 'config/AGENTS.snippet.md']) assert.ok(paths.includes(path), path);
+  for (const path of ['lib/migration.mjs', 'lib/migration-files.mjs', 'lib/migration-installation.mjs', 'docs/MIGRATION-DESIGN.md', 'docs/MIGRATION-OPERATIONS.md']) assert.ok(paths.includes(path), path);
   const prefix = join(temp, 'prefix'), cwd = join(temp, 'unrelated cwd'), state = join(temp, 'state'), cache = join(temp, 'cache');
   await mkdir(cwd); await mkdir(state);
   await call('npm', ['install', '--global', '--prefix', prefix, '--ignore-scripts', '--no-audit', '--no-fund', join(temp, packed.filename)]);
   const command = join(prefix, 'bin', 'agent-dialogue');
   const fake = join(temp, 'hcom');
   await writeFile(fake, `#!/usr/bin/env node\nif(process.argv[2]==='--version') console.log('hcom 0.7.30'); else if(process.argv[2]==='list') console.log('[]'); else throw Error('Unexpected command');\n`, { mode: 0o755 });
-  const env = { ...process.env, PATH: `${join(prefix, 'bin')}${delimiter}${dirname(process.execPath)}${delimiter}/usr/bin${delimiter}/bin`, AGENT_DIALOGUE_STATE_DIR: state, AGENT_DIALOGUE_CACHE_DIR: cache, AGENT_DIALOGUE_HCOM: fake };
+  const env = { ...process.env, PATH: `${join(prefix, 'bin')}${delimiter}${dirname(process.execPath)}${delimiter}/usr/bin${delimiter}/bin`, AGENT_DIALOGUE_STATE_DIR: state, AGENT_DIALOGUE_CACHE_DIR: cache, AGENT_DIALOGUE_LEDGER: 'hcom', AGENT_DIALOGUE_HCOM: fake };
   const pkg = join(prefix, 'lib/node_modules/@idle-cloud/agent-dialogue');
   const before = await readdir(pkg);
-  assert.match(await call(command, ['--help'], { cwd, env }), /attach opencode/);
+  const help = await call(command, ['--help'], { cwd, env });
+  assert.match(help, /attach <opencode\|opencode-v1\|codex\|kimi\|zcode>/);
+  assert.match(help, /migration prepare/);
+  assert.match(await call(command, ['agent-guide'], { cwd, env: { ...env, AGENT_DIALOGUE_STATE_DIR: '' } }), /Establish your identity once/);
+  const inspectionState = join(temp, 'not initialized state'), inspectionCache = join(temp, 'not initialized cache');
+  const tempBefore = await readdir(temp);
+  const inspection = JSON.parse(await call(command, ['inspect', '--json'], { cwd, env: { ...env, AGENT_DIALOGUE_STATE_DIR: inspectionState, AGENT_DIALOGUE_CACHE_DIR: inspectionCache } }));
+  assert.equal(inspection.schemaVersion, 1); assert.equal(inspection.overall, 'unconfigured');
+  assert.equal(inspection.effects.sourceWrites, false); assert.equal(inspection.effects.nativeContact, false);
+  assert.equal(inspection.effects.sshContact, false); assert.equal(inspection.effects.modelTurns, false);
+  assert.deepEqual(await readdir(temp), tempBefore, 'Pre-setup inspection must leave state/cache absent');
   assert.deepEqual(JSON.parse(await call(command, ['bindings'], { cwd, env })), { bindings: [], rooms: [] });
+  const node = JSON.parse(await call(command, ['node', 'init', '--name', 'package-test'], { cwd, env }));
+  const exported = JSON.parse(await call(command, ['node', 'export'], { cwd, env }));
+  assert.equal(node.nodeId, exported.payload.node.nodeId); assert.ok(exported.signature);
+  assert.equal(JSON.stringify(exported).includes('privateKey'), false);
+  const identityBefore = await readFile(join(state, 'dialogue', 'node.json'));
+  const upgrade = JSON.parse(await call(command, ['state', 'upgrade', '--offline', '--json'], { cwd, env }));
+  assert.equal(upgrade.version, 2); assert.equal(upgrade.upgraded, true);
+  const upgradedStore = await readFile(join(state, 'dialogue', 'store.json'));
+  const upgradedInspection = JSON.parse(await call(command, ['inspect', '--json'], { cwd, env }));
+  assert.equal(upgradedInspection.node.nodeId, node.nodeId);
+  assert.deepEqual(await readFile(join(state, 'dialogue', 'node.json')), identityBefore);
+  assert.deepEqual(await readFile(join(state, 'dialogue', 'store.json')), upgradedStore);
+  const recoveryUpgrade = JSON.parse(await call(command, ['state', 'upgrade', '--offline', '--target', '3', '--json'], { cwd, env }));
+  assert.equal(recoveryUpgrade.version, 3); assert.equal(recoveryUpgrade.upgraded, true);
+  const recoveryStore = await readFile(join(state, 'dialogue', 'store.json'));
+  assert.deepEqual(JSON.parse(recoveryStore).forwardings, {});
+  assert.deepEqual(await readFile(join(state, 'dialogue', 'node.json')), identityBefore);
+  const recoveryInspection = JSON.parse(await call(command, ['inspect', '--json'], { cwd, env }));
+  assert.equal(recoveryInspection.node.nodeId, node.nodeId);
+  assert.deepEqual(await readFile(join(state, 'dialogue', 'store.json')), recoveryStore);
+  const repeatedUpgrade = JSON.parse(await call(command, ['state', 'upgrade', '--offline', '--target', '3', '--json'], { cwd, env }));
+  assert.equal(repeatedUpgrade.upgraded, false);
+  assert.deepEqual(await readFile(join(state, 'dialogue', 'store.json')), recoveryStore);
+  const nativeUpgrade = JSON.parse(await call(command, ['state', 'upgrade', '--offline', '--target', '4', '--json'], { cwd, env }));
+  assert.equal(nativeUpgrade.version, 4); assert.equal(nativeUpgrade.upgraded, true);
+  const nativeStore = await readFile(join(state, 'dialogue', 'store.json'));
+  assert.deepEqual(JSON.parse(nativeStore).nativeIntents, {});
+  assert.deepEqual(await readFile(join(state, 'dialogue', 'node.json')), identityBefore);
+  const nativeInspection = JSON.parse(await call(command, ['inspect', '--json'], { cwd, env }));
+  assert.equal(nativeInspection.node.nodeId, node.nodeId);
+  const repeatedNative = JSON.parse(await call(command, ['state', 'upgrade', '--offline', '--target', '4', '--json'], { cwd, env }));
+  assert.equal(repeatedNative.upgraded, false);
+  assert.deepEqual(await readFile(join(state, 'dialogue', 'store.json')), nativeStore);
+  for (const path of ['lib/native-record.mjs', 'lib/native-proof.mjs', 'lib/native-recovery.mjs', 'lib/lock-recovery.mjs', 'docs/NATIVE-RECOVERY.md', 'docs/NATIVE-RECOVERY-DESIGN.md']) assert.ok(paths.includes(path), path);
   const doctor = JSON.parse(await call(command, ['doctor', '--json'], { cwd, env }));
   assert.equal(doctor.stateDir, state); assert.equal(doctor.cacheDir, cache); assert.equal(doctor.hcom.version, 'hcom 0.7.30');
+  const sourceBefore = await readdir(state);
+  const viewerConfig = join(temp, 'observer.json');
+  await writeFile(viewerConfig, JSON.stringify({ version: 1, sources: [{ kind: 'local', label: 'Installed package', path: './state' }] }));
+  const viewer = spawn(command, ['view', '--config', viewerConfig], { cwd, env, shell: false, stdio: ['ignore', 'pipe', 'pipe'] });
+  let viewerClosed = false;
+  const viewerClose = new Promise(resolveClosed => viewer.once('close', () => { viewerClosed = true; resolveClosed(); }));
+  try {
+    const url = await new Promise((resolveURL, rejectURL) => {
+      let output = '';
+      const timeout = setTimeout(() => rejectURL(new Error('Installed viewer did not become ready.')), 10000);
+      viewer.once('error', error => { clearTimeout(timeout); rejectURL(error); });
+      viewer.once('exit', code => { clearTimeout(timeout); rejectURL(new Error(`Installed viewer exited before readiness: ${code}`)); });
+      viewer.stdout.on('data', chunk => {
+        output += chunk;
+        const match = output.match(/http:\/\/127\.0\.0\.1:\d+\/\?token=[A-Za-z0-9_-]+/);
+        if (match) { clearTimeout(timeout); resolveURL(match[0]); }
+      });
+      viewer.stderr.resume();
+    });
+    const bootstrap = await fetch(url, { redirect: 'manual', signal: AbortSignal.timeout(10000) });
+    assert.equal(bootstrap.status, 303);
+    const cookie = bootstrap.headers.get('set-cookie').split(';')[0], origin = new URL(url).origin;
+    for (const path of ['/', '/app.js', '/style.css', '/api/snapshot']) {
+      const response = await fetch(`${origin}${path}`, { headers: { cookie }, signal: AbortSignal.timeout(10000) });
+      assert.equal(response.status, 200, path);
+      if (path === '/api/snapshot') {
+        const snapshot = await response.json();
+        assert.equal(snapshot.sources.length, 1);
+        assert.equal(snapshot.sources[0].available, false, 'Opening a viewer must not initialize a missing ledger');
+      } else assert.ok((await response.text()).length > 100, path);
+    }
+    assert.deepEqual(await readdir(state), sourceBefore);
+  } finally {
+    if (!viewerClosed) {
+      if (viewer.exitCode === null && viewer.signalCode === null) viewer.kill('SIGTERM');
+      await new Promise(resolveStopped => {
+        const timeout = setTimeout(() => { viewer.kill('SIGKILL'); resolveStopped(); }, 3000);
+        viewerClose.then(() => { clearTimeout(timeout); resolveStopped(); });
+      });
+    }
+  }
   assert.deepEqual(await readdir(pkg), before, 'Running installed CLI must not create state/cache inside package');
   const installed = JSON.parse(await readFile(join(pkg, 'package.json'), 'utf8'));
-  assert.equal(installed.version, '0.2.0');
-  console.log(JSON.stringify({ status: 'passed', name: installed.name, version: installed.version, packedFiles: paths.length, packedBytes: packed.size, checks: ['package allowlist', 'isolated prefix install', 'global executable', 'arbitrary working directory', 'external state/cache', 'no package mutation'] }, null, 2));
+  assert.equal(installed.version, JSON.parse(await readFile(join(root, 'package.json'), 'utf8')).version);
+  console.log(JSON.stringify({ status: 'passed', name: installed.name, version: installed.version, packedFiles: paths.length, packedBytes: packed.size, checks: ['package allowlist including recovery runtime/design and onboarding guides', 'isolated prefix install', 'global executable', 'agent guide before setup', 'pre-setup read-only inspect', 'arbitrary working directory', 'external state/cache', 'signed public node export', 'explicit offline v2 upgrade preserves node identity', 'installed inspect preserves v2 store bytes', 'explicit offline v3 upgrade and repeat preserve node identity and store bytes', 'installed inspect preserves v3 store bytes', 'explicit offline v4 upgrade/repeat and inspect preserve node identity/store bytes', 'packaged native proof/recovery/lock modules and guides', 'installed viewer assets/API with config-relative source', 'viewer leaves missing ledger absent', 'no package mutation'] }, null, 2));
 } finally { await rm(temp, { recursive: true, force: true }); }

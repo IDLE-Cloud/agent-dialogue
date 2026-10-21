@@ -1,0 +1,18 @@
+{
+  "version": 1,
+  "scenario": "replay-existing-owned-real-Codex-OpenCode-ledgers",
+  "recordedAt": "2026-10-18T02:12:52.969Z",
+  "modelCalls": 0,
+  "completed": false,
+  "failed": 1,
+  "reason": "Replay expectation omitted the newly visible raw hcom negative-probe event.",
+  "expected": {
+    "rooms": 2,
+    "messages": 6
+  },
+  "observed": {
+    "rooms": 3,
+    "messages": 7
+  },
+  "lesson": "Count raw hcom records separately; retain the rejected historical probe instead of hiding it."
+}

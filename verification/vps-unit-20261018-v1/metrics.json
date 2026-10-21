@@ -1,0 +1,34 @@
+{
+  "run_id": "vps-unit-20261018-v1",
+  "recorded_at": "2026-10-18T12:55:23.317965+00:00",
+  "status": "passed",
+  "scope": "local deterministic tests and isolated package install; no model or real SSH from these checks",
+  "tests": {
+    "total": 344,
+    "passed": 344,
+    "failed": 0,
+    "skipped": 0,
+    "cancelled": 0,
+    "duration_ms": 21113.377708
+  },
+  "package": {
+    "status": "passed",
+    "files": 46,
+    "bytes": 131127
+  },
+  "node": "v26.10.0",
+  "platform": "darwin-arm64",
+  "communication_baseline": "fbf5e11b3137aea73956c8fef67de4d5efd80ede",
+  "verifier_source_sha256": {
+    "scripts/vps-cleanup.mjs": "711b1a1b5fbb6a003f155b5f4b464a7c27676d5f523adab3fe4c76536f3da245",
+    "scripts/vps-codex-lease.mjs": "ce019218835f0ae35b7915524cdc9f6629e954e6a385704a83fd6b17f1a0236e",
+    "scripts/vps-command-evidence.mjs": "36551e547002707b3671488f53bcc2ea641afa0a32635e78fb806012cb395333",
+    "scripts/vps-integration-contract.mjs": "fe0c13ae99573ee89e3f60077c5a0e66ad1582693ef0fbd1ed86a621293f725e",
+    "scripts/vps-integration.mjs": "eb3dc8b109f5a9411b1b67d2da568f0550e4068744557e17569d99775c865a75",
+    "scripts/vps-observer-contract.mjs": "5c8527e19dadbd34f3098b87eb42d8d54e16bf665273ba0439557403a404ed69",
+    "scripts/vps-observer-integration.mjs": "8570030b12443e510d590167e359dd95b8e2b14e01ed19625c6b4edb103b32e1",
+    "scripts/vps-remote-helper.mjs": "6b4320bd5bb29c234221e511b6892465d4bf07d3563939abfab765ebe864e1e8",
+    "scripts/vps-seed.mjs": "a8352e368cd7721b53015f93dcfc32076ee92be2eb3f8713de63c24b90397b32"
+  },
+  "real_two_host_acceptance": "recorded separately, not inferred from unit tests"
+}

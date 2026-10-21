@@ -1,0 +1,144 @@
+{
+  "run_id": "codex-room-2026-10-17T14-20-55-983Z-7bec771b",
+  "started_at": "2026-10-17T14:20:55.984Z",
+  "status": "partial",
+  "scope": "one existing explicitly selected owned Codex test thread and one new owned normal OpenCode chat, one local room",
+  "codex": {
+    "explicit_resume_requested": true,
+    "model_changed": false,
+    "permissions_changed": false,
+    "approvals_granted": 0,
+    "was_loaded": false
+  },
+  "opencode": {
+    "model": {
+      "providerID": "opencode",
+      "id": "deepseek-v4.1-flash-free"
+    },
+    "zero_cost_verified": true,
+    "approvals_once": 0
+  },
+  "stages": [
+    {
+      "name": "explicit_owned_codex_thread_verified",
+      "at": "2026-10-17T14:20:55.997Z",
+      "loaded_before": false
+    },
+    {
+      "name": "exact_threads_attached_to_one_strict_room",
+      "at": "2026-10-17T14:21:01.177Z",
+      "codex_resumed_explicitly": true
+    },
+    {
+      "name": "waiting_for_owned_native_response",
+      "at": "2026-10-17T14:21:16.494Z",
+      "role": "codex",
+      "elapsed_seconds": 15
+    },
+    {
+      "name": "waiting_for_owned_native_response",
+      "at": "2026-10-17T14:21:31.712Z",
+      "role": "codex",
+      "elapsed_seconds": 30
+    },
+    {
+      "name": "waiting_for_owned_native_response",
+      "at": "2026-10-17T14:21:46.930Z",
+      "role": "codex",
+      "elapsed_seconds": 46
+    },
+    {
+      "name": "waiting_for_owned_native_response",
+      "at": "2026-10-17T14:22:02.157Z",
+      "role": "codex",
+      "elapsed_seconds": 61
+    },
+    {
+      "name": "waiting_for_owned_native_response",
+      "at": "2026-10-17T14:22:17.416Z",
+      "role": "codex",
+      "elapsed_seconds": 76
+    },
+    {
+      "name": "waiting_for_owned_native_response",
+      "at": "2026-10-17T14:22:32.643Z",
+      "role": "codex",
+      "elapsed_seconds": 91
+    },
+    {
+      "name": "waiting_for_owned_native_response",
+      "at": "2026-10-17T14:22:47.885Z",
+      "role": "codex",
+      "elapsed_seconds": 107
+    },
+    {
+      "name": "codex_queue_drain_and_model_response_verified",
+      "at": "2026-10-17T14:22:56.078Z"
+    },
+    {
+      "name": "waiting_for_owned_native_response",
+      "at": "2026-10-17T14:23:11.377Z",
+      "role": "codex",
+      "elapsed_seconds": 15
+    },
+    {
+      "name": "waiting_for_owned_native_response",
+      "at": "2026-10-17T14:23:26.518Z",
+      "role": "codex",
+      "elapsed_seconds": 30
+    },
+    {
+      "name": "waiting_for_owned_native_response",
+      "at": "2026-10-17T14:23:41.597Z",
+      "role": "codex",
+      "elapsed_seconds": 45
+    },
+    {
+      "name": "waiting_for_owned_native_response",
+      "at": "2026-10-17T14:23:56.756Z",
+      "role": "codex",
+      "elapsed_seconds": 61
+    },
+    {
+      "name": "waiting_for_owned_native_response",
+      "at": "2026-10-17T14:24:11.924Z",
+      "role": "codex",
+      "elapsed_seconds": 76
+    },
+    {
+      "name": "waiting_for_owned_native_response",
+      "at": "2026-10-17T14:24:27.033Z",
+      "role": "codex",
+      "elapsed_seconds": 91
+    },
+    {
+      "name": "waiting_for_owned_native_response",
+      "at": "2026-10-17T14:24:42.182Z",
+      "role": "codex",
+      "elapsed_seconds": 106
+    }
+  ],
+  "assertions": {
+    "codex_original_thread_preserved": true,
+    "operator_native_queue_admitted": true,
+    "codex_native_queue_drained_and_assistant_replied": true
+  },
+  "cleanup": [
+    {
+      "target": "opencode-binding",
+      "detached": true,
+      "native_chat_preserved": true
+    },
+    {
+      "target": "codex-binding",
+      "detached": true,
+      "native_chat_preserved": true
+    }
+  ],
+  "failure": {
+    "stage": "waiting_for_owned_native_response",
+    "category": "native-model-or-permission-timeout",
+    "raw_diagnosis_private": true
+  },
+  "finished_at": "2026-10-17T14:24:56.409Z"
+}

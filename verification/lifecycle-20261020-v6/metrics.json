@@ -1,0 +1,163 @@
+{
+  "schemaVersion": 1,
+  "stage": "ST-04 final implementation acceptance",
+  "observedAt": "2026-10-19T17:55:48.053910+00:00",
+  "sourceCommit": "fbca2f12af442e3f145edd2eb6281fc65d2ac4c6",
+  "closingChanges": "documentation and reports only; runtime content unchanged",
+  "runtimeFiles": 53,
+  "runtimeFilesSha256": "f3d499ec122289d6e5f31835bdd153423d92b3040b2d65eb9205f91f69030f44",
+  "digestFormat": "SHA256 of UTF-8 compact JSON array sorted by POSIX path, each object has path then sha256; no trailing newline",
+  "local": {
+    "platform": "darwin-arm64",
+    "nodeVersions": [
+      "v24.19.0",
+      "v26.10.0"
+    ],
+    "perVersion": {
+      "total": 644,
+      "passed": 643,
+      "failed": 0,
+      "cancelled": 0,
+      "skipped": 1
+    },
+    "newContractsFromInspectBase": 76,
+    "decomposition": {
+      "lifecycle": 59,
+      "store": 4,
+      "runtime": 3,
+      "atomic": 10
+    }
+  },
+  "ci": {
+    "runId": 39294916371,
+    "sourceCommit": "fbca2f12af442e3f145edd2eb6281fc65d2ac4c6",
+    "url": "https://github.com/IDLE-Cloud/agent-dialogue/actions/runs/39294916371",
+    "status": "completed",
+    "conclusion": "success",
+    "jobs": [
+      {
+        "id": 118204808838,
+        "name": "test (ubuntu-latest, 26)",
+        "nodeVersion": "v26.12.0",
+        "conclusion": "success"
+      },
+      {
+        "id": 118204809200,
+        "name": "windows-native",
+        "nodeVersion": "v24.21.0",
+        "conclusion": "success"
+      },
+      {
+        "id": 118204809216,
+        "name": "test (macos-latest, 24)",
+        "nodeVersion": "v24.21.0",
+        "conclusion": "success"
+      },
+      {
+        "id": 118204809372,
+        "name": "test (ubuntu-latest, 22)",
+        "nodeVersion": "v22.23.3",
+        "conclusion": "success"
+      },
+      {
+        "id": 118204809722,
+        "name": "test (ubuntu-latest, 24)",
+        "nodeVersion": "v24.22.0",
+        "conclusion": "success"
+      }
+    ],
+    "unixPerJob": {
+      "total": 644,
+      "passed": 643,
+      "failed": 0,
+      "cancelled": 0,
+      "skipped": 1
+    },
+    "windows": {
+      "total": 334,
+      "passed": 329,
+      "failed": 0,
+      "cancelled": 0,
+      "skipped": 5,
+      "durationMs": 1165519.7984,
+      "realSidAclChecks": true,
+      "embeddedSetup": "success",
+      "embeddedDoctor": "success"
+    },
+    "windowsSkips": "POSIX shell-execution, mode and symlink-specific assertions; actual Windows ACL assertions run"
+  },
+  "actualOldWriterFence": {
+    "oldCommit": "0aa51db985473dc22acd6245473604619f9a574f",
+    "currentCommit": "fbca2f12af442e3f145edd2eb6281fc65d2ac4c6",
+    "assertions": 43,
+    "passed": 43,
+    "oldWritersRefused": 5,
+    "fullStateBytesModesPreserved": true,
+    "notGenericST06Migration": true
+  },
+  "installedProductionLauncher": {
+    "sourceCommit": "fbca2f12af442e3f145edd2eb6281fc65d2ac4c6",
+    "nodeVersion": "v24.19.0",
+    "platform": "darwin-arm64",
+    "assertions": 40,
+    "passed": 40,
+    "defaultLauncherInjected": false,
+    "prefixHasSpaces": true,
+    "arbitraryCwd": true,
+    "externalStateCache": true,
+    "aliceSpawns": 1,
+    "bobSpawns": 1,
+    "explicitStartExtraSpawns": 0,
+    "pausedPosts": 0,
+    "resumedPosts": 1,
+    "persistedFakeInputsBeforeReceipt": 1,
+    "duplicatePosts": 0,
+    "samePidToken": true,
+    "ownedWorkersNormallyStoppedAndConfirmedDead": 2,
+    "ownedWorkersRemaining": 0,
+    "programBytesModesUnchanged": true,
+    "bindingsPinsCursorReceiptsPreserved": true,
+    "files": 76,
+    "compressedBytes": 271308,
+    "unpackedBytes": 854473,
+    "tarballSha256": "4ce5aec4db1945550778f6da148db54ebedd409fafa8c37d60a8e13e92bfc982",
+    "allFileContentBytesEqualSourceCommit": true,
+    "tarModes": {
+      "0644": 74,
+      "0755": 2
+    },
+    "sameBytesAsCITarballClaimed": false,
+    "frozenReleaseAsset": false
+  },
+  "review": {
+    "independentCodeSafety": "ready",
+    "independentEvidencePrivacy": "ready",
+    "scopedBlockingFindings": 0,
+    "historicalIdentityFollowups": "tracked for ST-07 and adapter compatibility; not silently fixed"
+  },
+  "safety": {
+    "modelTurns": 0,
+    "realHarnessApiCalls": 0,
+    "sshConnections": 0,
+    "remoteHostChanges": 0,
+    "realUserStateTouched": false,
+    "loopbackFixtures": true
+  },
+  "taskStatus": {
+    "ST-04": "complete",
+    "ST-05": "pending",
+    "ST-06": "pending",
+    "releaseCandidate": "pending",
+    "stableRelease": "v0.2.0",
+    "merged": false,
+    "newRelease": false
+  },
+  "historicalReportsPreserved": true,
+  "boundaries": [
+    "Windows contracts do not prove arbitrary desktop or model/hardware combinations",
+    "macOS installed default launcher is not native Windows scheduler proof",
+    "offline schema fence is not complete generic upgrade/rollback",
+    "unknown/pending remain needs-review; no automatic replay, lock breaking or native process restart",
+    "cross-prefix old workers require original installation maintenance"
+  ]
+}

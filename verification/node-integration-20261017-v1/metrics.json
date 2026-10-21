@@ -1,0 +1,90 @@
+{
+  "run_id": "node-project-2026-10-17T14-16-28-094Z-5e605893",
+  "started_at": "2026-10-17T14:16:28.095Z",
+  "status": "passed",
+  "transport": "local-process",
+  "scope": "two independent local nodes, one existing OpenCode service; no two-host claim",
+  "model": {
+    "providerID": "opencode",
+    "id": "deepseek-v4.1-flash-free",
+    "zero_cost_verified": true,
+    "service_version": "2.0.20"
+  },
+  "stages": [
+    {
+      "name": "zero_cost_model_verified",
+      "at": "2026-10-17T14:16:28.143Z"
+    },
+    {
+      "name": "normal_project_chat_seeded",
+      "at": "2026-10-17T14:16:31.509Z",
+      "role": "a"
+    },
+    {
+      "name": "existing_project_chat_attached",
+      "at": "2026-10-17T14:16:31.820Z",
+      "role": "a"
+    },
+    {
+      "name": "normal_project_chat_seeded",
+      "at": "2026-10-17T14:16:36.006Z",
+      "role": "b"
+    },
+    {
+      "name": "existing_project_chat_attached",
+      "at": "2026-10-17T14:16:36.200Z",
+      "role": "b"
+    },
+    {
+      "name": "public_cards_paired_and_room_imported",
+      "at": "2026-10-17T14:16:36.563Z"
+    },
+    {
+      "name": "project_collaboration_triggered",
+      "at": "2026-10-17T14:16:36.645Z"
+    },
+    {
+      "name": "waiting_for_owned_project_exchange",
+      "at": "2026-10-17T14:16:51.990Z",
+      "request_observed": true,
+      "linked_reply_observed": true
+    },
+    {
+      "name": "project_collaboration_completed",
+      "at": "2026-10-17T14:16:55.303Z",
+      "status": "passed",
+      "elapsed_ms": 18658
+    }
+  ],
+  "assertions": {
+    "seeded_before_attach": true,
+    "exactly_one_model_origin_request": true,
+    "exactly_one_model_origin_linked_reply": true,
+    "remote_stored_receipts": true,
+    "original_session_ids_preserved": true,
+    "original_private_context_combined": true,
+    "independent_node_identities": true,
+    "request_and_reply_reconciled_on_both_nodes": true,
+    "only_bounded_once_permissions": true
+  },
+  "permissions": {
+    "once": 2,
+    "rejected": 0
+  },
+  "cleanup": [
+    {
+      "role": "a",
+      "detached": true
+    },
+    {
+      "role": "b",
+      "detached": true
+    }
+  ],
+  "elapsed_ms": 18658,
+  "message_ids": {
+    "request": "m_b6e3cee9-84b2-4a19-a7e7-7080201010f3",
+    "reply": "m_1ba1b9fe-3277-465d-ba5c-748c57cafe2a"
+  },
+  "finished_at": "2026-10-17T14:16:55.426Z"
+}

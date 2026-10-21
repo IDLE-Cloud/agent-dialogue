@@ -1,0 +1,59 @@
+{
+  "schemaVersion": 1,
+  "stage": "ST-01/ST-02/ST-03 local implementation acceptance",
+  "observedAt": "2026-10-19T15:14:15.253974+00:00",
+  "sourceBaseCommit": "d861b5bfe97a3ad5611247c2d10d60cf6b3a993d",
+  "runtimeFilesSha256": "60cbf76e1425a1a25c4c833722675184935c36538f972ee806b6f1f38f8111ff",
+  "runtimeFiles": 51,
+  "sourceSnapshot": "working-tree content committed with this report",
+  "environment": {
+    "physicalHosts": 1,
+    "platform": "darwin-arm64",
+    "node": "v26.10.0"
+  },
+  "tests": {
+    "newInspectAndCliContracts": 32,
+    "fullTotal": 568,
+    "passed": 567,
+    "failed": 0,
+    "skipped": 1,
+    "skipReason": "Windows-only ACL test on POSIX"
+  },
+  "package": {
+    "status": "passed",
+    "files": 73,
+    "bytes": 246601,
+    "isolatedPrefix": true,
+    "arbitraryCwd": true,
+    "inspectBeforeSetupNoStateOrCacheCreation": true
+  },
+  "workflow": {
+    "testsAddedToWindowsNativeJob": true,
+    "platformCi": "not completed at this local snapshot; inspect the associated PR checks"
+  },
+  "safety": {
+    "realHarnessApiCalls": 0,
+    "modelTurns": 0,
+    "remoteHostChanges": 0,
+    "nativeAdapterFixturesUsed": true,
+    "ownedChildProcessesUsed": true,
+    "sourceStatePreservedByInspection": true
+  },
+  "review": {
+    "independentReviewCompleted": true,
+    "openBlockingFindings": 0,
+    "resolved": [
+      "cross-node control lock cycle in lifecycle design",
+      "preparing ingress omitted from needs-review",
+      "bounded metadata limit misclassified as invalid",
+      "installed status history links"
+    ]
+  },
+  "boundaries": [
+    "pause/resume and store v2 migration are design only",
+    "q/m/native recovery changes and lock recovery not implemented",
+    "no SSH deep inspection",
+    "no new real multi-host or desktop trial",
+    "no fixed RC, merge, tag or release"
+  ]
+}

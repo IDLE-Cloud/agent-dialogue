@@ -12,10 +12,12 @@ export { runtimeEnvironment, validateArchiveListing };
 
 export const PROJECT_DIR = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const TOOLS = new Set(['codex', 'opencode', 'kimi', 'pi']);
-const HELP = `agent-dialogue — local cross-harness agent communication
+const HELP = `agent-dialogue — cross-node, cross-harness agent communication
 
   setup                                   Install the pinned platform release in your user cache
   doctor [--json]                         Inspect tools, versions and local endpoints
+  inspect [--binding ALIAS] [--room ID] [--json]
+       [--native [--allow-session-load]]  Read existing state; native queries are explicit
   launch <codex|opencode|kimi|pi> --cwd PATH
        [--prompt TEXT] [--tag LABEL] [--interactive] [--terminal PRESET]
        [-- native-tool-arguments...]
@@ -23,14 +25,48 @@ const HELP = `agent-dialogue — local cross-harness agent communication
   send TARGET --message TEXT [--reply-to ID] [--thread NAME]
        [--intent request|inform|ack]        Send as the external operator (bigboss)
   history [--last N] [--thread NAME]       Read full message events as JSON Lines
+  view [--source LABEL=PATH ...] [--config PATH] [--port N]
+                                           Open a local read-only dialogue observer
+  view-export --state-dir PATH             Fixed stdin/stdout SSH observation entry
+  agent-guide [--room ID --from ALIAS [--to ALIAS]]
+                                           Read protocol / generate one agent's exact context
   stop NAME                               Stop one existing local endpoint
-  sessions opencode                       List existing native OpenCode chats
-  attach opencode --session ID --alias NAME Attach an existing chat, no fork/new chat
+  sessions <opencode|opencode-v1|codex|kimi|zcode> [--cwd PATH] List exact native chats
+  attach <opencode|opencode-v1|codex|kimi|zcode> --session ID --alias NAME [--resume]
+                                           Bind an existing chat; Codex resume is explicit
+  zcode init --cwd PATH --file PATH         Create an owner-selected tool-inbox descriptor
+  mcp-context --room ID --from ALIAS [--to ALIAS] [--output PATH]
+                                           Export a private, fixed ZCode MCP assignment
+  mcp --zcode-service PATH [--context PATH]  Serve contextual MCP tools over stdio
   bindings                                Show exact bindings, rooms and receipts
   room create --name LABEL --members a,b   Create a project collaboration room
+  room export ID | room import --file PATH Export/accept a signed room manifest
+  node init --name LABEL | node export     Create identity / export signed peer card
+  node peer add --file CARD (--ssh HOST | --local) --executable PATH
+       [--cli PATH] --state-dir PATH [--cache-dir PATH]
+       [--service-file PATH] [--codex-home PATH] [--kimi-service-file PATH] [--zcode-service-file PATH]
+       [--shell posix|powershell] [--opencode-v1-service-file PATH]
+       [--ledger hcom|embedded] [--ssh-config PATH]
+  node status | node flush [--message ID]  Inspect nodes / retry the same durable message
   collab send --room ID --from ALIAS --to ALIAS --message TEXT
-       [--reply-to EVENT] [--expected-session ID]
+       [--reply-to EVENT] [--expected-session ID] [--queue]
+                                           Queue locally when the model shell has no network
   bridge start ALIAS | bridge status       Start/inspect the native-session bridge
+  bridge pause ALIAS | bridge resume ALIAS Preserve exact binding and delivery progress
+  bridge stop ALIAS                        Cooperatively stop an owned worker; keep binding
+  state upgrade --offline [--target 2|3|4]  Explicit quiescent control-store upgrade
+  bridge reconcile ALIAS --submission q_UUID  Evidence-only stopped-worker repair; no resend
+  bridge native-evidence ALIAS --event N [--native [--allow-session-load]]
+                                           Read metadata; exact native query is explicit
+  bridge native-reconcile ALIAS --event N [--allow-session-load]
+                                           Repair a stopped worker from full native evidence
+  lock plan [--binding ALIAS] [--output PRIVATE_FILE]
+  lock retire --plan PRIVATE_FILE --offline  Quarantine one proven-dead control/dispatch lock
+  migration plan --from-package PATH --from-node PATH
+  migration prepare --from-package PATH --from-node PATH --bundle PATH --offline
+  migration status|verify --bundle PATH    Read maintenance metadata / exact file evidence
+  migration apply|accept --bundle PATH --offline
+  migration rollback --bundle PATH --offline  Restore only the eligible original store bytes
   detach ALIAS                            Stop bridge; preserve the original chat
   hcom <read-command> [arguments...]       Restricted read-only upstream access
 
@@ -98,6 +134,22 @@ function parseOptions(args, specs) {
   return { options, rest };
 }
 function noRest(rest) { if (rest.length) fail('This command does not accept native arguments.'); }
+async function readJsonFile(path) {
+  if (!path) fail('A JSON file path is required.');
+  const bytes = await readFile(resolve(path));
+  if (bytes.length > 262144) fail('JSON document exceeds 256 KiB.');
+  try { return JSON.parse(bytes.toString('utf8')); }
+  catch { fail('Invalid JSON document.'); }
+}
+async function readStdinJson() {
+  let size = 0; const chunks = [];
+  for await (const chunk of process.stdin) {
+    size += chunk.length; if (size > 262144) fail('Node envelope exceeds 256 KiB.');
+    chunks.push(chunk);
+  }
+  try { return JSON.parse(Buffer.concat(chunks).toString('utf8')); }
+  catch { fail('Invalid node envelope JSON.'); }
+}
 function targetName(input) {
   const name = input?.replace(/^@/, '');
   if (!name || !/^[A-Za-z0-9][A-Za-z0-9_.-]*$/.test(name) || name === 'all' || name.endsWith('-')) {
@@ -129,8 +181,10 @@ export function launchArguments(tool, args) {
 async function executablePath(command, env) {
   for (const dir of (env.PATH || '').split(delimiter)) {
     if (!dir) continue;
-    const path = resolve(dir, command);
-    try { await access(path, constants.X_OK); return path; } catch { /* continue PATH search */ }
+    for (const suffix of process.platform === 'win32' ? ['', '.exe', '.cmd', '.bat'] : ['']) {
+      const path = resolve(dir, command + suffix);
+      try { await access(path, constants.X_OK); return path; } catch { /* continue PATH search */ }
+    }
   }
   return null;
 }
@@ -139,7 +193,7 @@ async function doctor(context, json) {
   await Promise.all(['codex', 'opencode', 'kimi', 'pi', 'node', 'ssh'].map(async name => {
     const path = await executablePath(name, context.env);
     let version = null, error = null;
-    if (path && name !== 'ssh') {
+    if (path && name !== 'ssh' && (process.platform !== 'win32' || name === 'node')) {
       try {
         const result = await run(path, ['--version'], { env: context.env, capture: true, timeout: 15_000 });
         version = (result.stdout || result.stderr).trim().split('\n')[0] || null;
@@ -150,6 +204,11 @@ async function doctor(context, json) {
   }));
   let hcom = { path: context.binary, version: null }, endpoints = [], errors = [];
   try {
+    if (context.ledgerBackend === 'embedded') {
+      const { runEmbedded } = await import('../lib/embedded-ledger.mjs');
+      hcom = { path: null, backend: 'embedded', version: (await runEmbedded(context, ['--version'])).trim() };
+      if (await exists(context.stateDir)) endpoints = JSON.parse(await runEmbedded(context, ['list', '--json']));
+    } else {
     const version = await run(context.binary, ['--version'], { env: context.env, capture: true, timeout: 10_000 });
     hcom.version = version.stdout.trim() || null;
     if (version.code) errors.push(`hcom --version exited ${version.code}`);
@@ -160,6 +219,7 @@ async function doctor(context, json) {
         const items = JSON.parse(listing.stdout);
         endpoints = (Array.isArray(items) ? items : [items]).map(({ name, base_name, tool, status, session_id, headless, hooks_bound, process_bound }) => ({ name, base_name, tool, status, session_id, headless, hooks_bound, process_bound }));
       }
+    }
     }
   } catch (e) { errors.push(e.message); }
   const result = { platform: `${platform()}-${arch()}`, node: process.version, projectDir: PROJECT_DIR, stateDir: context.stateDir, cacheDir: context.cacheDir, runtimeDir: context.runtimeDir, hcom, tools, endpoints, errors, note: 'Executable presence does not verify provider login, model availability or desktop-chat attachment.' };
@@ -176,41 +236,250 @@ async function doctor(context, json) {
 export async function main(args = process.argv.slice(2), sourceEnv = process.env) {
   const [command, ...input] = args;
   if (!command || command === '--help' || command === 'help') { console.log(HELP); return 0; }
+  if (command === 'view-export') {
+    const { runObservationExport } = await import('../lib/viewer/export-cli.mjs');
+    return await runObservationExport(input);
+  }
+  if (command === 'agent-guide' && input.length === 0) {
+    console.log(await (await import('../lib/agent-guide.mjs')).readAgentGuide());
+    return 0;
+  }
+  if (command === 'inspect') {
+    // Unlike doctor/node status, this path must work before setup without
+    // initializing a ledger, identity, cache or third-party tool process.
+    try {
+      const { options, rest } = parseOptions(input, { '--binding': 'value', '--room': 'value', '--native': 'boolean', '--allow-session-load': 'boolean', '--json': 'boolean' });
+      noRest(rest);
+      if (options['--native'] && !options['--binding'] || options['--allow-session-load'] && !options['--native']) fail('Invalid inspection scope.');
+      const inspectionContext = runtimeEnvironment(sourceEnv);
+      await protectPersonalState(inspectionContext.stateDir);
+      await protectPersonalState(inspectionContext.cacheDir);
+      const report = await (await import('../lib/inspect.mjs')).inspect(inspectionContext, {
+        binding: options['--binding'], room: options['--room'], native: !!options['--native'], allowSessionLoad: !!options['--allow-session-load'],
+      });
+      if (options['--json']) console.log(JSON.stringify(report, null, 2));
+      else {
+        console.log(`Inspection: ${report.overall}\nState: ${report.paths.stateDir}`);
+        for (const check of report.checks) {
+          console.log(`[${check.status}] ${check.code}: ${check.message}`);
+          for (const action of check.actions || []) console.log(`  Next: ${action.code}${action.command ? ` ${JSON.stringify(action.command)}` : ''}`);
+        }
+      }
+      return ['blocked', 'needs-review'].includes(report.overall) ? 1 : 0;
+    } catch {
+      // Native/config/parser errors may contain credentials or caller text.
+      // Per-check failures belong in the closed report; invalid invocation is
+      // deliberately a fixed diagnostic, never an arbitrary exception echo.
+      console.error('agent-dialogue inspect: invalid arguments or configuration; use inspect [--binding ALIAS] [--room ID] [--native [--allow-session-load]] [--json].');
+      return 2;
+    }
+  }
   const context = runtimeEnvironment(sourceEnv);
   await protectPersonalState(context.stateDir);
   await protectPersonalState(context.cacheDir);
-  if (command === 'setup') { if (input.length) fail('setup takes no arguments.'); return await installHcom(context); }
+  if (command === 'migration') {
+    try {
+      const action = input[0];
+      if (!['plan', 'prepare', 'status', 'verify', 'apply', 'accept', 'rollback'].includes(action)) fail('Invalid migration action.');
+      const source = ['plan', 'prepare'].includes(action), mutating = ['prepare', 'apply', 'accept', 'rollback'].includes(action);
+      const definitions = { '--json': 'boolean', ...(source ? { '--from-package': 'value', '--from-node': 'value' } : {}), ...(action !== 'plan' ? { '--bundle': 'value' } : {}), ...(mutating ? { '--offline': 'boolean' } : {}) };
+      const { options, rest } = parseOptions(input.slice(1), definitions); noRest(rest);
+      const selectedPath = key => {
+        const value = options[key];
+        if (typeof value !== 'string' || !value.trim() || /[\x00-\x1f\x7f]/.test(value)) fail('An exact migration path is required.');
+        return resolve(value);
+      };
+      if (mutating && !options['--offline']) fail('Migration requires offline writers.');
+      const selected = { ...(source ? { fromPackage: selectedPath('--from-package'), fromNode: selectedPath('--from-node') } : {}), ...(action !== 'plan' ? { bundle: selectedPath('--bundle') } : {}), ...(mutating ? { offline: true } : {}) };
+      const migration = await import('../lib/migration.mjs');
+      const fn = { plan: migration.planMigration, prepare: migration.prepareMigration, status: migration.migrationStatus, verify: migration.verifyMigration, apply: migration.applyMigration, accept: migration.acceptMigration, rollback: migration.rollbackMigration }[action];
+      const result = await fn(context, selected);
+      console.log(JSON.stringify(result, null, 2)); return result.status === 'needs-review' ? 1 : 0;
+    } catch {
+      console.error('agent-dialogue migration: invalid selection or changed maintenance evidence; preserve the old/new installations, backup and current state. Mutations require explicit --offline; see the migration guide.');
+      return 2;
+    }
+  }
+  if (command === 'agent-guide') {
+    const { options, rest } = parseOptions(input, { '--room': 'value', '--from': 'value', '--to': 'value' }); noRest(rest);
+    console.log(await (await import('../lib/agent-guide.mjs')).generateAgentContext(context, {
+      room: options['--room'], from: options['--from'], to: options['--to'],
+    }));
+    return 0;
+  }
+  if (command === 'zcode') {
+    if (input[0] !== 'init') fail('Use zcode init --cwd PATH --file PATH.');
+    const { options, rest } = parseOptions(input.slice(1), { '--cwd': 'value', '--file': 'value' }); noRest(rest);
+    if (!options['--cwd'] || !options['--file']) fail('zcode init requires an exact workspace and private service file.');
+    const { createZCodeService } = await import('../lib/zcode.mjs');
+    console.log(JSON.stringify(await createZCodeService({ path: resolve(options['--file']), directory: resolve(options['--cwd']) }), null, 2));
+    return 0;
+  }
+  if (command === 'mcp-context') {
+    const { options, rest } = parseOptions(input, { '--room': 'value', '--from': 'value', '--to': 'value', '--output': 'value' }); noRest(rest);
+    const { createMcpScope } = await import('../lib/mcp-tools.mjs');
+    const text = JSON.stringify(await createMcpScope(context, { room: options['--room'], from: options['--from'], to: options['--to'] }), null, 2) + '\n';
+    if (options['--output']) {
+      const path = resolve(options['--output']), parent = dirname(path);
+      await mkdir(parent, { recursive: true, mode: 0o700 });
+      const info = await lstat(parent); if (!info.isDirectory() || info.isSymbolicLink()) fail('MCP context parent must be a regular directory.');
+      await writeFile(path, text, { flag: 'wx', mode: 0o600 });
+      if (platform() === 'win32') await (await import('../lib/private-files.mjs')).protectWindowsPrivatePath(path);
+      console.log(JSON.stringify({ saved: true, path }));
+    } else process.stdout.write(text);
+    return 0;
+  }
+  if (command === 'mcp') {
+    const { options, rest } = parseOptions(input, { '--context': 'value', '--zcode-service': 'value' }); noRest(rest);
+    const { createDialogueMcpTools } = await import('../lib/mcp-tools.mjs');
+    const { serveMcpStdio } = await import('../lib/mcp-stdio.mjs');
+    const handlers = await createDialogueMcpTools(context, { scopeFile: options['--context'] ? resolve(options['--context']) : undefined, serviceFile: options['--zcode-service'] ? resolve(options['--zcode-service']) : context.env.AGENT_DIALOGUE_ZCODE_SERVICE_FILE });
+    await serveMcpStdio({ ...handlers, serverInfo: { name: 'agent-dialogue', version: '0.3.0' } });
+    return 0;
+  }
+  if (command === 'view') {
+    const { runViewer } = await import('../lib/viewer/cli.mjs');
+    return await runViewer(input, context);
+  }
+  if (command === 'setup') {
+    if (input.length) fail('setup takes no arguments.');
+    if (context.ledgerBackend === 'embedded') {
+      console.log(JSON.stringify(await (await import('../lib/embedded-ledger.mjs')).initializeEmbedded(context), null, 2));
+      return 0;
+    }
+    return await installHcom(context);
+  }
   if (command === 'doctor') {
     const { options, rest } = parseOptions(input, { '--json': 'boolean' }); noRest(rest);
     return await doctor(context, !!options['--json']);
+  }
+  if (command === 'lock') {
+    const { planLockRetirement, readLockRetirementPlan, retireLock } = await import('../lib/lock-recovery.mjs');
+    if (input[0] === 'plan') {
+      const { options, rest } = parseOptions(input.slice(1), { '--binding': 'value', '--output': 'value', '--json': 'boolean' }); noRest(rest);
+      for (const key of ['--binding', '--output']) if (options[key] !== undefined && !options[key].trim()) fail('Lock plan requires a nonempty binding alias or output path when selected.');
+      if (options['--output'] !== undefined && /[\x00-\x1f\x7f]/.test(options['--output'])) fail('Lock plan requires a safe private output path.');
+      const { report, plan } = await planLockRetirement(context, options['--binding'] !== undefined ? { role: 'dispatch', alias: options['--binding'] } : { role: 'control' });
+      let planSaved = false;
+      if (plan && options['--output']) {
+        const path = resolve(options['--output']), parent = dirname(path), info = await lstat(parent);
+        if (!info.isDirectory() || info.isSymbolicLink()) fail('Lock plan requires an existing private output directory.');
+        if (platform() === 'win32') await (await import('../lib/private-files.mjs')).inspectWindowsPrivatePath(parent, { directory: true });
+        else if ((info.mode & 0o077) !== 0 || process.getuid && info.uid !== process.getuid()) fail('Lock plan requires a private output directory owned by the current user.');
+        const text = JSON.stringify(plan, null, 2) + '\n';
+        if (Buffer.byteLength(text, 'utf8') > 128 * 1024) fail('Lock plan exceeds its private file limit.');
+        await writeFile(path, text, { flag: 'wx', mode: 0o600 });
+        if (platform() === 'win32') await (await import('../lib/private-files.mjs')).protectWindowsPrivatePath(path);
+        planSaved = true;
+      }
+      console.log(JSON.stringify({ ...report, planSaved }, null, 2));
+      return report.status === 'ready' ? 0 : 1;
+    }
+    if (input[0] === 'retire') {
+      const { options, rest } = parseOptions(input.slice(1), { '--plan': 'value', '--offline': 'boolean', '--json': 'boolean' }); noRest(rest);
+      if (!options['--plan'] || !options['--offline']) fail('Lock retirement requires an exact private --plan and explicit --offline.');
+      const result = await retireLock(context, await readLockRetirementPlan(resolve(options['--plan'])), { offline: true });
+      console.log(JSON.stringify(result, null, 2)); return 0;
+    }
+    fail('Use lock plan [--binding ALIAS] [--output PRIVATE_FILE] or lock retire --plan PRIVATE_FILE --offline.');
+  }
+  if (command === 'state') {
+    if (input[0] !== 'upgrade') fail('Use state upgrade --offline [--target 2|3|4] [--json].');
+    const { options, rest } = parseOptions(input.slice(1), { '--offline': 'boolean', '--json': 'boolean', '--target': 'value' }); noRest(rest);
+    if (options['--target'] !== undefined && !['2', '3', '4'].includes(options['--target'])) fail('State upgrade target must be exactly 2, 3 or 4.');
+    if (!options['--offline']) fail('State upgrade requires --offline after all writers have been quiesced.');
+    const { upgradeStoreOffline } = await import('../lib/lifecycle.mjs');
+    const { assertOfflineWorkers } = await import('../lib/bridge.mjs');
+    console.log(JSON.stringify(await upgradeStoreOffline(context, { offline: true, ...(options['--target'] ? { targetVersion: Number(options['--target']) } : {}) }, { assertQuiescent: assertOfflineWorkers }), null, 2));
+    return 0;
+  }
+  if (command === 'node') {
+    const nodes = await import('../lib/nodes.mjs');
+    let result;
+    if (input[0] === 'init') {
+      const { options, rest } = parseOptions(input.slice(1), { '--name': 'value' }); noRest(rest);
+      const { loadOrCreateNode, nodePublic } = await import('../lib/node-identity.mjs');
+      result = nodePublic(await loadOrCreateNode(context, { name: options['--name'] || 'node' }));
+    } else if (input[0] === 'export' && input.length === 1) result = await nodes.exportNode(context);
+    else if (input[0] === 'status' && input.length === 1) result = await nodes.nodeStatus(context);
+    else if (input[0] === 'receive' && input.length === 1) result = await nodes.receiveEnvelope(context, await readStdinJson());
+    else if (input[0] === 'peer' && input[1] === 'add') {
+      const { options, rest } = parseOptions(input.slice(2), { '--file': 'value', '--ssh': 'value', '--local': 'boolean', '--executable': 'value', '--cli': 'value', '--state-dir': 'value', '--cache-dir': 'value', '--service-file': 'value', '--opencode-v1-service-file': 'value', '--kimi-service-file': 'value', '--zcode-service-file': 'value', '--codex-home': 'value', '--shell': 'value', '--ledger': 'value', '--ssh-config': 'value' }); noRest(rest);
+      if (!!options['--ssh'] === !!options['--local']) fail('Choose exactly one transport: --ssh HOST or --local.');
+      const transport = { kind: options['--local'] ? 'local-process' : 'ssh', executable: options['--executable'], stateDir: options['--state-dir'] };
+      if (options['--ssh']) transport.destination = options['--ssh'];
+      if (options['--cli']) transport.args = [options['--cli']];
+      for (const [flag, key] of [['--cache-dir', 'cacheDir'], ['--service-file', 'serviceFile'], ['--opencode-v1-service-file', 'opencodeV1ServiceFile'], ['--codex-home', 'codexHome'], ['--kimi-service-file', 'kimiServiceFile'], ['--zcode-service-file', 'zcodeServiceFile'], ['--shell', 'shell'], ['--ledger', 'ledgerBackend'], ['--ssh-config', 'sshConfig']]) if (options[flag]) transport[key] = options[flag];
+      result = await nodes.pairPeer(context, await readJsonFile(options['--file']), transport);
+    } else if (input[0] === 'flush') {
+      const { options, rest } = parseOptions(input.slice(1), { '--message': 'value' }); noRest(rest);
+      const status = await nodes.nodeStatus(context);
+      const ids = options['--message'] ? [options['--message']] : Object.keys(status.outbox).filter(id => ['queued', 'unknown', 'preparing'].includes(status.outbox[id].status));
+      result = [];
+      for (const id of ids) result.push(await nodes.flushMessage(context, id));
+    } else fail('Invalid node command; see --help.');
+    console.log(JSON.stringify(result, null, 2)); return 0;
   }
   if (['sessions', 'attach', 'bindings', 'room', 'collab', 'bridge', 'detach'].includes(command)) {
     const bridge = await import('../lib/bridge.mjs');
     let result;
     if (command === 'sessions') {
-      if (input[0] !== 'opencode') fail('sessions currently supports opencode.');
       const { options, rest } = parseOptions(input.slice(1), { '--cwd': 'value', '--json': 'boolean' }); noRest(rest);
-      const { OpenCodeClient } = await import('../lib/opencode.mjs');
-      const client = await OpenCodeClient.discover({ serviceFile: context.env.AGENT_DIALOGUE_OPENCODE_SERVICE_FILE });
-      result = { service: client.identity, sessions: (await client.sessions({ directory: options['--cwd'] ? resolve(options['--cwd']) : undefined })).map(s => ({ id: s.id, title: s.title, projectId: s.projectID, directory: s.location?.directory, model: s.model, time: s.time })) };
+      const { listNative } = await import('../lib/adapters.mjs');
+      result = await listNative(context, input[0], { directory: options['--cwd'] ? resolve(options['--cwd']) : undefined });
     } else if (command === 'attach') {
-      if (input[0] !== 'opencode') fail('attach currently supports opencode.');
-      const { options, rest } = parseOptions(input.slice(1), { '--session': 'value', '--alias': 'value' }); noRest(rest);
+      const { harnessId } = await import('../lib/adapters.mjs');
+      const harness = harnessId(input[0]);
+      const { options, rest } = parseOptions(input.slice(1), { '--session': 'value', '--alias': 'value', '--resume': 'boolean' }); noRest(rest);
       if (!options['--session'] || !options['--alias']) fail('attach needs --session ID and --alias NAME.');
-      result = await bridge.attach(context, { sessionId: options['--session'], alias: options['--alias'] });
+      if (options['--resume'] && harness !== 'codex-app-server') fail('--resume currently applies only to Codex.');
+      result = await bridge.attach(context, { harness, sessionId: options['--session'], alias: options['--alias'], resume: !!options['--resume'] });
     } else if (command === 'bindings' || command === 'bridge' && input[0] === 'status') {
       const { rest } = parseOptions(command === 'bindings' ? input : input.slice(1), { '--json': 'boolean' }); noRest(rest);
       result = await bridge.bridgeStatus(context);
     } else if (command === 'room' && input[0] === 'create') {
       const { options, rest } = parseOptions(input.slice(1), { '--name': 'value', '--members': 'value' }); noRest(rest);
       result = await bridge.roomCreate(context, { name: options['--name'], members: options['--members']?.split(',') || [] });
+    } else if (command === 'room' && input[0] === 'export' && input.length === 2) {
+      result = await (await import('../lib/nodes.mjs')).exportRoom(context, input[1]);
+    } else if (command === 'room' && input[0] === 'import') {
+      const { options, rest } = parseOptions(input.slice(1), { '--file': 'value' }); noRest(rest);
+      result = await (await import('../lib/nodes.mjs')).acceptRoom(context, await readJsonFile(options['--file']));
     } else if (command === 'collab' && input[0] === 'send') {
-      const { options, rest } = parseOptions(input.slice(1), { '--room': 'value', '--from': 'value', '--to': 'value', '--message': 'value', '--reply-to': 'value', '--expected-session': 'value' }); noRest(rest);
-      result = await bridge.collabSend(context, { room: options['--room'], from: options['--from'], to: options['--to'], text: options['--message'], replyTo: options['--reply-to'] || null, expectedSession: options['--expected-session'] });
-    } else if (command === 'bridge' && input[0] === 'start' && input.length === 2) result = await bridge.startBridge(context, input[1]);
+      const { options, rest } = parseOptions(input.slice(1), { '--room': 'value', '--from': 'value', '--to': 'value', '--message': 'value', '--reply-to': 'value', '--expected-session': 'value', '--queue': 'boolean' }); noRest(rest);
+      const message = { room: options['--room'], from: options['--from'], to: options['--to'], text: options['--message'], replyTo: options['--reply-to'] || null, expectedSession: options['--expected-session'] };
+      result = options['--queue'] ? await (await import('../lib/submissions.mjs')).queueSubmission(context, message) : await bridge.collabSend(context, message);
+    } else if (command === 'bridge' && ['native-evidence', 'native-reconcile'].includes(input[0])) {
+      if (!input[1] || input[1].startsWith('--')) fail('Native recovery requires one exact binding alias.');
+      const allowed = { '--event': 'value', '--allow-session-load': 'boolean', '--json': 'boolean', ...(input[0] === 'native-evidence' ? { '--native': 'boolean' } : {}) };
+      const { options, rest } = parseOptions(input.slice(2), allowed); noRest(rest);
+      const eventId = Number(options['--event']);
+      if (!Number.isSafeInteger(eventId) || eventId < 1 || String(eventId) !== options['--event']) fail('Native recovery requires an exact positive --event ID.');
+      if (input[0] === 'native-evidence' && options['--allow-session-load'] && !options['--native']) fail('--allow-session-load requires an explicit native evidence query.');
+      const recovery = await import('../lib/native-recovery.mjs');
+      try {
+        result = await recovery[input[0] === 'native-evidence' ? 'nativeEvidence' : 'reconcileNative'](context, input[1], eventId, {
+          ...(input[0] === 'native-evidence' ? { native: !!options['--native'] } : {}),
+          allowSessionLoad: !!options['--allow-session-load'],
+        });
+      } catch {
+        fail('Native recovery could not verify exact evidence. Preserve the original pending input; check the selected binding, paused/stopped owner, pins and private state.');
+      }
+    } else if (command === 'bridge' && input[0] === 'reconcile') {
+      if (!input[1] || input[1].startsWith('--')) fail('Reconciliation requires one exact binding alias.');
+      const { options, rest } = parseOptions(input.slice(2), { '--submission': 'value', '--json': 'boolean' }); noRest(rest);
+      result = await (await import('../lib/recovery.mjs')).reconcileSubmission(context, input[1], options['--submission']);
+    } else if (command === 'bridge' && ['start', 'pause', 'resume', 'stop'].includes(input[0])) {
+      if (!input[1] || input[1].startsWith('--')) fail('Bridge operation requires one exact binding alias.');
+      const { rest } = parseOptions(input.slice(2), { '--json': 'boolean' }); noRest(rest);
+      result = await bridge[{ start: 'startBridge', pause: 'pauseBridge', resume: 'resumeBridge', stop: 'stopBridge' }[input[0]]](context, input[1]);
+    }
     else if (command === 'detach' && input.length === 1) result = await bridge.detach(context, input[0]);
     else fail('Invalid collaboration command; see --help.');
     console.log(JSON.stringify(result, null, 2)); return 0;
+  }
+  if (context.ledgerBackend === 'embedded' && ['launch', 'send', 'stop', 'hcom'].includes(command)) {
+    fail('The embedded ledger supports native sessions/attach/room/collab; upstream hooks, launch and raw hcom commands are unavailable.');
   }
   let argv;
   if (command === 'launch') {
@@ -256,6 +525,11 @@ export async function main(args = process.argv.slice(2), sourceEnv = process.env
     argv = input;
   } else fail(`Unknown command: ${command}. Run --help.`);
   await mkdir(context.stateDir, { recursive: true });
+  if (context.ledgerBackend === 'embedded') {
+    const output = await (await import('../lib/embedded-ledger.mjs')).runEmbedded(context, argv);
+    if (output) process.stdout.write(output);
+    return 0;
+  }
   return (await run(context.binary, argv, { env: context.env })).code;
 }
 

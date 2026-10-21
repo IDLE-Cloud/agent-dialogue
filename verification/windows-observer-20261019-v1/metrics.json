@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "status": "passed",
+  "observed_at": "2026-10-19T07:03:29.181Z",
+  "scope": "Mac local and native Windows over existing FRP SSH, no harness API or model calls",
+  "checks": {
+    "both_sources_available": true,
+    "fresh_observations_have_stable_message_identity": true,
+    "six_logical_messages_visible": true,
+    "two_correlated_replies_visible": true,
+    "four_signed_messages_merged_from_two_machines": true,
+    "mac_state_bytes_unchanged": true,
+    "windows_state_bytes_unchanged": true,
+    "no_windows_worker_launch_files_remain": true
+  },
+  "logical_messages": 6,
+  "correlated_replies": 2,
+  "signed_messages_merged": 4,
+  "source_files_unchanged": {
+    "mac": 7,
+    "windows": 7
+  }
+}

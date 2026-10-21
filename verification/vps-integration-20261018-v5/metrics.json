@@ -1,0 +1,206 @@
+{
+  "version": 1,
+  "run_id": "vps-integration-20261018-v5",
+  "started_at": "2026-10-18T12:56:48.606Z",
+  "status": "passed",
+  "scope": "one explicit owned local Codex thread and one owned VPS OpenCode chat; two independent signed nodes; actual SSH stdio",
+  "model": {
+    "providerID": "opencode",
+    "id": "deepseek-v4.1-flash-free",
+    "zero_cost_verified": true,
+    "catalogCheckMs": 6504
+  },
+  "transport": "ssh",
+  "realSsh": true,
+  "stages": [
+    {
+      "name": "checking_explicit_owned_environment",
+      "at": "2026-10-18T12:56:48.606Z"
+    },
+    {
+      "name": "free_model_and_existing_codex_verified",
+      "at": "2026-10-18T12:57:02.917Z"
+    },
+    {
+      "name": "two_host_ssh_routes_paired_and_sealed_room_accepted",
+      "at": "2026-10-18T12:57:32.443Z"
+    },
+    {
+      "name": "native_owner_route_policies_confirmed",
+      "at": "2026-10-18T12:57:44.984Z"
+    },
+    {
+      "name": "waiting_for_owned_model",
+      "at": "2026-10-18T12:58:01.607Z",
+      "role": "local",
+      "elapsedSeconds": 17
+    },
+    {
+      "name": "waiting_for_owned_model",
+      "at": "2026-10-18T12:58:17.805Z",
+      "role": "local",
+      "elapsedSeconds": 33
+    },
+    {
+      "name": "codex_to_vps_context_and_project_artifact_verified",
+      "at": "2026-10-18T12:58:30.491Z"
+    },
+    {
+      "name": "waiting_for_owned_model",
+      "at": "2026-10-18T12:58:50.516Z",
+      "role": "remote",
+      "elapsedSeconds": 15
+    },
+    {
+      "name": "waiting_for_owned_model",
+      "at": "2026-10-18T12:59:08.287Z",
+      "role": "remote",
+      "elapsedSeconds": 33
+    },
+    {
+      "name": "waiting_for_owned_model",
+      "at": "2026-10-18T12:59:24.320Z",
+      "role": "remote",
+      "elapsedSeconds": 49
+    },
+    {
+      "name": "waiting_for_owned_model",
+      "at": "2026-10-18T12:59:41.138Z",
+      "role": "remote",
+      "elapsedSeconds": 66
+    },
+    {
+      "name": "waiting_for_owned_model",
+      "at": "2026-10-18T12:59:57.545Z",
+      "role": "remote",
+      "elapsedSeconds": 82
+    },
+    {
+      "name": "bidirectional_cross_harness_ssh_model_exchange_verified",
+      "at": "2026-10-18T13:00:12.440Z"
+    },
+    {
+      "name": "actual_ssh_replay_signature_and_session_guards_verified",
+      "at": "2026-10-18T13:00:37.409Z"
+    },
+    {
+      "name": "real_two_host_cross_harness_acceptance_completed",
+      "at": "2026-10-18T13:00:48.812Z"
+    }
+  ],
+  "assertions": {
+    "matching_deployed_communication_source": true,
+    "matching_deployed_acceptance_helper": true,
+    "explicit_codex_workspace_matches": true,
+    "controller_holds_exact_owned_codex_subscription": true,
+    "codex_seed_drain_did_not_start_another_input": true,
+    "exact_owned_codex_seed_input_completed": true,
+    "native_project_context_seeded_before_attachment": true,
+    "independent_signed_node_identities": true,
+    "native_owner_authorized_nonsecret_facts_and_exact_peer_routes": true,
+    "codex_model_origin_ssh_request_and_global_linked_vps_reply": true,
+    "private_context_combined_after_real_peer_reply": true,
+    "nonce_bound_project_artifact_combines_both_native_contexts": true,
+    "native_codex_tool_returned_local_queue_receipt": true,
+    "owning_codex_worker_forwarded_same_submission_to_ssh_message": true,
+    "vps_model_origin_ssh_request_and_global_linked_codex_reply": true,
+    "reverse_peer_reply_preserves_codex_preexisting_fact": true,
+    "native_vps_tools_executed_exact_approved_request_and_reply": true,
+    "only_bounded_once_opencode_permissions": true,
+    "all_four_global_messages_reconciled_on_both_nodes": true,
+    "all_outbound_ssh_messages_remote_stored": true,
+    "same_id_ssh_flush_returns_original_remote_event": true,
+    "signed_same_id_body_collision_rejected_over_actual_ssh": true,
+    "tampered_signature_rejected_over_actual_ssh": true,
+    "signed_unaccepted_room_rejected_over_actual_ssh": true,
+    "wrong_expected_session_rejected_before_submission": true,
+    "replay_and_rejections_preserve_both_inbox_mappings": true,
+    "replay_and_rejections_add_no_room_ledger_message_or_submission": true,
+    "replay_and_rejections_add_no_outbox_intent": true,
+    "replay_and_rejections_add_no_native_user_input": true,
+    "replayed_request_has_one_stable_remote_native_input": true,
+    "both_exact_native_sessions_and_services_preserved": true,
+    "codex_model_and_permission_settings_preserved": true,
+    "local_owned_worker_stopped_before_readonly_observation": true,
+    "remote_owned_worker_stopped_before_readonly_observation": true,
+    "real_ssh_observer_accepts_exact_node_and_room_scope": true,
+    "real_ssh_observer_deduplicates_four_formal_messages": true,
+    "real_ssh_viewer_links_global_reply_and_native_evidence": true,
+    "real_ssh_viewer_response_excludes_private_paths_and_keys": true,
+    "real_ssh_observer_does_not_mutate_quiescent_local_state": true,
+    "real_ssh_export_does_not_mutate_quiescent_remote_state": true
+  },
+  "permissions": {
+    "codexApprovalsGranted": 0,
+    "opencodeOnce": 2,
+    "opencodeRejected": 0
+  },
+  "cleanup": [
+    {
+      "target": "local-binding",
+      "detached": true,
+      "nativeChatPreserved": true,
+      "workerStopped": true
+    },
+    {
+      "target": "remote-binding",
+      "detached": true,
+      "nativeChatPreserved": true,
+      "workerStopped": true
+    }
+  ],
+  "sshHelperCalls": 88,
+  "source": {
+    "localNode": "v26.10.0",
+    "localPlatform": "darwin",
+    "localArch": "arm64",
+    "remoteNode": "v24.22.0",
+    "remotePlatform": "linux",
+    "remoteArch": "x64",
+    "remoteOpenCode": "2.0.20",
+    "implementationFiles": {
+      "bin/agent-dialogue.mjs": "c20963ed4565476e47c6156d766474544628584f59cb7beef05f6692e25aa529",
+      "lib/bridge.mjs": "b9ff29cab255cb59fcd7a856c3afac832e7752d751f578dd7913ebe55ed964bf",
+      "lib/bridge-store.mjs": "cace38a83253d9752d702912324c41e49da125fe7d964fff13508c2f9b6bd2a4",
+      "lib/codex.mjs": "7eeb2673662184d2d900975b941638c8480aa75472dd6cd7f77cbc721d50aba6",
+      "lib/opencode.mjs": "cf61e5412f9b119f8347573eb889cc669e1340bba66ea7cff571ef9fbc7be010",
+      "lib/nodes.mjs": "56f74404273ab2bec7ba8b30c3b1d890c3b5c2f9fa873686d7010566bd4da0e3",
+      "lib/node-identity.mjs": "e9c077f28db095ab3083b5e06617712a512b09f32acc55c8d8e1fd5957b63ee7",
+      "lib/node-transport.mjs": "ee0e92416540d7887a82b9ca82d515b41c77f9c53f067186e3fafcfe75773f8f",
+      "lib/submissions.mjs": "c0447008acfcf907eebb426fe66de12ecd53e9988b08e10e038da4fe81f5cc29",
+      "lib/viewer/observation.mjs": "fb6cddbae5a0ef7e20c59a2beb9e353583cb37660301d9f91a53ccaf0764a2cb"
+    },
+    "verifierFiles": {
+      "vps-integration.mjs": "eb3dc8b109f5a9411b1b67d2da568f0550e4068744557e17569d99775c865a75",
+      "vps-integration-contract.mjs": "fe0c13ae99573ee89e3f60077c5a0e66ad1582693ef0fbd1ed86a621293f725e",
+      "vps-cleanup.mjs": "711b1a1b5fbb6a003f155b5f4b464a7c27676d5f523adab3fe4c76536f3da245",
+      "vps-seed.mjs": "a8352e368cd7721b53015f93dcfc32076ee92be2eb3f8713de63c24b90397b32",
+      "vps-codex-lease.mjs": "ce019218835f0ae35b7915524cdc9f6629e954e6a385704a83fd6b17f1a0236e",
+      "vps-command-evidence.mjs": "36551e547002707b3671488f53bcc2ea641afa0a32635e78fb806012cb395333",
+      "vps-remote-helper.mjs": "6b4320bd5bb29c234221e511b6892465d4bf07d3563939abfab765ebe864e1e8"
+    }
+  },
+  "codexComparedSettingFields": [
+    "model",
+    "modelProvider",
+    "cwd"
+  ],
+  "codexSeed": {
+    "explicitQueueStartAccepted": false,
+    "executionObservedWithoutExplicitStart": true,
+    "exactNativeInputCount": 1
+  },
+  "artifactSha256": "cebfed3beb5c00afceec3d47f08492d0b1944621506bd776d68adb29876ac4f2",
+  "observer": {
+    "actualSshCollectionsAttempted": 1,
+    "roomCount": 1,
+    "formalMessageCount": 4,
+    "protocol": "real SSH scoped snapshot",
+    "disconnectionRecovery": "separate controlled route-gate acceptance pending",
+    "hashedFiles": {
+      "local": 11,
+      "remote": 13
+    }
+  },
+  "finished_at": "2026-10-18T13:00:48.822Z"
+}

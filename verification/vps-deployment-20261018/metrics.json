@@ -1,0 +1,62 @@
+{
+  "version": 1,
+  "run_id": "vps-deployment-20261018",
+  "recorded_at": "2026-10-18T13:14:44.594Z",
+  "status": "passed",
+  "controller_commit": "074603e6d38d60e438fb3fc18e9be40953980a2f",
+  "communication_source_commit": "fbf5e11b3137aea73956c8fef67de4d5efd80ede",
+  "installed": {
+    "platform": "Debian 13 x64",
+    "node": "24.22.0",
+    "opencode": "2.0.20",
+    "hcom": "0.7.30",
+    "git": "2.47.3",
+    "ripgrep": "14.1.1"
+  },
+  "isolation": {
+    "dedicated_nonroot_account": true,
+    "native_api_loopback_only": true,
+    "opencode_service_memory_max_mib": 450,
+    "observed_service_peak_bytes": 367255552,
+    "existing_packages_upgraded": false,
+    "existing_services_preserved": true,
+    "service_enabled_at_boot": false
+  },
+  "acceptance": {
+    "unit": "344/344",
+    "cross_host": "40/40",
+    "observer_recovery": "11/11",
+    "native_tool_audit": "4/4",
+    "package_files": 46
+  },
+  "cleanup": {
+    "owned_bindings_detached_and_workers_stopped": true,
+    "native_chats_preserved": true,
+    "three_owned_temporary_processes_stopped": true,
+    "owned_child_exited_without_extra_signal": true,
+    "temporary_mac_receiver_closed": true,
+    "reverse_route_closed": true,
+    "dedicated_codex_socket_closed": true,
+    "global_settings_changed": false
+  },
+  "retained": {
+    "vps_opencode_service": true,
+    "readonly_local_viewer": true,
+    "private_configs_and_diagnostics": true
+  },
+  "viewer": {
+    "status": 200,
+    "messageCount": 5,
+    "formal": 4,
+    "linkedReplies": 2,
+    "sourcesAvailable": true,
+    "completePage": true,
+    "public_access_url_included": false
+  },
+  "limits": [
+    "One owned local Codex CLI validation server and its original test thread; active Desktop attachment remains unverified.",
+    "Fault recovery uses an observer-client gate; it does not establish VPS or public-network outage recovery.",
+    "Production adapters do not automatically resume threads or restart exited processes.",
+    "Stable release remains v0.2.0."
+  ]
+}

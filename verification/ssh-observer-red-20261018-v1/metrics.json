@@ -1,0 +1,30 @@
+{
+  "version": 1,
+  "phase": "tests-first-red-before-implementation",
+  "recordedAt": "2026-10-18T04:37:18.156Z",
+  "baseCommit": "292afdc",
+  "node": "v26.10.0",
+  "modelCalls": 0,
+  "actualSshConnections": 0,
+  "tests": [
+    "tests/viewer-observation.test.mjs",
+    "tests/viewer-ssh.test.mjs",
+    "tests/viewer-remote-cli.test.mjs",
+    "tests/viewer-ssh-integration.test.mjs"
+  ],
+  "declaredContractCases": 47,
+  "exitCode": 1,
+  "runnerCounts": {
+    "tests": 0,
+    "passed": 0,
+    "failed": 0
+  },
+  "expectedMissingFeatures": [
+    "lib/viewer/observation.mjs",
+    "lib/viewer/readers/ssh.mjs",
+    "view-export CLI",
+    "view --config",
+    "reader lifecycle close"
+  ],
+  "rawOutputPublished": false
+}

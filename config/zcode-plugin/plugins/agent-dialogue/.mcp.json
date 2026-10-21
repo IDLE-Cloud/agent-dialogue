@@ -1,0 +1,24 @@
+{
+  "mcpServers": {
+    "agent-dialogue": {
+      "type": "stdio",
+      "protocolVersion": "legacy",
+      "command": "${user_config.node_executable}",
+      "args": [
+        "${user_config.agent_dialogue_root}/bin/agent-dialogue.mjs",
+        "mcp",
+        "--zcode-service",
+        "${user_config.service_file}",
+        "--context",
+        "${user_config.context_file}"
+      ],
+      "cwd": "${CLAUDE_PROJECT_DIR}",
+      "env": {
+        "AGENT_DIALOGUE_STATE_DIR": "${user_config.state_dir}",
+        "AGENT_DIALOGUE_LEDGER": "embedded"
+      },
+      "enabled": true,
+      "timeoutMs": 30000
+    }
+  }
+}

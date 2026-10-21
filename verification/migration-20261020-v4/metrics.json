@@ -1,0 +1,686 @@
+{
+  "schemaVersion": 1,
+  "timestamp": "2026-10-20T17:04:22.512755+00:00",
+  "phase": "accepted-first-same-host-fixed-installation-slice",
+  "implementationCommit": "f2edb4a0bb9788f660c8c90fe97242c7cc557ebc",
+  "runtimeFiles": 64,
+  "runtimeSha256": "5e8450edfc3bde20bcc8f6b017a8489c13356c85f60660475ff10c9314cd522d",
+  "local": {
+    "node24": {
+      "version": "24.19.0",
+      "tests": 933,
+      "pass": 930,
+      "fail": 0,
+      "cancel": 0,
+      "skip": 3,
+      "rawSha256": "f69571ecc9024e07d4644bef7a58d617b44c0c49ccc3cec6077ae1eef31be52f"
+    },
+    "node26": {
+      "version": "26.10.0",
+      "tests": 933,
+      "pass": 930,
+      "fail": 0,
+      "cancel": 0,
+      "skip": 3,
+      "rawSha256": "9dfd45d54b98d684e83f6a0623971855265cfcfe650c9c8017bafffa6249d5cc"
+    }
+  },
+  "newTopLevelCasesSince824Baseline": 109,
+  "pendingLoopSplitAdditionalTopLevelCases": 2,
+  "installedHandoff": {
+    "actualExecutionCommit": "f2edb4a0bb9788f660c8c90fe97242c7cc557ebc",
+    "assertions": 135,
+    "sourceCleanAtPack": true,
+    "all64RuntimeAnd93PackageFilesMatchGitAndInstalledBeforeAfter": true,
+    "schema3To4AndExactRawRollback": true,
+    "secondBundleAcceptedBeforeActivation": true,
+    "oldWorkers": 2,
+    "newWorkers": 2,
+    "normalStops": 4,
+    "recheckedConfirmedDead": 4,
+    "q": 1,
+    "formal": 1,
+    "forwarded": 1,
+    "admittedNativeIntent": 1,
+    "durableSyntheticInputs": 1,
+    "nativePosts": 1,
+    "duplicateNativePosts": 0,
+    "entryModeSamples": 62,
+    "entryModeAll755": true,
+    "packageFilesystemWatchEvents": 0,
+    "platform": "macOS arm64",
+    "node": "24.19.0",
+    "scope": "Real installed default launcher and OS ownership; owned synthetic OpenCode V2 and embedded ledger. No real model or Windows actual installed launcher proof.",
+    "effects": {
+      "realHarnessCalls": 0,
+      "modelTurns": 0,
+      "sshCalls": 0,
+      "downloads": 0,
+      "realUserStateTouched": false
+    }
+  },
+  "retainedPackage": {
+    "sha256": "2cf10714b85e7a93ff6390d614c2eff40b03f9fcb7918d732ba6a1974521025e",
+    "bytes": 350223,
+    "unpackedBytes": 1140312,
+    "packedFiles": 93,
+    "modes": {
+      "644": 91,
+      "755": 2
+    }
+  },
+  "ci": {
+    "runId": 39459128207,
+    "url": "https://github.com/IDLE-Cloud/agent-dialogue/actions/runs/39459128207",
+    "headSha": "f2edb4a0bb9788f660c8c90fe97242c7cc557ebc",
+    "conclusion": "success",
+    "allJobsTerminal": true,
+    "jobs": [
+      {
+        "jobId": 118753649836,
+        "name": "windows-recovery-state",
+        "conclusion": "success",
+        "nodeVersions": [
+          "v24.21.0"
+        ],
+        "testSummaryBlocks": [
+          {
+            "tests": 47,
+            "suites": 0,
+            "pass": 46,
+            "fail": 0,
+            "cancelled": 0,
+            "skipped": 1,
+            "todo": 0,
+            "duration_ms": 726784.3468
+          }
+        ],
+        "rawSha256": "a089d7ce7974a815d77e4865167e2bd362634b9ec6c0cf616aed0cfdcae0285d"
+      },
+      {
+        "jobId": 118753650067,
+        "name": "windows-native-recovery",
+        "conclusion": "success",
+        "nodeVersions": [
+          "v24.21.0"
+        ],
+        "testSummaryBlocks": [
+          {
+            "tests": 42,
+            "suites": 0,
+            "pass": 42,
+            "fail": 0,
+            "cancelled": 0,
+            "skipped": 0,
+            "todo": 0,
+            "duration_ms": 434040.285
+          }
+        ],
+        "rawSha256": "d2e8d0498a0b002521dc131bc89b3cee54686ddcb12ceed2838f6040d27efbe8"
+      },
+      {
+        "jobId": 118753650160,
+        "name": "windows-migration-transaction (publication)",
+        "conclusion": "success",
+        "nodeVersions": [
+          "v24.22.0"
+        ],
+        "testSummaryBlocks": [
+          {
+            "tests": 6,
+            "suites": 0,
+            "pass": 6,
+            "fail": 0,
+            "cancelled": 0,
+            "skipped": 0,
+            "todo": 0,
+            "duration_ms": 1041297.4617
+          }
+        ],
+        "rawSha256": "bd1cff9d6ee36d4208f990bf8a78cb3aa7c313ba0069650974d0cc7b06072800"
+      },
+      {
+        "jobId": 118753650283,
+        "name": "windows-recovery-forwarding",
+        "conclusion": "success",
+        "nodeVersions": [
+          "v24.21.0"
+        ],
+        "testSummaryBlocks": [
+          {
+            "tests": 33,
+            "suites": 0,
+            "pass": 33,
+            "fail": 0,
+            "cancelled": 0,
+            "skipped": 0,
+            "todo": 0,
+            "duration_ms": 857468.8761
+          }
+        ],
+        "rawSha256": "e7ac555396c8e12e54d7d317bcce89d878da22644bc4b66d1f083d1e5a888ce7"
+      },
+      {
+        "jobId": 118753650360,
+        "name": "windows-migration-transaction (runtime-pending)",
+        "conclusion": "success",
+        "nodeVersions": [
+          "v24.21.0"
+        ],
+        "testSummaryBlocks": [
+          {
+            "tests": 1,
+            "suites": 0,
+            "pass": 1,
+            "fail": 0,
+            "cancelled": 0,
+            "skipped": 0,
+            "todo": 0,
+            "duration_ms": 365393.886
+          }
+        ],
+        "rawSha256": "b51b98ea1e0d08c227e8aaa7f5e3699b7cfb2f130661d0b7e448ffd14f591e8a"
+      },
+      {
+        "jobId": 118753650427,
+        "name": "windows-migration-files",
+        "conclusion": "success",
+        "nodeVersions": [
+          "v24.21.0"
+        ],
+        "testSummaryBlocks": [
+          {
+            "tests": 62,
+            "suites": 0,
+            "pass": 56,
+            "fail": 0,
+            "cancelled": 0,
+            "skipped": 6,
+            "todo": 0,
+            "duration_ms": 654041.5389
+          }
+        ],
+        "rawSha256": "3de0ee7753cbfd06790b2a8e33fb64500081fd22414eeed4995b04d892ca404b"
+      },
+      {
+        "jobId": 118753650477,
+        "name": "test (ubuntu-latest, 26)",
+        "conclusion": "success",
+        "nodeVersions": [
+          "v26.12.0"
+        ],
+        "testSummaryBlocks": [
+          {
+            "tests": 933,
+            "suites": 0,
+            "pass": 930,
+            "fail": 0,
+            "cancelled": 0,
+            "skipped": 3,
+            "todo": 0,
+            "duration_ms": 36307.079191
+          }
+        ],
+        "rawSha256": "12b196f2f441400a155ac622cf138de17c79923c30b345fb536c3fb2f0dd7cbd",
+        "packageSmoke": {
+          "status": "passed",
+          "packedFiles": 93,
+          "packedBytes": 350223
+        }
+      },
+      {
+        "jobId": 118753650517,
+        "name": "windows-native",
+        "conclusion": "success",
+        "nodeVersions": [
+          "v24.22.0"
+        ],
+        "testSummaryBlocks": [
+          {
+            "tests": 350,
+            "suites": 0,
+            "pass": 341,
+            "fail": 0,
+            "cancelled": 0,
+            "skipped": 9,
+            "todo": 0,
+            "duration_ms": 1257140.6528
+          }
+        ],
+        "rawSha256": "a101af8463e6cd3cb8e88f53b7cf15a6f1bd1ba133ef3280f912fbb3449f2564"
+      },
+      {
+        "jobId": 118753650692,
+        "name": "windows-migration-handoff (schema-and-owners)",
+        "conclusion": "success",
+        "nodeVersions": [
+          "v24.22.0"
+        ],
+        "testSummaryBlocks": [
+          {
+            "tests": 4,
+            "suites": 0,
+            "pass": 4,
+            "fail": 0,
+            "cancelled": 0,
+            "skipped": 0,
+            "todo": 0,
+            "duration_ms": 1145658.4326
+          }
+        ],
+        "rawSha256": "446db4382e3a3e36c5b1bd039f77b20804250916c961959ffe13aafff3ca6517"
+      },
+      {
+        "jobId": 118753650696,
+        "name": "windows-migration-transaction (recovery)",
+        "conclusion": "success",
+        "nodeVersions": [
+          "v24.21.0"
+        ],
+        "testSummaryBlocks": [
+          {
+            "tests": 4,
+            "suites": 0,
+            "pass": 4,
+            "fail": 0,
+            "cancelled": 0,
+            "skipped": 0,
+            "todo": 0,
+            "duration_ms": 1125372.9205
+          }
+        ],
+        "rawSha256": "3b75f25a36fee52071f6622f6843ecc644bc3e644096f04a58ad0317d309c313"
+      },
+      {
+        "jobId": 118753650725,
+        "name": "windows-migration-handoff (preimages)",
+        "conclusion": "success",
+        "nodeVersions": [
+          "v24.21.0"
+        ],
+        "testSummaryBlocks": [
+          {
+            "tests": 8,
+            "suites": 0,
+            "pass": 8,
+            "fail": 0,
+            "cancelled": 0,
+            "skipped": 0,
+            "todo": 0,
+            "duration_ms": 806435.3959
+          }
+        ],
+        "rawSha256": "e3dc442925275d0e74ee8dba2d1bba367991872403e437d157f3cbe7b43c7308"
+      },
+      {
+        "jobId": 118753650734,
+        "name": "windows-migration-transaction (runtime-outgoing-pending)",
+        "conclusion": "success",
+        "nodeVersions": [
+          "v24.22.0"
+        ],
+        "testSummaryBlocks": [
+          {
+            "tests": 1,
+            "suites": 0,
+            "pass": 1,
+            "fail": 0,
+            "cancelled": 0,
+            "skipped": 0,
+            "todo": 0,
+            "duration_ms": 290538.6697
+          }
+        ],
+        "rawSha256": "39fab51994ce347aed687636ec64bac12fc8b76987bea06c4ac6310400872fe9"
+      },
+      {
+        "jobId": 118753650756,
+        "name": "test (ubuntu-latest, 22)",
+        "conclusion": "success",
+        "nodeVersions": [
+          "v22.23.3"
+        ],
+        "testSummaryBlocks": [
+          {
+            "tests": 933,
+            "suites": 0,
+            "pass": 930,
+            "fail": 0,
+            "cancelled": 0,
+            "skipped": 3,
+            "todo": 0,
+            "duration_ms": 45642.524947
+          }
+        ],
+        "rawSha256": "6d672fb9bfb8192532cdbdb2000d2f2967e0100c8f1b3114eb250ca2139b4414",
+        "packageSmoke": {
+          "status": "passed",
+          "packedFiles": 93,
+          "packedBytes": 350223
+        }
+      },
+      {
+        "jobId": 118753650765,
+        "name": "test (macos-latest, 24)",
+        "conclusion": "success",
+        "nodeVersions": [
+          "v24.21.0"
+        ],
+        "testSummaryBlocks": [
+          {
+            "tests": 933,
+            "suites": 0,
+            "pass": 930,
+            "fail": 0,
+            "cancelled": 0,
+            "skipped": 3,
+            "todo": 0,
+            "duration_ms": 61025.403
+          }
+        ],
+        "rawSha256": "42e7c41038e6e5bdce46988c5456d55f70b8c9fe9a02f9b62a650df39def456d",
+        "packageSmoke": {
+          "status": "passed",
+          "packedFiles": 93,
+          "packedBytes": 350223
+        }
+      },
+      {
+        "jobId": 118753650876,
+        "name": "windows-migration-transaction (readiness)",
+        "conclusion": "success",
+        "nodeVersions": [
+          "v24.21.0"
+        ],
+        "testSummaryBlocks": [
+          {
+            "tests": 4,
+            "suites": 0,
+            "pass": 4,
+            "fail": 0,
+            "cancelled": 0,
+            "skipped": 0,
+            "todo": 0,
+            "duration_ms": 1084679.1283
+          }
+        ],
+        "rawSha256": "0139c08047cbe40d020330b988608f9a3ab5c46e7884bc0925fee80424772d0a"
+      },
+      {
+        "jobId": 118753650886,
+        "name": "windows-migration-transaction (runtime-native-pending)",
+        "conclusion": "success",
+        "nodeVersions": [
+          "v24.21.0"
+        ],
+        "testSummaryBlocks": [
+          {
+            "tests": 1,
+            "suites": 0,
+            "pass": 1,
+            "fail": 0,
+            "cancelled": 0,
+            "skipped": 0,
+            "todo": 0,
+            "duration_ms": 405768.1915
+          }
+        ],
+        "rawSha256": "195f41eb6993549c1bf312ccc7b54e0aab09d6a9b4ff1440090baab3dae32d7f"
+      },
+      {
+        "jobId": 118753650920,
+        "name": "test (ubuntu-latest, 24)",
+        "conclusion": "success",
+        "nodeVersions": [
+          "v24.22.0"
+        ],
+        "testSummaryBlocks": [
+          {
+            "tests": 933,
+            "suites": 0,
+            "pass": 930,
+            "fail": 0,
+            "cancelled": 0,
+            "skipped": 3,
+            "todo": 0,
+            "duration_ms": 44728.174209
+          }
+        ],
+        "rawSha256": "8907f62acf7befd3b377ae6db4efae33dde83c7f4ea2963a37ac14cf24908f8b",
+        "packageSmoke": {
+          "status": "passed",
+          "packedFiles": 93,
+          "packedBytes": 350223
+        }
+      },
+      {
+        "jobId": 118753651005,
+        "name": "windows-migration-handoff (interrupted-images)",
+        "conclusion": "success",
+        "nodeVersions": [
+          "v24.22.0"
+        ],
+        "testSummaryBlocks": [
+          {
+            "tests": 4,
+            "suites": 0,
+            "pass": 4,
+            "fail": 0,
+            "cancelled": 0,
+            "skipped": 0,
+            "todo": 0,
+            "duration_ms": 1305135.548
+          }
+        ],
+        "rawSha256": "f349e182acc8f5b2a3042bd70a0a8b6fb4e38178fd4bbab664b5a8faba3af59a"
+      },
+      {
+        "jobId": 118753651131,
+        "name": "windows-lock-recovery",
+        "conclusion": "success",
+        "nodeVersions": [
+          "v24.22.0"
+        ],
+        "testSummaryBlocks": [
+          {
+            "tests": 52,
+            "suites": 0,
+            "pass": 47,
+            "fail": 0,
+            "cancelled": 0,
+            "skipped": 5,
+            "todo": 0,
+            "duration_ms": 693871.598
+          }
+        ],
+        "rawSha256": "c136c30d6cb8d613e94e072ea26695bb88b2a91548b8f65d6f78634a4280de68"
+      }
+    ],
+    "unixPackageSetupDoctorPassed": true,
+    "windowsEmbeddedSetupDoctorPassed": true,
+    "privateFinalSummarySha256": "bdea125d182e2653218a4d7cc5d09d42174096ccda4b63117fcf8183436f3fb1"
+  },
+  "coverage": {
+    "selectedMigrationContracts": 33,
+    "distinctMigrationContracts": 33,
+    "eachExactlyOnce": true,
+    "transaction": [
+      4,
+      1,
+      1,
+      1,
+      6,
+      4
+    ],
+    "handoff": [
+      8,
+      4,
+      4
+    ],
+    "localPatternEvidenceSha256": "d79c742b97fde41fbd9cbabb985732ebb9c1470683aa79711a2fc5c39c2bf209"
+  },
+  "detachCorrection": {
+    "sourceFailureRunId": 39452641171,
+    "sourceFailureJobId": 118731219803,
+    "sourceFailureRawSha256": "b176789f9870f5529c4888e62f6619aacd4d04f41d341e11bc9ab2ee205856b5",
+    "red": {
+      "tests": 6,
+      "pass": 4,
+      "fail": 1,
+      "skip": 1,
+      "seamOnlyWithoutCatch": true,
+      "notRealOsReproduction": true
+    },
+    "focusedEachNode": {
+      "tests": 7,
+      "pass": 6,
+      "skip": 1,
+      "fail": 0
+    },
+    "acceptedError": "ESRCH only after exact owned-live verification and SIGTERM",
+    "otherErrorsPreserved": [
+      "EPERM",
+      "EIO"
+    ],
+    "otherBindingsRoomsNativeRuntimeBytesPreserved": true
+  },
+  "previousRuns": [
+    {
+      "runId": 39439900151,
+      "jobs": 12,
+      "success": 6,
+      "failure": 6,
+      "snapshot": "../migration-20261020-v1/README.md"
+    },
+    {
+      "runId": 39442467557,
+      "jobs": 12,
+      "success": 7,
+      "failure": 3,
+      "cancelled": 2,
+      "snapshot": "../migration-20261020-v2/README.md"
+    },
+    {
+      "runId": 39445922619,
+      "jobs": 15,
+      "success": 13,
+      "failure": 1,
+      "cancelled": 1,
+      "snapshot": "../migration-20261020-v3/README.md"
+    },
+    {
+      "runId": 39452641171,
+      "jobs": 19,
+      "conclusions": {
+        "failure": 3,
+        "success": 16
+      },
+      "privateFinalSummarySha256": "b93993b7a47f78a4311e9bcdc9bd5a64d6c8b646cedc682fef14599da2c6a077",
+      "knownFailures": [
+        "POSIX detach ESRCH race corrected in new runtime",
+        "Windows files first fixture generic ACL failure8122ms",
+        "Windows lock first fixture generic ACL failure8088ms"
+      ],
+      "aclUnderlyingCauseNotRecorded": true,
+      "readOnlyWarmNotProvenFix": true
+    },
+    {
+      "runId": 39454755108,
+      "jobs": 19,
+      "conclusions": {
+        "failure": 2,
+        "success": 17
+      },
+      "privateFinalSummarySha256": "4eaec880fc5c34cbf0a11ba0628940f6edbd3c371163208e4ff539290ebadfaa",
+      "knownFailures": [
+        "Windows lock first fixture generic ACL failure8020ms",
+        "Windows parallel start ACL provisioning not confirmed; prior evidence did not distinguish protection versus owner"
+      ],
+      "aclUnderlyingCauseNotRecorded": true,
+      "newBooleanDiagnosticsNotClaimedAsBehaviorFix": true
+    }
+  ],
+  "evidenceSha256": {
+    "installedResult": "a7f305052aa67e6c846dde6dddbfa66f0ec7a7eb6efaaaf4e8681ad02718a593",
+    "installedSummary": "72327785c7d9b7b50903425cd92ad601a707b504b20424dcc0ffc655fae9ef10"
+  },
+  "limits": [
+    "Same machine/user/state/backend/cache, fixed separate install prefixes and same-volume private data-only bundle. No full old-writer fence; continuous offline attestation required.",
+    "Only deterministic supported source schema2/3/4 to4. Unknown or pending at backup permanently disables rollback; acceptance closes rollback before any activation.",
+    "Rollback restores only original raw store under exact full image and artifact match. No full-tree restore, cross-machine key copy, backend conversion or automatic service/MCP/SSH path rewrite.",
+    "Windows real SID/ACL contracts and fixtures are distinct from macOS actual installed135. Existing Admins/SYSTEM source ownership is needs-review under strict current-SID requirement; new fixture provisioning is not production repair.",
+    "Earlier first-provision generic ACL and native provisioning-not-confirmed failures remain cause-unknown; no automatic retry, relaxed ACL or change to production8s deadline. A later green run does not prove prior environmental cause resolved.",
+    "Whole-test900s only applies to transaction/handoff fixtures, Windows jobs35min and Unix10min; receiver race5s and production ACL8s remain. These test budgets are not product latency commitments.",
+    "ST05 whole, ST06 whole, worker/scheduled-token retirement, V2/Codex strong unknown recovery, continuous real project trial and RC remain incomplete. Stable is v0.2.0; no existing deployments/chats migrated and no merge/tag/release."
+  ],
+  "windowsAclDiagnostics": {
+    "firstRootFixtureRealExec": true,
+    "timeoutMs": 8000,
+    "retry": false,
+    "fields": [
+      "operation",
+      "elapsedMs",
+      "code",
+      "signal",
+      "killed"
+    ],
+    "writeInitializationJobs": [
+      "windows-lock-recovery",
+      "windows-migration-files"
+    ],
+    "initializationStepMinutes": 2,
+    "newEmptyObjectsOnly": true,
+    "productionErrorFieldsContract": [
+      "aclProtected",
+      "aclOwnerMatchesCurrentUser"
+    ],
+    "refusalAndMessageUnchanged": true,
+    "previousUnderlyingCauseStillUnknown": true,
+    "actualEvidence": {
+      "files": {
+        "jobId": 118753650427,
+        "rawSha256": "3de0ee7753cbfd06790b2a8e33fb64500081fd22414eeed4995b04d892ca404b",
+        "scriptInitializationMs": 835,
+        "newDirectories": 1,
+        "newEmptyFiles": 1,
+        "cleanupEvidence": "Success marker follows exact file deletion and nonrecursive empty directory deletion; no separate observer filesystem listing.",
+        "rootDiagnosticCount": 21,
+        "firstRootExecutionMs": 1220,
+        "minimumRootExecutionMs": 341,
+        "maximumRootExecutionMs": 1220,
+        "allCodeZeroSignalNullAndNotKilled": true,
+        "privateEvidenceSha256": "a0b4396a32f564acb1793ec4a33cd326c203f0382d077fe6cdb04aa435118107"
+      },
+      "lock": {
+        "jobId": 118753651131,
+        "rawSha256": "c136c30d6cb8d613e94e072ea26695bb88b2a91548b8f65d6f78634a4280de68",
+        "scriptInitializationMs": 671,
+        "newDirectories": 1,
+        "newEmptyFiles": 1,
+        "cleanupEvidence": "Success marker follows exact file deletion and nonrecursive empty directory deletion; no separate observer filesystem listing.",
+        "rootDiagnosticCount": 9,
+        "firstRootExecutionMs": 1019,
+        "minimumRootExecutionMs": 278,
+        "maximumRootExecutionMs": 1019,
+        "allCodeZeroSignalNullAndNotKilled": true,
+        "privateEvidenceSha256": "594477fe86efa40ac9998db95ff96e36cd1950a28cd44463abf4df92bf24e37a"
+      }
+    }
+  },
+  "finalEvidencePrivacy": "reviewed-ready",
+  "documentationClosing": {
+    "runtimeFiles": 64,
+    "runtimeSha256": "5e8450edfc3bde20bcc8f6b017a8489c13356c85f60660475ff10c9314cd522d",
+    "allWorkingRuntimeBytesAndModesEqualAcceptedGit": true,
+    "packageSmoke": {
+      "status": "passed",
+      "node": "24.19.0",
+      "packedFiles": 93,
+      "packedBytes": 351338,
+      "rawSha256": "f7380357b39abe3eadd6b5d95a48d1a895c9d4b622faa71cdd319994c854e913",
+      "temporaryArchiveRemoved": true
+    },
+    "differentSnapshotFromRetainedInstalled135Package": true,
+    "privateComparisonSha256": "54388c2c3712544ac7b388b292b04b8bcf6569def6389b18e4262bcf15112765"
+  }
+}

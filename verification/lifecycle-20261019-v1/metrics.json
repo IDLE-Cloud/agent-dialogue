@@ -1,0 +1,65 @@
+{
+  "schemaVersion": 1,
+  "stage": "ST-04 local implementation acceptance; platform CI pending",
+  "observedAt": "2026-10-19T16:14:25.337645+00:00",
+  "sourceBaseCommit": "0aa51db985473dc22acd6245473604619f9a574f",
+  "runtimeFilesSha256": "0dc07276eb06b3796ee84779dda206a8d8b474a5936633008956b95d59900191",
+  "runtimeFiles": 52,
+  "digestFormat": "SHA256 of UTF-8 compact JSON array sorted by POSIX path, each object has path then sha256; no trailing newline",
+  "sourceSnapshot": "working-tree runtime content committed with this report",
+  "environment": {
+    "physicalHosts": 1,
+    "platform": "darwin-arm64",
+    "node": "v26.10.0"
+  },
+  "tests": {
+    "newLifecycleContracts": 58,
+    "fullTotal": 626,
+    "passed": 625,
+    "failed": 0,
+    "skipped": 1,
+    "skipReason": "Windows-only ACL test on POSIX"
+  },
+  "package": {
+    "status": "passed",
+    "files": 75,
+    "bytes": 266404,
+    "isolatedPrefix": true,
+    "arbitraryCwd": true,
+    "offlineV2UpgradePreservesNodeIdentity": true,
+    "installedInspectPreservesStoreBytes": true
+  },
+  "workflow": {
+    "testsAddedToWindowsNativeJob": true,
+    "platformCi": "pending; inspect PR checks for this implementation"
+  },
+  "review": {
+    "independentReviewCompleted": true,
+    "openBlockingFindings": 0,
+    "resolved": [
+      "room manifestHash/ownerNodeId omitted from resume CAS",
+      "native query crossing control transaction",
+      "scope changed during MCP inbox read",
+      "pause/stop preparation and rejected cursor outside dispatch",
+      "malformed/falsy worker ownership evidence",
+      "unknown source outbox incorrectly allowed resume",
+      "intermediate receipt visible before cursor/status commit",
+      "cross-installation worker ownership documentation"
+    ]
+  },
+  "safety": {
+    "realHarnessApiCalls": 0,
+    "modelTurns": 0,
+    "remoteHostChanges": 0,
+    "loopbackNativeFixturesUsed": true,
+    "ownedChildProcessesUsed": true,
+    "secretsOrChatBodiesIncluded": false
+  },
+  "boundaries": [
+    "unknown q/m/native recovery and lock recovery remain ST-05",
+    "offline declaration cannot discover all writers",
+    "old live workers at another installation path are not automatically taken over",
+    "no new real multi-host or desktop trial",
+    "no fixed RC, merge, tag or release"
+  ]
+}

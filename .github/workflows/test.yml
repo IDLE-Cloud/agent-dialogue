@@ -27,9 +27,319 @@ jobs:
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: ${{ matrix.node }}
+      - name: Use an owned immutable Node copy for installation identity contracts
+        shell: bash
+        run: |
+          node --input-type=module <<'JS'
+          import { constants, createReadStream } from 'node:fs';
+          import { appendFile, chmod, copyFile, lstat, mkdir, realpath } from 'node:fs/promises';
+          import { createHash } from 'node:crypto';
+          import { join } from 'node:path';
+          const source = await realpath(process.execPath);
+          const before = await lstat(source, { bigint: true });
+          const fields = ['dev', 'ino', 'mode', 'uid', 'gid', 'nlink', 'size', 'mtimeNs', 'ctimeNs'];
+          const describe = info => Object.fromEntries(fields.map(key => [key, info[key].toString()]));
+          const digest = async path => { const hash = createHash('sha256'); for await (const bytes of createReadStream(path)) hash.update(bytes); return hash.digest('hex'); };
+          const sourceHash = await digest(source);
+          const directory = join(process.env.RUNNER_TEMP, 'agent-dialogue-owned-node');
+          await mkdir(directory, { mode: 0o700 });
+          const selected = join(directory, 'node');
+          await copyFile(source, selected, constants.COPYFILE_EXCL); await chmod(selected, 0o755);
+          const after = await lstat(source, { bigint: true }), copied = await lstat(selected, { bigint: true });
+          if (JSON.stringify(describe(before)) !== JSON.stringify(describe(after)) || await digest(source) !== sourceHash || await digest(selected) !== sourceHash || copied.uid !== BigInt(process.getuid()) || copied.nlink !== 1n || (copied.mode & 0o777n) !== 0o755n) throw Error('Node artifact copy changed or is not safely owned');
+          console.log(JSON.stringify({ sourceNode: describe(before), currentUid: process.getuid(), ownedNode: describe(copied), sha256: sourceHash }));
+          await appendFile(process.env.GITHUB_PATH, directory + '\n');
+          JS
       - run: npm test
       - run: npm run test:package
       - name: Install pinned native dependency
         run: node bin/agent-dialogue.mjs setup
       - name: Check installed tool
         run: node bin/agent-dialogue.mjs doctor --json
+  windows-native:
+    runs-on: windows-latest
+    # Lifecycle v2 exercises private dispatch/control locks with real SID/ACL
+    # checks and owned child workers. Keep per-operation deadlines unchanged.
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 24
+      - name: Native Windows contracts, ledger and lifecycle
+        shell: pwsh
+        run: >-
+          node --test --test-concurrency=1
+          tests/atomic-rename.test.mjs
+          tests/bridge-store.test.mjs
+          tests/detach-race.test.mjs
+          tests/embedded-ledger.test.mjs
+          tests/inspect.test.mjs
+          tests/inspect-cli.test.mjs
+          tests/lifecycle.test.mjs
+          tests/lifecycle-delivery.test.mjs
+          tests/lifecycle-observation.test.mjs
+          tests/lifecycle-runtime.test.mjs
+          tests/lifecycle-bridge.test.mjs
+          tests/lifecycle-cli.test.mjs
+          tests/windows-platform.test.mjs
+          tests/windows-node-card.test.mjs
+          tests/windows-transport.test.mjs
+          tests/windows-viewer.test.mjs
+          tests/windows-worker.test.mjs
+          tests/opencode-v1.test.mjs
+          tests/windows-integration-contract.test.mjs
+          tests/native-admission.test.mjs
+          tests/kimi.test.mjs
+          tests/zcode.test.mjs
+          tests/zcode-wiring.test.mjs
+          tests/mcp-stdio.test.mjs
+          tests/mcp-tools.test.mjs
+          tests/zcode-mcp-ingress.test.mjs
+          tests/zcode-plugin.test.mjs
+          tests/zcode-cli.test.mjs
+          tests/tool-inbox-viewer.test.mjs
+          tests/kimi-wiring.test.mjs
+          tests/kimi-integration-contract.test.mjs
+          tests/node-transport.test.mjs
+          tests/node-identity.test.mjs
+          tests/private-files.test.mjs
+      - name: Initialize and check an isolated embedded ledger
+        shell: pwsh
+        env:
+          AGENT_DIALOGUE_LEDGER: embedded
+        run: |
+          $env:AGENT_DIALOGUE_STATE_DIR = Join-Path $env:RUNNER_TEMP 'agent-dialogue-ci-state'
+          $env:AGENT_DIALOGUE_CACHE_DIR = Join-Path $env:RUNNER_TEMP 'agent-dialogue-ci-cache'
+          node bin/agent-dialogue.mjs setup
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          node bin/agent-dialogue.mjs doctor --json
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+  windows-recovery-state:
+    runs-on: windows-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 24
+      - name: Initialize Windows metadata runtime
+        shell: pwsh
+        run: |
+          $script = @'
+          $ErrorActionPreference='Stop'
+          $sid=[Security.Principal.WindowsIdentity]::GetCurrent().User.Value
+          $acl=[IO.Directory]::GetAccessControl($env:RUNNER_TEMP)
+          if(-not $sid -or -not $acl){throw 'Windows metadata runtime unavailable'}
+          '@
+          $encoded = [Convert]::ToBase64String([Text.Encoding]::Unicode.GetBytes($script))
+          $executable = Join-Path $env:SystemRoot 'System32\WindowsPowerShell\v1.0\powershell.exe'
+          & $executable -NoLogo -NoProfile -NonInteractive -EncodedCommand $encoded
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Native Windows recovery state and fixed submissions
+        shell: pwsh
+        run: >-
+          node --test --test-concurrency=1
+          tests/recovery-schema.test.mjs
+          tests/recovery-evidence.test.mjs
+          tests/recovery-submissions.test.mjs
+          tests/recovery-mcp.test.mjs
+          tests/recovery-cli.test.mjs
+  windows-recovery-forwarding:
+    runs-on: windows-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 24
+      - name: Native Windows exact forwarding and stopped runtime recovery
+        shell: pwsh
+        run: >-
+          node --test --test-concurrency=1
+          tests/recovery-nodes.test.mjs
+          tests/recovery-forwarding.test.mjs
+          tests/recovery-runtime.test.mjs
+  windows-native-recovery:
+    runs-on: windows-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 24
+      - name: Initialize Windows PowerShell metadata runtime
+        shell: pwsh
+        run: |
+          # Isolate runner cold-start cost before the contracts. Every actual
+          # product ACL operation still uses its unchanged 8-second deadline.
+          $script = @'
+          $ErrorActionPreference='Stop'
+          $sid=[Security.Principal.WindowsIdentity]::GetCurrent().User.Value
+          $acl=[IO.Directory]::GetAccessControl($env:RUNNER_TEMP)
+          if(-not $sid -or -not $acl){throw 'Windows metadata runtime unavailable'}
+          [Console]::Out.WriteLine('Windows identity and ACL metadata runtime ready')
+          '@
+          $encoded = [Convert]::ToBase64String([Text.Encoding]::Unicode.GetBytes($script))
+          $executable = Join-Path $env:SystemRoot 'System32\WindowsPowerShell\v1.0\powershell.exe'
+          $clock = [Diagnostics.Stopwatch]::StartNew()
+          & $executable -NoLogo -NoProfile -NonInteractive -EncodedCommand $encoded
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          Write-Output "Metadata runtime initialization elapsed ms: $($clock.ElapsedMilliseconds)"
+      - name: Exact persisted native input and stopped owner recovery
+        shell: pwsh
+        run: >-
+          node --test --test-concurrency=1
+          tests/native-proof.test.mjs
+          tests/native-recovery.test.mjs
+          tests/native-recovery-adversarial.test.mjs
+          tests/native-recovery-cli.test.mjs
+          tests/native-worker-review.test.mjs
+  windows-lock-recovery:
+    runs-on: windows-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 24
+      - name: Initialize Windows ACL writes in new owned empty objects
+        timeout-minutes: 2
+        shell: pwsh
+        run: |
+          $script = [IO.File]::ReadAllText((Join-Path $env:GITHUB_WORKSPACE '.github\scripts\initialize-windows-acl.ps1'))
+          $encoded = [Convert]::ToBase64String([Text.Encoding]::Unicode.GetBytes($script))
+          $executable = Join-Path $env:SystemRoot 'System32\WindowsPowerShell\v1.0\powershell.exe'
+          & $executable -NoLogo -NoProfile -NonInteractive -EncodedCommand $encoded
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Private v4 schema and explicit offline lock quarantine
+        shell: pwsh
+        run: >-
+          node --test --test-concurrency=1
+          tests/native-recovery-schema.test.mjs
+          tests/windows-acl-diagnostic.test.mjs
+          tests/lock-recovery.test.mjs
+          tests/lock-recovery-cli.test.mjs
+  windows-migration-files:
+    runs-on: windows-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 24
+      - name: Initialize Windows metadata runtime
+        shell: pwsh
+        run: |
+          $script = @'
+          $ErrorActionPreference='Stop'
+          $sid=[Security.Principal.WindowsIdentity]::GetCurrent().User.Value
+          $acl=[IO.Directory]::GetAccessControl($env:RUNNER_TEMP)
+          if(-not $sid -or -not $acl){throw 'Windows metadata runtime unavailable'}
+          '@
+          $encoded = [Convert]::ToBase64String([Text.Encoding]::Unicode.GetBytes($script))
+          $executable = Join-Path $env:SystemRoot 'System32\WindowsPowerShell\v1.0\powershell.exe'
+          & $executable -NoLogo -NoProfile -NonInteractive -EncodedCommand $encoded
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Initialize Windows ACL writes in new owned empty objects
+        timeout-minutes: 2
+        shell: pwsh
+        run: |
+          $script = [IO.File]::ReadAllText((Join-Path $env:GITHUB_WORKSPACE '.github\scripts\initialize-windows-acl.ps1'))
+          $encoded = [Convert]::ToBase64String([Text.Encoding]::Unicode.GetBytes($script))
+          $executable = Join-Path $env:SystemRoot 'System32\WindowsPowerShell\v1.0\powershell.exe'
+          & $executable -NoLogo -NoProfile -NonInteractive -EncodedCommand $encoded
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Private Windows backup, installation and publication
+        shell: pwsh
+        run: >-
+          node --test --test-concurrency=1
+          tests/migration-files.test.mjs
+          tests/migration-installation.test.mjs
+          tests/migration-transform.test.mjs
+          tests/migration-cli.test.mjs
+          tests/migration-publication.test.mjs
+          tests/migration-core-review.test.mjs
+          tests/migration-lock-owner-review.test.mjs
+  windows-migration-transaction:
+    name: windows-migration-transaction (${{ matrix.slice }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - slice: readiness
+            pattern: '^(default migration|a plan observing|allowed rollback|historical legacy)'
+          - slice: runtime-pending
+            pattern: '^stopped runtime pending '
+          - slice: runtime-native-pending
+            pattern: '^stopped runtime nativePending '
+          - slice: runtime-outgoing-pending
+            pattern: '^stopped runtime outgoingPending '
+          - slice: publication
+            pattern: '^(a newly stored|drift after|journal drift|a previously confirmed|changes after|an installation changed)'
+          - slice: recovery
+            pattern: '^(a different source|lost responses|accept permanently|modified external)'
+    runs-on: windows-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 24
+      - name: Initialize Windows metadata runtime
+        shell: pwsh
+        run: |
+          $script = @'
+          $ErrorActionPreference='Stop'
+          $sid=[Security.Principal.WindowsIdentity]::GetCurrent().User.Value
+          $acl=[IO.Directory]::GetAccessControl($env:RUNNER_TEMP)
+          if(-not $sid -or -not $acl){throw 'Windows metadata runtime unavailable'}
+          '@
+          $encoded = [Convert]::ToBase64String([Text.Encoding]::Unicode.GetBytes($script))
+          $executable = Join-Path $env:SystemRoot 'System32\WindowsPowerShell\v1.0\powershell.exe'
+          & $executable -NoLogo -NoProfile -NonInteractive -EncodedCommand $encoded
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Offline migration checkpoints and rollback adversaries
+        shell: pwsh
+        run: >-
+          node --test --test-concurrency=1
+          --test-name-pattern '${{ matrix.pattern }}'
+          tests/migration-adversarial.test.mjs
+  windows-migration-handoff:
+    name: windows-migration-handoff (${{ matrix.slice }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - slice: preimages
+            pattern: '^(raw journal|source store|prepare does|a control lock|losing the exact|handoff refuses)'
+          - slice: schema-and-owners
+            pattern: '^(schema-only|a new worker|schema 2|schema 4)'
+          - slice: interrupted-images
+            pattern: '^read-only verify'
+    runs-on: windows-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 24
+      - name: Initialize Windows metadata runtime
+        shell: pwsh
+        run: |
+          $script = @'
+          $ErrorActionPreference='Stop'
+          $sid=[Security.Principal.WindowsIdentity]::GetCurrent().User.Value
+          $acl=[IO.Directory]::GetAccessControl($env:RUNNER_TEMP)
+          if(-not $sid -or -not $acl){throw 'Windows metadata runtime unavailable'}
+          '@
+          $encoded = [Convert]::ToBase64String([Text.Encoding]::Unicode.GetBytes($script))
+          $executable = Join-Path $env:SystemRoot 'System32\WindowsPowerShell\v1.0\powershell.exe'
+          & $executable -NoLogo -NoProfile -NonInteractive -EncodedCommand $encoded
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Fixed installation handoff and preimage retention
+        shell: pwsh
+        run: >-
+          node --test --test-concurrency=1
+          --test-name-pattern '${{ matrix.pattern }}'
+          tests/migration-handoff-review.test.mjs

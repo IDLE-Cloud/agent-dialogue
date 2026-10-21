@@ -1,0 +1,84 @@
+{
+  "schemaVersion": 1,
+  "stage": "ST-04 corrected local acceptance; new platform CI pending",
+  "observedAt": "2026-10-19T16:34:22.193293+00:00",
+  "sourceBaseCommit": "0fa23af2ee87b07dbeac8ea0b87466e0e43d4feb",
+  "runtimeFilesSha256": "4a9054dc671d08140852c2908d361ea5cba50113061d80ce6a26dc272015774a",
+  "runtimeFiles": 52,
+  "digestFormat": "SHA256 of UTF-8 compact JSON array sorted by POSIX path, each object has path then sha256; no trailing newline",
+  "sourceSnapshot": "corrected working-tree runtime content committed with this report",
+  "environment": {
+    "physicalHosts": 1,
+    "platform": "darwin-arm64",
+    "nodeVersions": [
+      "v24.19.0",
+      "v26.10.0"
+    ]
+  },
+  "tests": {
+    "newContractsFromInspectBase": 61,
+    "lifecycleContracts": 58,
+    "additionalStoreContracts": 3,
+    "perNodeVersion": {
+      "total": 629,
+      "passed": 628,
+      "failed": 0,
+      "skipped": 1
+    },
+    "skipReason": "Windows-only ACL test on POSIX",
+    "priorNode24FailureRetained": {
+      "source": "0fa23af",
+      "total": 626,
+      "passed": 624,
+      "failed": 1,
+      "skipped": 1
+    },
+    "safeSnapshotRed": {
+      "readers": 16,
+      "failed": 16
+    },
+    "safeSnapshotRepeatNode24": {
+      "independentRuns": 20,
+      "passed": 20,
+      "readers": 320,
+      "snapshots": 12800,
+      "atomicRenames": 1600
+    },
+    "frozenFocusedNode24": {
+      "total": 55,
+      "passed": 55
+    }
+  },
+  "package": {
+    "status": "passed-on-both-node-versions",
+    "files": 75,
+    "bytes": 267103,
+    "isolatedPrefix": true,
+    "arbitraryCwd": true,
+    "v2UpgradePreservesNode": true,
+    "inspectPreservesStore": true
+  },
+  "review": {
+    "independentSafetyReview": "ready",
+    "openBlockingFindings": 0,
+    "fixedAtomicPublicationWithoutWeakeningInplaceChangeChecks": true
+  },
+  "workflow": {
+    "windowsStoreContractsIncluded": 13,
+    "platformCi": "pending; inspect the corrected commit checks",
+    "priorRun39283921095": "cancellation requested after new local failure; not final platform acceptance"
+  },
+  "safety": {
+    "modelTurns": 0,
+    "realHarnessApiCalls": 0,
+    "remoteHostChanges": 0,
+    "loopbackFixtures": true,
+    "ownedChildWorkers": true
+  },
+  "boundaries": [
+    "Windows/Linux native platform result not inferred from macOS local runs",
+    "ST-05 reconciliation and lock recovery not implemented",
+    "ST-06 generic cross-prefix migration not implemented",
+    "no merge/tag/release"
+  ]
+}

@@ -1,0 +1,133 @@
+{
+  "run_id": "node-project-2026-10-17T16-29-49-820Z-16244ef7",
+  "started_at": "2026-10-17T16:29:49.821Z",
+  "status": "passed",
+  "transport": "local-process",
+  "scope": "two independent local nodes, one existing OpenCode service; no two-host claim",
+  "model": {
+    "providerID": "opencode",
+    "id": "deepseek-v4.1-flash-free",
+    "zero_cost_verified": true,
+    "service_version": "2.0.20"
+  },
+  "stages": [
+    {
+      "name": "zero_cost_model_verified",
+      "at": "2026-10-17T16:29:49.860Z"
+    },
+    {
+      "name": "normal_project_chat_seeded",
+      "at": "2026-10-17T16:29:53.279Z",
+      "role": "a"
+    },
+    {
+      "name": "existing_project_chat_attached",
+      "at": "2026-10-17T16:29:53.620Z",
+      "role": "a"
+    },
+    {
+      "name": "normal_project_chat_seeded",
+      "at": "2026-10-17T16:29:55.813Z",
+      "role": "b"
+    },
+    {
+      "name": "existing_project_chat_attached",
+      "at": "2026-10-17T16:29:56.152Z",
+      "role": "b"
+    },
+    {
+      "name": "public_cards_paired_and_room_imported",
+      "at": "2026-10-17T16:29:56.866Z"
+    },
+    {
+      "name": "project_collaboration_triggered",
+      "at": "2026-10-17T16:29:57.021Z"
+    },
+    {
+      "name": "waiting_for_owned_project_exchange",
+      "at": "2026-10-17T16:30:12.172Z",
+      "request_observed": true,
+      "linked_reply_observed": true
+    },
+    {
+      "name": "checking_same_id_replay_and_signed_ingress_guards",
+      "at": "2026-10-17T16:30:13.557Z"
+    },
+    {
+      "name": "duplicate_and_signed_ingress_guards_completed",
+      "at": "2026-10-17T16:30:15.887Z",
+      "collision_rejected": true,
+      "signature_rejected": true,
+      "unaccepted_room_rejected": true
+    },
+    {
+      "name": "project_collaboration_completed",
+      "at": "2026-10-17T16:30:15.888Z",
+      "status": "passed",
+      "elapsed_ms": 16536
+    }
+  ],
+  "assertions": {
+    "seeded_before_attach": true,
+    "exactly_one_model_origin_request": true,
+    "exactly_one_model_origin_linked_reply": true,
+    "remote_stored_receipts": true,
+    "original_session_ids_preserved": true,
+    "original_private_context_combined": true,
+    "independent_node_identities": true,
+    "request_and_reply_reconciled_on_both_nodes": true,
+    "only_bounded_once_permissions": true,
+    "same_id_flush_returns_original_remote_event": true,
+    "signed_same_id_different_body_rejected": true,
+    "tampered_signature_rejected_at_cli_ingress": true,
+    "unaccepted_room_rejected_at_cli_ingress": true,
+    "replay_and_rejections_preserve_both_inbox_mappings": true,
+    "duplicate_does_not_repeat_stable_native_inputs": true,
+    "rejections_add_no_native_user_input": true,
+    "replay_and_rejections_add_no_message_ledger_event": true
+  },
+  "permissions": {
+    "once": 2,
+    "rejected": 0
+  },
+  "cleanup": [
+    {
+      "role": "a",
+      "detached": true
+    },
+    {
+      "role": "b",
+      "detached": true
+    }
+  ],
+  "elapsed_ms": 16536,
+  "message_ids": {
+    "request": "m_e12d3cc4-003d-4cad-b116-e0bf6510a54b",
+    "reply": "m_2fe0ef7d-f70b-4c40-a8af-a8d25215d22d"
+  },
+  "guards": {
+    "collision": {
+      "rejected": true,
+      "exit_code": 1
+    },
+    "invalid_signature": {
+      "rejected": true,
+      "exit_code": 1
+    },
+    "unaccepted_room": {
+      "rejected": true,
+      "exit_code": 1
+    },
+    "stable_native_input_counts": {
+      "before": {
+        "a": 1,
+        "b": 1
+      },
+      "after": {
+        "a": 1,
+        "b": 1
+      }
+    }
+  },
+  "finished_at": "2026-10-17T16:30:16.092Z"
+}

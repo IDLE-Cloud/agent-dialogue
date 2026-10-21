@@ -1,0 +1,127 @@
+{
+  "schemaVersion": 1,
+  "phase": "first-platform-failures-preserved",
+  "candidateCommit": "a2653bdb414598953326c69470b63fea54a5f89d",
+  "runtimeFiles": 64,
+  "runtimeSha256": "87f3da3cde3db2e12859f633e4464f6e11fe6d3382357af3159e5fea9d802e8d",
+  "local": {
+    "node24": {
+      "version": "24.19.0",
+      "tests": 917,
+      "pass": 915,
+      "skip": 2,
+      "fail": 0,
+      "cancel": 0
+    },
+    "node26": {
+      "version": "26.10.0",
+      "tests": 917,
+      "pass": 915,
+      "skip": 2,
+      "fail": 0,
+      "cancel": 0
+    },
+    "newTests": 93
+  },
+  "installedHandoff": {
+    "assertions": 135,
+    "oldWorkers": 2,
+    "newWorkers": 2,
+    "normalStopsConfirmedDead": 4,
+    "schema3To4ThenExactRawRollback": true,
+    "acceptBeforeActivation": true,
+    "qEvents": 1,
+    "formalEvents": 1,
+    "nativeIntentsAdmitted": 1,
+    "fakeNativePosts": 1,
+    "persistedFakeInputs": 1,
+    "duplicatePosts": 0,
+    "allPackageBytesAndModesUnchanged": true,
+    "entryModeSamples": 62,
+    "packageWatchEvents": 0,
+    "runtimeMatchesGit": true,
+    "platform": "macOS arm64",
+    "node": "24.19.0"
+  },
+  "retainedPackage": {
+    "sha256": "20586f7c48f16982cff3ebd878c2a735100c0be24920ac6b72f9bce2cab27ad2",
+    "bytes": 349272,
+    "unpackedBytes": 1136650,
+    "packedFiles": 93,
+    "modes": {
+      "644": 91,
+      "755": 2
+    }
+  },
+  "ci": {
+    "runId": 39439900151,
+    "url": "https://github.com/IDLE-Cloud/agent-dialogue/actions/runs/39439900151",
+    "statusAtSnapshot": "in_progress_with_failed_jobs",
+    "failedContracts": [
+      {
+        "job": "Ubuntu22 and Ubuntu24",
+        "failure": "Actual current Node artifact rejected by safeInfo owner/write-bit branch; original log lacks exact stat values; diagnostic and owned CI Node copy will verify cause",
+        "countsPerJob": {
+          "tests": 917,
+          "pass": 914,
+          "fail": 1,
+          "skip": 2,
+          "cancel": 0
+        }
+      },
+      {
+        "job": "windows-migration-files",
+        "tests": 58,
+        "pass": 35,
+        "fail": 17,
+        "skip": 6,
+        "cancel": 0,
+        "failure": "Current-SID owner check before meaningful migration; missing explicit fixture owner provisioning investigated"
+      },
+      {
+        "job": "windows-migration-transaction",
+        "tests": 15,
+        "pass": 1,
+        "fail": 14,
+        "skip": 0,
+        "cancel": 0
+      },
+      {
+        "job": "windows-migration-handoff",
+        "tests": 16,
+        "pass": 1,
+        "fail": 15,
+        "skip": 0,
+        "cancel": 0
+      }
+    ]
+  },
+  "furtherProductionFinding": {
+    "newStrictLockOwnerNotProvisionedOnWindows": true,
+    "sameBytesOwnerInodeReplacementCanReachCallback": true,
+    "newReviewTests": 3,
+    "firstRed": {
+      "pass": 2,
+      "fail": 1
+    },
+    "resolution": "A subsequent candidate will provision only the exclusively created strict owner file and verify fd/path/content identity before exposing its capability. This changes runtime; the present package is not that candidate."
+  },
+  "effects": {
+    "modelTurns": 0,
+    "sshCalls": 0,
+    "existingDeploymentsMigrated": false,
+    "stableRelease": "v0.2.0",
+    "mergeTagRelease": false
+  },
+  "limits": [
+    "Installed migration/default launcher uses real owned macOS workers plus an owned synthetic OpenCode V2 loopback service, not real harness/model or Windows launcher proof.",
+    "Fixture synthetic installation/PID tests are distinct from the installed worker result.",
+    "No full-writer fence; continuous offline attestation remains mandatory.",
+    "Initial pending/unknown closes rollback; acceptance permanently closes it before any activation.",
+    "Same machine/user/state/backend/cache and same-volume bundle only; no backend conversion, cross-host private-key copy or whole-state restore.",
+    "Production runtime is undergoing a justified new strict-lock owner fix; this snapshot is not final acceptance."
+  ],
+  "clarifications": {
+    "ubuntuMatrixLabels": "Ubuntu22/24 denotes ubuntu-latest jobs using Node22/24, not Ubuntu release versions."
+  }
+}

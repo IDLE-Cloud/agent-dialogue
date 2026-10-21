@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "scenario": "local-full-tests-and-installed-viewer-package",
+  "recordedAt": "2026-10-18T02:19:04.763Z",
+  "baseCommit": "19d96e4",
+  "implementationSha256": "bc6fcdd7a5ccbd5d6bb0cde8df2143c4cf78952b231c999bdcae4bbf136c78eb",
+  "node": "v26.10.0",
+  "platform": "darwin",
+  "arch": "arm64",
+  "tests": {
+    "passed": 185,
+    "failed": 0,
+    "durationMs": 12704.0995
+  },
+  "package": {
+    "status": "passed",
+    "packedFiles": 34,
+    "packedBytes": 99061,
+    "checks": [
+      "allowlist",
+      "isolated-global-prefix",
+      "unrelated-working-directory",
+      "installed-viewer-assets-and-API",
+      "missing-ledger-remains-absent",
+      "no-package-mutation"
+    ]
+  },
+  "modelCalls": 0
+}

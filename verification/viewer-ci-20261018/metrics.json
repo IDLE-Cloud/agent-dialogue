@@ -1,0 +1,101 @@
+{
+  "version": 1,
+  "recordedAt": "2026-10-18T02:22:11.817Z",
+  "headSha": "d996db093f04052120de019191b8aade8f571ca4",
+  "url": "https://github.com/IDLE-Cloud/agent-dialogue/actions/runs/39089715479",
+  "conclusion": "success",
+  "jobs": [
+    {
+      "name": "test (macos-latest, 24)",
+      "conclusion": "success",
+      "url": "https://github.com/IDLE-Cloud/agent-dialogue/actions/runs/39089715479/job/117563667423",
+      "checks": [
+        {
+          "name": "Run npm test",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run npm run test:package",
+          "conclusion": "success"
+        },
+        {
+          "name": "Install pinned native dependency",
+          "conclusion": "success"
+        },
+        {
+          "name": "Check installed tool",
+          "conclusion": "success"
+        }
+      ]
+    },
+    {
+      "name": "test (ubuntu-latest, 22)",
+      "conclusion": "success",
+      "url": "https://github.com/IDLE-Cloud/agent-dialogue/actions/runs/39089715479/job/117563667519",
+      "checks": [
+        {
+          "name": "Run npm test",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run npm run test:package",
+          "conclusion": "success"
+        },
+        {
+          "name": "Install pinned native dependency",
+          "conclusion": "success"
+        },
+        {
+          "name": "Check installed tool",
+          "conclusion": "success"
+        }
+      ]
+    },
+    {
+      "name": "test (ubuntu-latest, 26)",
+      "conclusion": "success",
+      "url": "https://github.com/IDLE-Cloud/agent-dialogue/actions/runs/39089715479/job/117563667544",
+      "checks": [
+        {
+          "name": "Run npm test",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run npm run test:package",
+          "conclusion": "success"
+        },
+        {
+          "name": "Install pinned native dependency",
+          "conclusion": "success"
+        },
+        {
+          "name": "Check installed tool",
+          "conclusion": "success"
+        }
+      ]
+    },
+    {
+      "name": "test (ubuntu-latest, 24)",
+      "conclusion": "success",
+      "url": "https://github.com/IDLE-Cloud/agent-dialogue/actions/runs/39089715479/job/117563667610",
+      "checks": [
+        {
+          "name": "Run npm test",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run npm run test:package",
+          "conclusion": "success"
+        },
+        {
+          "name": "Install pinned native dependency",
+          "conclusion": "success"
+        },
+        {
+          "name": "Check installed tool",
+          "conclusion": "success"
+        }
+      ]
+    }
+  ]
+}

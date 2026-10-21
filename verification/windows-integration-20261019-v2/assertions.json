@@ -1,0 +1,23 @@
+{
+  "windows_free_catalog": true,
+  "independent_nodes": true,
+  "windows_worker_alive_after_ssh_return": true,
+  "mac_request_and_windows_reply": true,
+  "windows_request_and_mac_reply": true,
+  "four_signed_messages": true,
+  "replay_original_remote_event": true,
+  "same_id_changed_text_rejected": true,
+  "bad_signature_rejected": true,
+  "unaccepted_room_rejected": true,
+  "wrong_session_rejected": true,
+  "replay_no_ledger_append": true,
+  "replay_no_native_input": true,
+  "all_signed_sends_remote_stored": true,
+  "windows_model_executed_two_communication_tools": true,
+  "mac_model_executed_two_tools": true,
+  "matching_deployed_runtime": true,
+  "native_model_cost_zero": true,
+  "windows_original_agent_model_preserved": true,
+  "owned_workers_stopped": true,
+  "combined_fixture_facts_in_native_answer": true
+}

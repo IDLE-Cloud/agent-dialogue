@@ -1,0 +1,92 @@
+{
+  "schemaVersion": 1,
+  "phase": "windows-fixture-correction-platform-recheck-pending",
+  "runtime": {
+    "commit": "c44bc9d117b455b692a7ac5229e05dd69e08fe74",
+    "files": 61,
+    "sha256": "7ec88027e61bba31be457b5ed05c17863d214e2ed4a4f7878a8844ce08efd19d",
+    "productionCodeChangedByCorrection": false
+  },
+  "originalCi": {
+    "id": 39426418555,
+    "nativeRecoveryJob": 118640014452,
+    "tests": 42,
+    "pass": 36,
+    "fail": 6,
+    "cancel": 0,
+    "skip": 0,
+    "node": "24.22.0",
+    "diagnosis": {
+      "fixturePathMismatch": 5,
+      "firstWindowsAclSetupFailure": 1,
+      "aclElapsedMs": 8080.8972,
+      "coldStartCause": "plausible but not proven; runner hid timeout/exit details"
+    },
+    "otherJobs": "four Unix and Windows recovery-forwarding already success at this snapshot; remaining jobs still in progress"
+  },
+  "correction": {
+    "testOnly": "platform resolve for fake binding/session directories and authoritative Kimi normalized projectID",
+    "workflowOnly": "separate read-only WindowsPowerShell SID/ACL metadata initialization with elapsed timing before functional contracts",
+    "productionPermissionDeadlineMs": 8000,
+    "node24Focused": {
+      "tests": 66,
+      "pass": 66,
+      "fail": 0,
+      "skip": 0
+    },
+    "node26Focused": {
+      "tests": 66,
+      "pass": 66,
+      "fail": 0,
+      "skip": 0
+    }
+  },
+  "additionalLocalEvidence": {
+    "oldV3WriterFence": {
+      "oldCommit": "63fba039df59c2d23b230722ad2e8b2aaf254508",
+      "assertions": 143,
+      "independentGitChecks": 264,
+      "pass": true,
+      "writers": 5
+    },
+    "installedDefaultLauncher": {
+      "assertions": 103,
+      "pass": true,
+      "ownedWorkers": 2,
+      "spawns": 2,
+      "nativePosts": 1,
+      "persistedSyntheticInputs": 1,
+      "duplicatePosts": 0,
+      "normalStopConfirmedDead": 2,
+      "installedPackageFiles": 88,
+      "runtimeFiles": 61,
+      "unchangedBytesAndModes": true,
+      "entryModeSamples": 30,
+      "packageWatchEvents": 0
+    },
+    "retainedTarball": {
+      "bytes": 315900,
+      "unpackedBytes": 1016381,
+      "files": 88,
+      "sha256": "b8ad8a39a6a01dac1d41a7ea6bb6a61c953d51b2bc40624c6efe9126e357169d",
+      "modes": {
+        "0644": 86,
+        "0755": 2
+      },
+      "notReleaseCandidate": true
+    },
+    "firstLauncherAttempt": {
+      "status": "failed",
+      "assertionsBeforeFailure": 77,
+      "cause": "review evidence script recursively changed shared test prefix file permissions to0600",
+      "bothOwnedWorkersNormalStopConfirmedDead": true,
+      "rerun": "same unchanged tarball installed into separate new prefix; original failure retained"
+    }
+  },
+  "limits": [
+    "New Windows correction not yet validated on Windows at this snapshot",
+    "Runtime identity does not imply equal documentation tarball; CI temporary315896bytes and retained315900bytes differ",
+    "Package smoke checks external state/cache and package directory entries; full bytes/modes proven separately by installed launcher",
+    "No real model/SSH/user service/remote changes; ST05 remains in progress; ST06/worker token retirement/RC not complete"
+  ]
+}

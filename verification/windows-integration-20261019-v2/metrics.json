@@ -1,0 +1,66 @@
+{
+  "version": 1,
+  "run_id": "windows-integration-20261019-v2",
+  "status": "passed",
+  "started_at": "2026-10-19T06:43:10.062Z",
+  "finished_at": "2026-10-19T07:03:29.180Z",
+  "scope": "one owned native Windows OpenCode V1 chat; signed room; existing FRP SSH transport",
+  "transport": "ssh-frp",
+  "software": {
+    "node": "v24.22.0",
+    "opencode": "1.19.0"
+  },
+  "zero_cost_verified": true,
+  "checks": {
+    "total": 21,
+    "passed": 21,
+    "failed": 0
+  },
+  "permissions": {
+    "once": 4,
+    "rejected": 0,
+    "foreign_ignored": 0
+  },
+  "peer_software": {
+    "platform": "darwin-arm64",
+    "node": "v26.10.0",
+    "opencode": "2.0.20"
+  },
+  "model": "opencode/deepseek-v4.1-flash-free",
+  "signed_messages": 4,
+  "model_communication_commands": 4,
+  "total_fixture_logical_messages": 6,
+  "source_files": {
+    "bin/agent-dialogue.mjs": "ef53355bcd4f1446b70649edefb638ff8037ea9bbc821944c27c67e322c55d7e",
+    "bin/bridge-worker.mjs": "f7245f4c77cffb242f1266604299be069f894935d8b619f166f9f4d01175b552",
+    "lib/adapters.mjs": "f03e69734cbcdb5eba9a3114f8cbd385ffaa40368b213ef18a65ca1907864392",
+    "lib/agent-guide.mjs": "c2c9cff78f0bf0828a080de8407cd3f9a091876c180e9e317a24e4b7b80e0711",
+    "lib/bridge-store.mjs": "cace38a83253d9752d702912324c41e49da125fe7d964fff13508c2f9b6bd2a4",
+    "lib/bridge.mjs": "f56f4684d355fa4eed548453d33bc5fce688ee100e5e8f42e38ab4df82f2bd0f",
+    "lib/codex.mjs": "7eeb2673662184d2d900975b941638c8480aa75472dd6cd7f77cbc721d50aba6",
+    "lib/embedded-ledger.mjs": "9cc7a7ce99d96d7ddbf1e99c2ab4a7584a7ee9ebfc7e478aa95c02c65a0c24c7",
+    "lib/install.mjs": "40dd765caea17cf3d5b2d13f9b64c8f3a015f7e1e048d6c7165956bf5a32de58",
+    "lib/native-admission.mjs": "5d964b9e5890537d78c1312eb14c96566e367e07c072a30a5991e279ba860090",
+    "lib/node-identity.mjs": "2e56f39c5bc9efecf2be5e052440999123050b99f64f9e0c165274b46f6456cf",
+    "lib/node-transport.mjs": "0d37ad34a2b0230ab95a618f025859337893615c460636dc193b86781fbaaef8",
+    "lib/nodes.mjs": "a1f5023a1b7cb08e1d9d4a0b03b480b57d0db42535dd3925c35d1330724a3bf0",
+    "lib/opencode-v1.mjs": "84a0ce10c2d896f8a426f0abfd2ad4a297d839561574d2e18d2c02f43327bf44",
+    "lib/opencode.mjs": "cf61e5412f9b119f8347573eb889cc669e1340bba66ea7cff571ef9fbc7be010",
+    "lib/paths.mjs": "631addc66096c4df18d5cdd386f0bff5334da2503ae45dbe59cec7b30e1d1b59",
+    "lib/platform.mjs": "7457704a9f8e230a34b1baf43aa6082b86d000216764f58839b7be2a61f3ba9e",
+    "lib/private-files.mjs": "6e370708261d0379e8171b3886fbf20abfb11b6c81523d2f6308101abcee33e3",
+    "lib/submissions.mjs": "c0447008acfcf907eebb426fe66de12ecd53e9988b08e10e038da4fe81f5cc29",
+    "lib/viewer/cli.mjs": "05b2a7cf0396ad56c97ce8cb20b37002ec21f41172b07813fe30a3599fc6eff4",
+    "lib/viewer/config.mjs": "74de2f1bfe99d9c7b0561787c5b24eed3ba9544c8e39174c343de10a686c6147",
+    "lib/viewer/export-cli.mjs": "60e3106055c945f5ffd8b511a0e7996c61bf0797f258f3508279b6fd97838742",
+    "lib/viewer/observation.mjs": "fb6cddbae5a0ef7e20c59a2beb9e353583cb37660301d9f91a53ccaf0764a2cb",
+    "lib/viewer/projection.mjs": "e5ae659a4d085ccc2baf4b31eae85a70fd220e98644186446f9cfa0a63d88526",
+    "lib/viewer/readers/local.mjs": "33888d7d4301df8bebfb96902ca25e8a9c7daea7864badfbf69deba15972e8f9",
+    "lib/viewer/readers/ssh.mjs": "c899042484bec4f3ec26c66869352ef56e90297ab33d7f5a37b5310bd8444c6c",
+    "lib/viewer/server.mjs": "f9a954dd3529d1d726955b7c869dc1176d568598ffc9cef0f60ec781f3c4655a",
+    "lib/viewer/stream.mjs": "9dc10542031dcc870ac9f6b1f988db043ecd57e2b3c8e8a88b51a67b4f8bbffa",
+    "lib/windows-worker.mjs": "2673e4cf026e9154c5510ea58e5127739a8ab7fd7d66cd2a09f221b455f66f5f",
+    "scripts/windows-integration-contract.mjs": "600dfd77ca696bc76f86d67640bea0dda54a6de7ba9df77ada590d76298cbb18"
+  },
+  "fixture_scope": "Owner supplied bounded project task, exact communication commands and reply text. Confirms transport and native tool execution, not open-ended autonomous collaboration quality."
+}

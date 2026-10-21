@@ -1,0 +1,99 @@
+{
+  "version": 1,
+  "status": "passed",
+  "kind": "real-windows-worker-lifecycle",
+  "date": "2026-10-19",
+  "scope": "Isolated Windows deployment; actual current-user Limited scheduled task calls production cleanupWindowsWorker. No native agent or model is invoked.",
+  "platform": {
+    "os": "Windows 11 x64",
+    "node": "24.22.0"
+  },
+  "communicationBaselineCommit": "f1feccb6c8e7d9e105e26cbe8e92489732054fd9",
+  "source": {
+    "module": "lib/windows-worker.mjs",
+    "sha256": "4bd00631e5ebc3dd82d5057b270f49834114d17367764136b37b94d578b9d5be",
+    "test": "tests/windows-worker.test.mjs",
+    "testSha256": "10dcac175e53ff00f0a2cda709edbfaa6388b080b328bcbc9d99277e478139c4",
+    "baselineModuleSha256": "2673e4cf026e9154c5510ea58e5127739a8ab7fd7d66cd2a09f221b455f66f5f",
+    "baselineDeploymentPreserved": true
+  },
+  "failureAndFix": {
+    "observedFailure": "Elevated SSH registration left the Limited task principal with only FR in the default task DACL. Both stopped workers retained their exact owned scheduled tasks and launch descriptors.",
+    "fix": "Create this individual task with an explicit protected DACL granting full control to SYSTEM, local Administrators and the exact current-user SID. RunLevel stays Limited; no triggers, password storage or global scheduler ACL changes.",
+    "existingStoppedWorkersRecovered": "Two previously stopped exact-owned tasks and descriptors were removed externally using the original production ownership checks; no foreign task was stopped."
+  },
+  "startedAt": "2026-10-19T07:05:19.672Z",
+  "finishedAt": "2026-10-19T07:05:25.609Z",
+  "assertions": [
+    {
+      "id": "actual_limited_token",
+      "passed": true
+    },
+    {
+      "id": "interactive_token",
+      "passed": true
+    },
+    {
+      "id": "limited_task_runlevel",
+      "passed": true
+    },
+    {
+      "id": "no_task_triggers",
+      "passed": true
+    },
+    {
+      "id": "started_after_registering_ssh_exited",
+      "passed": true
+    },
+    {
+      "id": "same_owned_process_completed_cleanup",
+      "passed": true
+    },
+    {
+      "id": "exact_owned_task_self_delete_confirmed",
+      "passed": true
+    },
+    {
+      "id": "descriptor_removed",
+      "passed": true
+    },
+    {
+      "id": "no_remaining_owned_task",
+      "passed": true
+    },
+    {
+      "id": "no_remaining_launch_descriptors",
+      "passed": true
+    },
+    {
+      "id": "no_models_or_native_harness_calls",
+      "passed": true
+    },
+    {
+      "id": "isolated_deployment_matches_local_source_and_preserves_baseline",
+      "passed": true
+    }
+  ],
+  "metrics": {
+    "passed": 12,
+    "total": 12,
+    "actualTokenIsAdministrator": false,
+    "modelsInvoked": 0,
+    "nativeHarnessApiCalls": 0,
+    "selfDeletedOwnedTasks": 1,
+    "remainingOwnedTasks": 0,
+    "remainingLaunchDescriptors": 0
+  },
+  "windowsUnitRegression": {
+    "command": "node --test tests/windows-worker.test.mjs",
+    "passed": 12,
+    "total": 12,
+    "exitCode": 0,
+    "note": "This is the final worker subset on the physical Windows host. The earlier 97-test Windows result is a separate frozen run, not summed as new tests."
+  },
+  "limits": [
+    "Requires an existing interactive Windows login; no boot/login trigger is installed.",
+    "This verifies task ownership, permission scope and shutdown cleanup; it does not repeat the earlier model conversation.",
+    "Private task names, SIDs, native conversation IDs, hostnames and absolute deployment paths are omitted."
+  ]
+}

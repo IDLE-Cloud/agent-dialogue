@@ -1,5 +1,31 @@
 # Changelog
 
+## 0.3.0 (development)
+
+- Add fixed same-host installation handoff with full private data-only state backups, exact package/Node/backend/cache evidence, private-copy SQLite validation and explicit schema 2/3/4 to 4 transformation. Offline preimages, both publication artifacts and R/C owners are rechecked; interrupted transactions retain evidence. Rollback restores only the original store bytes before acceptance and only when the entire maintenance image is unchanged and had no unfinished work. See [migration operations](docs/MIGRATION-OPERATIONS.md); no cross-machine private-key copy, backend conversion or automatic process/service reconfiguration.
+
+- Add explicit offline schema v4 with durable original native prompt/event/frame/binding/route provenance, per-attempt submit phases and strict old-writer rejection. Full persisted user-input proof is currently available for Kimi Code and OpenCode V1; unknown outcomes never cause a second POST. Existing successful V2/Codex submissions remain usable, while their strong recovery is unsupported.
+- Add metadata-only `bridge native-evidence`, explicit native proof and paused, exact stopped-owner `bridge native-reconcile`. Preserve cursors and unrelated runtime fields with pre/postimage checkpoints; require explicit Kimi session-load permission before discovery. See [native recovery operations](docs/NATIVE-RECOVERY.md).
+- Add read-only C/D `lock plan` and explicit offline `lock retire`, with private bounded plan files, confirmed-dead owner checks, preserved same-volume quarantine and deterministic retry. Worker locks and uncertain scheduled launches remain needs-review; no age-based deletion, automatic resume or process restart.
+
+- Add explicit offline schema v3 and durable queued q→formal→remote m provenance. Contextual MCP sends allocate a fixed q before append; repeated request keys preserve identity, and unknown outcomes use complete bounded evidence scans without a second append. See [recovery operations](docs/RECOVERY.md).
+- Add selected `bridge reconcile ALIAS --submission q_UUID` for a paused binding with its exact stopped, confirmed-dead worker. A deterministic two-file checkpoint repairs only the original outgoing receipt, preserves the cursor and unrelated pending state, and supports interrupted retries. General native-pending repair, stale-lock handling, upgrade/rollback and a stable v0.3 release remain pending.
+- Add packaged operator and agent guides, a portable project rules snippet, and read-only `agent-guide --room ID --from ALIAS [--to ALIAS]` contexts with owning-node checks, exact peer sessions and quoted queue commands.
+- Add explicit SSH observer configuration and a fixed read-only export entry. Verify node and sealed-room pins, nonce and wire signatures at both ends; collect bounded room snapshots asynchronously and retain stale history across disconnects.
+- Add a loopback-only read-only browser viewer for explicit local sources, exact session identities, protocol-linked replies, queue/result folding, signed wire-copy deduplication and delivery evidence.
+- Read stable DB/WAL byte snapshots through SQLite only in private temporary copies; leave communication DB/WAL/SHM, stores, worker cursors and lifecycle untouched. Observe late receipts separately from new events.
+- Add filtered history paging, bounded SSE replay/reset, selected-room JSON/Markdown export and source availability diagnostics. Serve plain message text with local access tokens, Host/Origin checks and restrictive CSP.
+- Package the viewer's static assets and installation smoke check; require Node >=22.13 for built-in SQLite without a startup flag.
+- Add native adapter contracts and an exact Codex shared-daemon client using its existing Unix WebSocket and durable input queue. Resume is explicit and execution starts only bridge-owned queued inputs.
+- Add Ed25519 node identities, signed public binding cards, pinned peers and owner-signed room manifests accepted on each node.
+- Add fixed SSH stdio and local-process test transports, signed global message/reply IDs, sender/receiver routing checks, ledger reconciliation and duplicate receipt recovery.
+- Keep message bodies in local hcom ledgers; store only routing hashes, IDs and state in inbox/outbox metadata.
+- Add local-only `collab send --queue` for network-restricted model shells. The owning background worker revalidates bindings and performs network delivery; queued/forwarded/remote-stored receipts remain distinct.
+- Preserve prior remote-stored evidence after a failed retry, accept legal aliases without inherited-object collisions, and reject oversized encoded ledger frames before saving intents.
+- Verify two independent local nodes with actual free OpenCode model tool calls and preserved pre-attachment project context. Real two-host SSH is recorded separately below.
+- 2026-10-18: pass [40/40 real two-host assertions](verification/vps-integration-20261018-v5/metrics.json) between an owned macOS arm64 Codex CLI 0.162.1 validation server and Debian 13 x64 VPS OpenCode 2.0.20 with an explicitly verified zero-price model. Verify four signed global messages, bidirectional model-origin requests/replies, preserved pre-attachment context, a real JSON artifact, replay/rejection guards and quiescent state hashes. This does not establish attachment to the current active Codex Desktop chat.
+- 2026-10-18: pass [11/11 independent SSH observer assertions](verification/vps-observer-20261018-v1/metrics.json), with two allowed real SSH collections and two observer-only client gate rejections, retained stale history, fresh recovery, unchanged logical message IDs and unchanged local/remote state bytes. The gate is a controlled client transport failure, not a VPS or public-network outage; no model or native harness API is called. Persistent Codex leases belong to the acceptance helper, not automatic production thread resume or process restart.
+
 ## 0.2.0
 
 - Extract the local communication prototype into a standalone GitHub-installable CLI.

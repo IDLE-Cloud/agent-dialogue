@@ -1,0 +1,131 @@
+{
+  "schemaVersion": 1,
+  "stage": "ST-05 first batch local acceptance; platform CI pending",
+  "observedAt": "2026-10-20T02:11:15.226312+00:00",
+  "sourceCommit": "0f18966924f67b90a6df1d2d5a1019a857189644",
+  "runtimeFiles": 57,
+  "runtimeFilesSha256": "56f96305f7234e922fd277bb402210b01e978e2f50bc40652d071fcb1093c94d",
+  "digestFormat": "SHA256 of UTF-8 compact JSON array sorted by POSIX path, each object has path then sha256; no trailing newline",
+  "local": {
+    "platform": "darwin-arm64",
+    "nodeVersions": [
+      "v24.19.0",
+      "v26.10.0"
+    ],
+    "perVersion": {
+      "total": 724,
+      "passed": 723,
+      "failed": 0,
+      "cancelled": 0,
+      "skipped": 1
+    },
+    "newContracts": 80,
+    "newContractFiles": {
+      "schema": 15,
+      "evidence": 5,
+      "forwarding": 3,
+      "runtime": 15,
+      "mcp": 18,
+      "submissions": 7,
+      "nodes": 15,
+      "cli": 2
+    }
+  },
+  "ci": {
+    "runId": 39357388203,
+    "sourceCommit": "0f18966924f67b90a6df1d2d5a1019a857189644",
+    "url": "https://github.com/IDLE-Cloud/agent-dialogue/actions/runs/39357388203",
+    "status": "in_progress",
+    "notClaimedPassed": true,
+    "expectedJobs": 7
+  },
+  "installedProductionLauncher": {
+    "assertions": 84,
+    "passed": 84,
+    "nodeVersion": "v24.19.0",
+    "platform": "darwin-arm64",
+    "defaultLauncherInjected": false,
+    "workerSpawns": 2,
+    "explicitStartExtraSpawns": 0,
+    "pausedPosts": 0,
+    "qEvents": 1,
+    "formalEvents": 1,
+    "forwardings": 1,
+    "phase": "forwarded",
+    "nativePosts": 1,
+    "durablyPersistedFakeInputs": 1,
+    "duplicates": 0,
+    "ownedWorkersNormallyStoppedAndConfirmedDead": 2,
+    "ownedWorkersRemaining": 0,
+    "programBytesModesUnchanged": true,
+    "runtimeFileContentsEqualSourceCommit": true,
+    "packageSource": "frozen working-tree snapshot, later verified runtime-equivalent to sourceCommit; documentation snapshot differs",
+    "tarball": {
+      "files": 82,
+      "compressedBytes": 292648,
+      "unpackedBytes": 932988,
+      "sha256": "b95c8c1c2a6b4e640d3561e9e2c73b93435b2703d48308dab2511a9557324859",
+      "modes": {
+        "0644": 80,
+        "0755": 2
+      }
+    },
+    "notFrozenReleaseAsset": true,
+    "sameBytesAsCITarballClaimed": false
+  },
+  "actualOldWriterFence": {
+    "oldCommit": "5ea6c43a540a086d294ec47b0412b522aefb9aee",
+    "currentRuntimeSha256": "56f96305f7234e922fd277bb402210b01e978e2f50bc40652d071fcb1093c94d",
+    "assertions": 138,
+    "passed": 138,
+    "oldWritersRefused": 5,
+    "fullStateAndCacheBytesModesPreserved": true,
+    "notGenericST06Migration": true,
+    "notGeneralPreflightEffectsProof": true
+  },
+  "packageSmoke": {
+    "node26": {
+      "passed": true,
+      "files": 82,
+      "compressedBytes": 290023
+    },
+    "node24": {
+      "passed": true,
+      "files": 82,
+      "compressedBytes": 290250
+    },
+    "scope": "different documentation snapshots; actual installed v2/v3 upgrade, repeat, inspect and viewer",
+    "notFrozenReleaseAsset": true
+  },
+  "review": {
+    "core": "ready",
+    "mcpNodes": "ready",
+    "stoppedRuntime": "ready",
+    "publicDocumentation": "ready",
+    "scopedBlockingFindings": 0
+  },
+  "safety": {
+    "modelTurns": 0,
+    "realHarnessApiCalls": 0,
+    "sshConnections": 0,
+    "remoteHostChanges": 0,
+    "realUserStateTouched": false,
+    "loopbackFixtures": true
+  },
+  "taskStatus": {
+    "ST-05": "in_progress",
+    "ST-06": "pending",
+    "releaseCandidate": "pending",
+    "stableRelease": "v0.2.0",
+    "merged": false,
+    "newRelease": false
+  },
+  "boundaries": [
+    "general native pending operator repair and true stale-owner lock handling remain pending",
+    "missing legacy provenance, incomplete scans, ambiguous evidence and remote-unconfirmed remain needs-review",
+    "stopped-runtime injected process probes are contract tests; real process proof belongs to installed launcher smoke",
+    "installed default launcher evidence is macOS synthetic loopback; not Windows or model/harness deployment proof",
+    "offline writer fence is not generic migration/rollback or an OS authorization boundary"
+  ],
+  "historicalReportsPreserved": true
+}
