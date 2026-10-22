@@ -1,0 +1,258 @@
+{
+  "schemaVersion": 1,
+  "observedAt": "2026-10-22T10:40:34.829449+00:00",
+  "status": "local_first_slice_passed",
+  "sourceCommit": "861007a8e4d939c7a8b6bab346e1f1abdf904b5d",
+  "baseCommit": "f576ecba35c1819ff0fb96278e51ea92541ba772",
+  "package": {
+    "name": "@idle-cloud/agent-dialogue-lite",
+    "version": "0.1.0",
+    "runtimeDependencyCount": 0,
+    "command": "adl",
+    "independentStateDirectory": true
+  },
+  "localTests": [
+    {
+      "node": "24.19.0",
+      "tests": 43,
+      "pass": 43,
+      "fail": 0,
+      "skip": 0,
+      "cancel": 0,
+      "logPrivate": ".state/lite-20261022-v1/tests-node24-v5.log"
+    },
+    {
+      "node": "26.10.0",
+      "tests": 43,
+      "pass": 43,
+      "fail": 0,
+      "skip": 0,
+      "cancel": 0,
+      "logPrivate": ".state/lite-20261022-v1/tests-node26-v5.log"
+    }
+  ],
+  "packageSmokeNode24": {
+    "status": "passed",
+    "package": "@idle-cloud/agent-dialogue-lite",
+    "version": "0.1.0",
+    "files": 20,
+    "packedBytes": 46495,
+    "checks": [
+      "isolated tarball install",
+      "CLI outside source tree",
+      "installed SQLite Hub/API",
+      "packaged viewer assets",
+      "no runtime dependencies"
+    ]
+  },
+  "realModel": {
+    "hosts": 1,
+    "nodeIdentities": 2,
+    "nodeProcesses": 2,
+    "harness": "OpenCode 2.0.20",
+    "model": {
+      "id": "deepseek-v4.1-flash-free",
+      "providerID": "opencode",
+      "cost": [
+        {
+          "input": 0,
+          "output": 0,
+          "cache": {
+            "read": 0,
+            "write": 0
+          }
+        }
+      ]
+    },
+    "messages": 2,
+    "replyLinks": 1,
+    "nativeInputs": 2,
+    "successfulNativeShellSends": 2,
+    "onceApprovals": 2,
+    "ownerCorrectionsAfterDialogueStarted": 0,
+    "questionId": "msg_9470b1d9-92eb-49d5-a9f2-df3d2458a4f3",
+    "replyId": "msg_728ec872-c98f-456a-940d-1da54a35cdd2",
+    "checks": {
+      "exactTwoHubMessages": true,
+      "replyLink": true,
+      "allNativeAdmitted": true,
+      "singleQuestionNativeInput": true,
+      "singleReplyNativeInput": true,
+      "oneSuccessfulNativeSendPerChat": true,
+      "approvalBoundedToTwoExactCommands": true,
+      "visibleFinalCombinesContexts": true
+    },
+    "privateEvidenceRoot": ".state/lite-20261022-v2/live/",
+    "sourceBoundary": "Working-tree demo before final descriptor-version guard, V1 shell choice, operator resolve and atomic config update. Those follow-up paths have final commit unit/contract/package evidence; V1 and remote native paths were not exercised by this demo."
+  },
+  "failureHistory": [
+    {
+      "run": "local-real-model-v1",
+      "result": "recovered",
+      "cause": "Sender kept its native turn active while waiting for asynchronous push; help and guessed recv commands denied by bounded controller. Owner clarified finish-turn behavior; no repeated successful send.",
+      "evidence": ".state/lite-20261022-v1/live/demo.private.json + recovery-v2.private.json"
+    },
+    {
+      "run": "local-real-model-v2-preparation",
+      "result": "seed_acknowledgement_check_failed_then_continued",
+      "cause": "Model spelled the acknowledgement RESPOND_SER_LITE_READY. Native idle and persisted seed confirmed. Same existing sessions used for successful dialogue without in-dialogue owner corrections.",
+      "evidence": ".state/lite-20261022-v2/live/demo.private.json + continuation-v3.private.json"
+    }
+  ],
+  "controlPathMeasurement": {
+    "schemaVersion": 1,
+    "observedAt": "2026-10-22T10:33:49.757Z",
+    "status": "passed",
+    "nodeVersion": "v24.19.0",
+    "topology": {
+      "physicalHosts": 1,
+      "nodeIdentities": 2,
+      "nodeConnectors": 2,
+      "hubProcesses": 1,
+      "allInOneMeasurementProcess": true,
+      "nativeAdapter": "stub",
+      "modelCalls": 0
+    },
+    "samples": 10,
+    "messages": 10,
+    "replyLinks": 9,
+    "duplicateNativeAttempts": 0,
+    "readyMs": 53.076583,
+    "acceptedLatencyMs": {
+      "samples": [
+        4.861750000000001,
+        1.140041999999994,
+        1.0745830000000183,
+        1.3939159999999902,
+        1.6514579999999341,
+        2.0814170000001013,
+        1.809791000000132,
+        1.0708749999998872,
+        2.245208000000048,
+        1.67837499999996
+      ],
+      "p95": 4.861750000000001
+    },
+    "sendToDeliveredMs": {
+      "samples": [
+        13.444999999999993,
+        245.681917,
+        250.52329199999997,
+        251.69445800000005,
+        252.90891599999998,
+        249.1065000000001,
+        249.300833,
+        250.08395900000005,
+        258.05258300000014,
+        248.7249579999998
+      ],
+      "p95": 258.05258300000014
+    },
+    "combinedProcess": {
+      "rssBytes": 139558912,
+      "idleWindowMs": 1000,
+      "idleCpuMs": 6.433
+    },
+    "limitations": [
+      "small local controlled sample; no SLA",
+      "latency excludes real model execution",
+      "combined RSS is not per-service RSS",
+      "no remote physical hosts"
+    ]
+  },
+  "runtimeManifest": [
+    {
+      "path": "packages/lite/bin/adl.mjs",
+      "sha256": "6e7a2b90ed2417668557e18267fb2de359a5df083acbca16cd4f8c76f185b40f",
+      "lines": 186
+    },
+    {
+      "path": "packages/lite/lib/adapters.mjs",
+      "sha256": "7a7b02ac3da25e8e6f099af2aad8ec3da7ccffa9cb3a5e4759f9d6b3fe41050c",
+      "lines": 111
+    },
+    {
+      "path": "packages/lite/lib/client.mjs",
+      "sha256": "517a88370495b696d9c8a68be4335a15f5c84a3c05069fd904404fb49159993b",
+      "lines": 60
+    },
+    {
+      "path": "packages/lite/lib/config.mjs",
+      "sha256": "7fdfd84b0db1ad048b8715398fff52e6a56bbeaa13fdcc17dc10b74de107b596",
+      "lines": 49
+    },
+    {
+      "path": "packages/lite/lib/hub.mjs",
+      "sha256": "0236c3cdc99c80e39b8999cef3a2972754ccaf94ef494b13d5d67e24294b4bad",
+      "lines": 120
+    },
+    {
+      "path": "packages/lite/lib/mcp-stdio.mjs",
+      "sha256": "949a4e9760b26be79a041400aceb6a733ad1618096fe268865e23ef973059252",
+      "lines": 226
+    },
+    {
+      "path": "packages/lite/lib/mcp.mjs",
+      "sha256": "754fc9e76278e9db863c0fd9ebfe7e884691f717a150b688f2e8212d18e21647",
+      "lines": 41
+    },
+    {
+      "path": "packages/lite/lib/native/opencode-v1.mjs",
+      "sha256": "47f54ddaedf216e39bd6e4365e9f5afbca7bd6045c544058e0eb44b8cf3f25e8",
+      "lines": 255
+    },
+    {
+      "path": "packages/lite/lib/native/opencode.mjs",
+      "sha256": "fff334d21acd520a6313f2ddce206321b9b43111b3a16d0270ac4888ed0bca09",
+      "lines": 191
+    },
+    {
+      "path": "packages/lite/lib/node.mjs",
+      "sha256": "beb3fe6a3db8f322d5d461ffeb78d165bbc0cce7bb5aa5157f8f2bc7082099ed",
+      "lines": 124
+    },
+    {
+      "path": "packages/lite/lib/store.mjs",
+      "sha256": "a5cda26802dee90ad27969e48642375f0fe1d5e0a016469e40d7942d483ee22b",
+      "lines": 284
+    },
+    {
+      "path": "packages/lite/web/app.js",
+      "sha256": "956da7f947a833288c1384e86fea3c1df680103d6b916a4b15784ed9e253cab1",
+      "lines": 136
+    },
+    {
+      "path": "packages/lite/web/index.html",
+      "sha256": "591a03c902b6d22a0e74f1d2a193f302f6160f45c7446e61bba3ad3054d5187c",
+      "lines": 29
+    },
+    {
+      "path": "packages/lite/web/style.css",
+      "sha256": "880f02110ae1b4f275485e2c3b0b39ffdf8ab4fc1bc30822c209f5688a31d75d",
+      "lines": 4
+    }
+  ],
+  "runtimeLineCount": 1816,
+  "existingRootRuntimeChanged": false,
+  "reviews": {
+    "independentHubNodeToolsReviews": true,
+    "finalReview": "READY; no remaining actionable P1/P2 found",
+    "fixedFindings": [
+      "malformed dispatch grant -> unknown without submit",
+      "manual admin resolution of unknown without regrant",
+      "atomic private config update",
+      "npm package smoke without shell; spaces in temp path"
+    ]
+  },
+  "notVerified": [
+    "Lite on multiple physical hosts",
+    "hosted Windows/Linux/macOS CI at this snapshot",
+    "Lite native Kimi/Codex/ZCode",
+    "actual OpenCode V1 model roundtrip",
+    "full browser viewer login; DOM behavior + actual Hub cookie/API integration tested"
+  ],
+  "release": {
+    "published": false,
+    "mergedToMain": false
+  }
+}

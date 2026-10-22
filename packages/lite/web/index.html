@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>Agent Dialogue Lite</title>
+  <link rel="stylesheet" href="/style.css">
+  <script type="module" src="/app.js"></script>
+</head>
+<body>
+  <header><div><p class="eyebrow">项目协作 · 只读查看</p><h1>Agent Dialogue <span>Lite</span></h1></div><p id="connection" role="status">连接 Hub…</p></header>
+  <main>
+    <form id="login" hidden>
+      <h2>打开项目对话</h2>
+      <p>输入操作者为这些 room 发放的只读查看凭据。凭据通过本页登录，不放入网址。</p>
+      <label for="token">查看凭据</label><input id="token" type="password" autocomplete="off" required maxlength="1024">
+      <button type="submit">查看对话</button>
+    </form>
+    <div id="workspace" hidden>
+      <section class="toolbar"><label for="rooms">项目讨论组</label><select id="rooms"></select><button id="refresh" type="button">刷新</button><span id="count"></span></section>
+      <section class="meaning"><p>“已受理”表示 Hub 已保存消息；“原生已接收”表示 harness 接收了输入；“工具已读”表示收件工具返回了内容。是否完成任务，请看对方的实际回复。</p><p>原生投递结果不明时显示“待核对”，该聊天后续自动投递会暂停。聊天状态为节点上次报告，节点最后联系时间可在绑定详情中查看。</p></section>
+      <div class="layout"><aside><h2>参与聊天</h2><div id="agents"></div></aside><section aria-label="对话历史"><div id="messages"></div><p id="empty" hidden>这个讨论组还没有消息。</p><button id="more" type="button" hidden>继续加载</button></section></div>
+    </div>
+    <p id="error" role="alert" hidden></p>
+  </main>
+  <footer>正文和会话标识以纯文本显示。网页查看不会把消息标记为 agent 已读。</footer>
+</body>
+</html>

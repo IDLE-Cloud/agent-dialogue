@@ -2,7 +2,9 @@ name: test-and-install
 on:
   push:
     branches: [main]
+    paths-ignore: ['packages/lite/**', '.github/workflows/lite.yml']
   pull_request:
+    paths-ignore: ['packages/lite/**', '.github/workflows/lite.yml']
   workflow_dispatch:
 permissions:
   contents: read
