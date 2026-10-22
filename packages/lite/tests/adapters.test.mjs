@@ -34,7 +34,7 @@ test('Windows absolute binding can be validated without adopting the local platf
 
 test('native prompt preserves one message ID and scoped config without credentials', () => {
   const message = { id: 'msg_test', room: 'room_test', sender: 'agent_peer', text: '请检查项目\n$(not a shell command)' };
-  const prompt = dialoguePrompt(message, { configPath: "/private/test's scope.json", cliPath: '/app/adl.mjs' });
+  const prompt = dialoguePrompt(message, { configPath: "/private/test's scope.json", cliPath: '/app/adl.mjs', powershell: false });
   assert.ok(prompt.includes('--reply-to msg_test'));
   assert.ok(prompt.includes('--to agent_peer'));
   assert.ok(prompt.includes('msg_UUID'));
