@@ -214,3 +214,8 @@ ZCode 桌面工具收件开发入口见 [ZCODE.md](docs/ZCODE.md)：使用官方
 2026-10-20 开发增量：同机切换独立安装目录的`migration`维护命令与严格回退门禁见[迁移操作指南](docs/MIGRATION-OPERATIONS.md)。保持同一state/backend/cache，完整备份后升级固定兼容来源；先accept再恢复写入，已有pending或新增历史时不自动还原。该能力不代表现有多机部署已升级，稳定版仍v0.2.0。
 
 上述同机交接首批已通过[十九组CI与独立验收](verification/migration-20261020-v4/README.md)：本机/四Unix各933项、新实际安装交接135/135，Windows使用真实SID/ACL并通过33个不同迁移场景。首次失败及修正独立保留；Windows权限旧错误根因仍未知。当前ST06只完成该限定首片，真实Windows安装迁移、连续项目试用和固定RC仍待后续，完整状态见[STATUS](docs/STATUS.md)。
+
+
+## Lite 开发包
+
+轻量路线位于 [packages/lite](packages/lite/README.md)：一个 SQLite Hub、每台机器一个 Node，独立命令 `adl`、独立数据目录，通过 CLI/MCP 或受支持 OpenCode 原生输入连接已有聊天，并从同一个只读网页查看通信。它是 0.1.0 开发包；现版 v0.3 不受替换，Lite 的多机与其它原生 harness 验收状态单独记录。
