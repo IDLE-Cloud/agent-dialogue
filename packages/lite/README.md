@@ -4,6 +4,8 @@ Lite 把不同电脑、不同 harness 的已有聊天接入同一个项目讨论
 
 这是独立的 `0.1.0` 开发包，命令 `adl`，数据目录 `agent-dialogue-lite`。安装不会转换现版 `agent-dialogue` 的数据。
 
+首次使用可先读 [中文使用报告：Kimi 保留 TUI 的项目协作](docs/USAGE-REPORT-ZH.md)，其中包含从零配置、可直接给 agent 的指令、日常操作、多机接入和故障处理。
+
 ```text
 Mac 已有聊天 ─ 本机 Node ─┐
                          ├─ HTTPS / SSH 隧道 ─ Hub + SQLite ─ 只读网页
