@@ -25,6 +25,11 @@ export async function startHub({ dbPath, adminToken, host = '127.0.0.1', port = 
   const store = new LiteStore({ dbPath, adminToken });
   const waiters = new Set(); let closing = false;
   const wake = () => { for (const fn of waiters) fn(); };
+  const waitForChange = (response, waitMs) => new Promise(resolve => {
+    if (closing || response.destroyed) { resolve(); return; }
+    const done = () => { clearTimeout(timer); waiters.delete(done); response.off('close', done); resolve(); };
+    const timer = setTimeout(done, waitMs); waiters.add(done); response.once('close', done);
+  });
   const server = createServer(async (request, response) => {
     response.setHeader('x-content-type-options', 'nosniff');
     response.setHeader('referrer-policy', 'no-referrer');
@@ -73,7 +78,22 @@ export async function startHub({ dbPath, adminToken, host = '127.0.0.1', port = 
         case 'POST /v1/viewers': result = store.issueScope(auth, body, true); break;
         case 'GET /v1/context': result = store.context(auth); break;
         case 'POST /v1/messages': result = store.send(auth, body); break;
-        case 'GET /v1/inbox': result = store.inbox(auth, query); break;
+        case 'GET /v1/inbox': {
+          const waitMs = Number(query.waitMs ?? 0);
+          if (!Number.isInteger(waitMs) || waitMs < 0 || waitMs > 25000) fail(400, 'invalid_input', 'Inbox wait must be 0–25000ms.');
+          const deadline = performance.now() + waitMs;
+          result = store.inbox(auth, query);
+          while (!result.items.length && waitMs && !closing && !response.destroyed) {
+            const remaining = deadline - performance.now();
+            if (remaining <= 0) break;
+            await waitForChange(response, remaining);
+            if (closing || response.destroyed) return;
+            // Keep the caller's exact cursor and scope. Unrelated messages and
+            // room changes may wake this request without making its inbox ready.
+            result = store.inbox(auth, query);
+          }
+          break;
+        }
         case 'GET /v1/status': result = store.status(auth, query.id); break;
         case 'GET /v1/history': result = store.history(auth, query); break;
         case 'POST /v1/node/heartbeat': result = store.heartbeat(auth, body); break;
@@ -82,10 +102,7 @@ export async function startHub({ dbPath, adminToken, host = '127.0.0.1', port = 
           if (!Number.isInteger(waitMs) || waitMs < 0 || waitMs > 25000) fail(400, 'invalid_input', 'Poll wait must be 0–25000ms.');
           result = store.poll(auth);
           if (!result.deliveries.length && waitMs && !closing) {
-            await new Promise(resolve => {
-              const done = () => { clearTimeout(timer); waiters.delete(done); response.off('close', done); resolve(); };
-              const timer = setTimeout(done, waitMs); waiters.add(done); response.once('close', done);
-            });
+            await waitForChange(response, waitMs);
             if (closing || response.destroyed) return;
             result = store.poll(auth);
           }

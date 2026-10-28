@@ -14,6 +14,7 @@ Windows 已有聊天 ─ Node ──┘
 
 - 原生推送：OpenCode 2.0.20，OpenCode V1 客户端固定支持 1.19.0。连接进程按准确的服务、完整 session ID、project ID 和目录核验目标。V1 的实际本轮模型验证状态见验证报告，不能用协议测试代替。
 - 通用收件：可执行 CLI 或配置 stdio MCP 的 harness 可使用 `context / send / inbox / status`。这条路径需要 agent 主动读 inbox，空闲模型不会因此自动唤醒。Kimi、Codex、ZCode 的 Lite 原生推送尚未接入。
+- Kimi TUI 收信：`adl wait` 在原生后台 Bash 任务中等待来信，由 Kimi 自己的任务完成通知唤醒当前聊天，TUI 保持打开。首次启动和收到消息后重新挂接由当前 agent 执行，权限沿用原生规则。见 [Kimi TUI 指南](docs/KIMI-TUI.md)；这条工具收件路径不依赖 Kimi Web adapter。
 - 同一台机的 Node 管理多段聊天；忙碌、等待审批、进程未运行时保留排队。原生提交结果不明时显示 `unknown`，阻塞该聊天后续自动推送，其他聊天继续。
 - Hub 受理后持久保存；同 ID 同内容重试不会新增消息；回复用 `replyTo` 关联。`delivered` 代表原生服务受理，`tool-read` 代表工具读取，完成任务需要实际回复。
 - Hub 网页只读，直接显示统一消息记录。浏览器查看不会给 agent 标已读。
@@ -114,6 +115,8 @@ adl attach --config /私有目录/node-mac.json --kind tool --session YOUR_CHAT_
 ```
 
 具体配置键因 harness 不同，以上为常见格式。四个工具的身份由配置 scope 固定，调用参数不能指定 sender。这个工具进程需要原本就有访问 Hub 的权限；Lite 不改变 harness 的沙箱或审批策略。
+
+Kimi Code 用户希望保留 TUI 并自动收信时，按 [KIMI-TUI.md](docs/KIMI-TUI.md) 使用 `adl wait --config chat.json --after CURSOR`，让 **Kimi 原生 Bash 后台任务**运行它。普通终端中执行 `wait` 只会返回消息，不会自行唤醒模型；收到一批后需用返回 cursor 重新挂接。
 
 ## 查看跨机聊天
 

@@ -1,7 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { execFile } from 'node:child_process';
+import { execFile, spawn } from 'node:child_process';
 import { promisify } from 'node:util';
+import { setTimeout as delay } from 'node:timers/promises';
 import { mkdtemp, rm, readFile, stat } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -32,13 +33,29 @@ test('CLI two isolated nodes and scoped existing tool chats exchange replies; vi
     await call('scope', '--config', admin, '--room', room.id, '--agent', agent.id, '--out', scope);
     await call('link-tools', '--config', node, '--agent', agent.id, '--scope-config', scope);
   }
+  let reads = 0;
+  const originalInbox = hub.store.inbox.bind(hub.store);
+  hub.store.inbox = (...args) => { reads++; return originalInbox(...args); };
+  const waiting = spawn(process.execPath, [cli, 'wait', '--config', scopes[1], '--after', '0', '--limit', '1'], { stdio: ['ignore', 'pipe', 'pipe'] });
+  t.after(() => { if (waiting.exitCode === null) waiting.kill(); });
+  let waitedOutput = '', waitedError = '';
+  waiting.stdout.on('data', bytes => { waitedOutput += bytes; });
+  waiting.stderr.on('data', bytes => { waitedError += bytes; });
+  const waitedExit = new Promise((resolve, reject) => { waiting.once('error', reject); waiting.once('close', code => resolve(code)); });
+  const deadline = performance.now() + 5000;
+  while (!reads) { assert(performance.now() < deadline, 'CLI waiter did not reach Hub.'); await delay(5); }
+  assert.equal(waitedOutput, ''); assert.equal(waiting.exitCode, null);
   const id = newId();
   const sent = await call('send', '--config', scopes[0], '--room', room.id, '--to', agents[1].id, '--id', id, '--text', '请评审实现');
   assert.equal(sent.message.sender, agents[0].id); assert.equal(sent.message.id, id);
+  assert.equal(await waitedExit, 0, waitedError);
+  const waited = JSON.parse(waitedOutput);
+  assert.equal(waited.items.length, 1); assert.equal(waited.items[0].message.id, id);
+  assert.equal(waited.cursor, sent.message.seq);
   const viewer = join(dir, 'viewer.json');
   await call('viewer', '--config', admin, '--room', room.id, '--out', viewer);
   const history = await call('history', '--config', viewer, '--room', room.id);
-  assert.equal(history.items[0].deliveries[0].state, 'queued');
+  assert.equal(history.items[0].deliveries[0].state, 'tool-read');
   const received = await call('inbox', '--config', scopes[1]);
   assert.equal(received.items[0].message.id, id);
   assert.equal(received.items[0].delivery.state, 'tool-read');
@@ -50,6 +67,8 @@ test('CLI two isolated nodes and scoped existing tool chats exchange replies; vi
   assert.equal(back.items[0].message.id, reply.message.id);
   assert.equal((await call('context', '--config', scopes[0])).self.binding.sessionId, 'existing-chat-a');
   const observer = new HubClient(JSON.parse(await readFile(viewer, 'utf8')));
+  await assert.rejects(call('wait', '--config', viewer), error => /per-chat agent config/.test(error.stderr));
+  await assert.rejects(call('wait', '--config', scopes[1], '--limit', '0'), error => /pagination/.test(error.stderr));
   await assert.rejects(observer.request('POST', '/v1/messages', { id: newId(), room: room.id, to: [agents[0].id], text: 'no', replyTo: null }), e => e.status === 403);
   if (process.platform !== 'win32') assert.equal((await stat(scopes[0])).mode & 0o077, 0);
 });

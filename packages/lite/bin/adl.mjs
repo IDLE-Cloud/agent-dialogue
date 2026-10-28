@@ -24,12 +24,14 @@ adl mcp        --config chat.json
 adl context    --config chat.json
 adl send       --config chat.json --room ROOM --to AGENT[,AGENT] --text TEXT [--id msg_UUID] [--reply-to msg_UUID]
 adl inbox      --config chat.json [--after 0] [--limit 50]
+adl wait       --config chat.json [--after 0] [--limit 10]
 adl status     --config chat.json --id msg_UUID
 adl resolve    --config hub.json --id msg_UUID --agent AGENT --state failed|delivered --note TEXT --executor-stopped
 adl history    --config viewer.json --room ROOM [--after 0] [--limit 50]
 
 Config files contain credentials; keep private. Use one scope file per selected chat.
 Native push wakes a supported running harness; tool inbox alone does not wake a model.
+wait stays silent until mail arrives; use a harness-native background task to notify that chat.
 Remote HTTP: use HTTPS or an SSH tunnel to a loopback URL. No automatic process launch.
 `;
 
@@ -163,6 +165,21 @@ async function main() {
     case 'inbox': {
       const params = new URLSearchParams({ after: String(integer(o.after, 0, Number.MAX_SAFE_INTEGER)), limit: String(integer(o.limit, 50, 100)) });
       print(await client.request('GET', `/v1/inbox?${params}`)); break;
+    }
+    case 'wait': {
+      if (config.kind !== 'agent') throw new Error('Wait requires a per-chat agent config.');
+      const { waitForInbox } = await import('../lib/wait.mjs');
+      const controller = new AbortController();
+      const stop = () => controller.abort();
+      process.once('SIGINT', stop); process.once('SIGTERM', stop);
+      try {
+        print(await waitForInbox({ client, after: integer(o.after, 0, Number.MAX_SAFE_INTEGER),
+          limit: integer(o.limit, 10, 100), signal: controller.signal }));
+      } catch (error) {
+        if (!controller.signal.aborted) throw error;
+        process.exitCode = 130;
+      } finally { process.off('SIGINT', stop); process.off('SIGTERM', stop); }
+      break;
     }
     case 'status': print(await client.request('GET', `/v1/status?${new URLSearchParams({ id: required(o, 'id') })}`)); break;
     case 'resolve': {

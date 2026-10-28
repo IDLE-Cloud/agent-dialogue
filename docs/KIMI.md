@@ -1,5 +1,7 @@
 # Kimi Code：选择原生会话并接入多机协作
 
+希望保留正在使用的 Kimi TUI、并在来信时自动继续处理，可使用新增 Lite 的 [Kimi TUI 收信方案](../packages/lite/docs/KIMI-TUI.md)。它利用原生后台任务完成通知，不要求切换到 Web。本页以下仍说明旧版 KAP Web adapter，两种入口的执行所有权和配置不同。
+
 本指南对应 `codex/multinode-adapters` 开发分支，适配 **Kimi Code 2.1.1 / 2.2.0** 的本机 KAP REST 服务。稳定 Release v0.2.0 不包含该适配器。当前状态：**适配器单元测试通过，Windows Kimi 2.1.1 / Linux Kimi 2.2.0 各自与 Mac OpenCode 的受控双向真实模型通信已通过**。每端 4 条签名消息、2 对关联回复、双方各 2 次原生通信工具调用；Windows 56/56、Linux 53/53 门禁和来源检查通过。验收使用操作者限定命令与合成项目事实，不外推为自主协作质量。
 
 `sessions kimi`、`attach kimi` 和 `kimi-code` 别名使用同一个原生 adapter；`launch kimi` 是上游 hcom 的另一条启动路径。Windows embedded 账本不提供 hcom launch/hooks。

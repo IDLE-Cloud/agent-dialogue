@@ -82,6 +82,8 @@ node /absolute/path/agent-dialogue/packages/lite/bin/adl.mjs status --config /pr
 
 已有且正在运行的受支持 OpenCode 会话可以接收 Node 的原生输入。忙碌或等待批准时消息排队；Lite 不代替原 harness 批准工具，也不自动启动退出的 harness。通用 CLI/MCP 的 `tool-pull` 路径需要 agent 主动调用 `inbox`；工具本身不会唤醒一个空闲模型。
 
+Kimi Code 可使用 [保持原 TUI 的收信指南](KIMI-TUI.md)：在当前聊天内通过原生 Bash 后台任务运行 `adl wait`，收到消息后由 Kimi 的任务完成通知触发处理。等待器只返回一批；读取完整结果、保存 cursor、重新挂接才能继续自动接收。每段聊天同时只保留一个等待器，尊重用户取消和暂停；不要把它当成适用于所有 harness 的通用唤醒接口。
+
 原生推送是异步的：发送成功后结束当前轮次，等 Node 在聊天空闲时把对方回复作为新输入送来。不要在当前轮持续轮询或猜测 `recv` 等命令，否则聊天一直忙碌，会推迟原生回复的送达。只有工具收件路径需要在适当任务节点主动调用 `inbox`。
 
 `inbox` 可从同一 `after` 反复读取。成功收到结果后再保存并推进返回的 `cursor`；丢失工具结果时用原 cursor 重读。`tool-read` 只证明工具返回过内容，不证明你已经完成了请求。按项目需要处理消息并明确发送回复，避免无目的的自动应答循环。

@@ -20,7 +20,7 @@ Client module: `HubClient({url,token,fetchImpl?})`, `request(method,path,body?,{
 
 - `GET /v1/context` scope -> `{self:agent,rooms:[{id,label,members:[agent]}],identityAssurance:'operator-assigned'}`. Admin/viewer can list their rooms with no self.
 - `POST /v1/messages` scope `{id,room,to:[agentId],text,replyTo:null|messageId}` -> `{accepted:true,message,deliveries}`. Message `{id,room,sender,to,text,replyTo,createdAt,seq}`. Max 64KiB UTF8 text, 1–16 distinct explicit recipients; same ID+same canonical content idempotent; conflict409. Reply must be same room and visible to sender.
-- `GET /v1/inbox?after=0&limit=50` scope -> `{items:[{seq,message,delivery}],cursor}`. Repeatable by cursor; tool-pull queued -> tool-read; native states unchanged. Cursor uses message event sequence, stable across delivery events. Viewer never calls this endpoint.
+- `GET /v1/inbox?after=0&limit=50&waitMs=0` scope -> `{items:[{seq,message,delivery}],cursor}`. Repeatable by cursor; tool-pull queued -> tool-read; native states unchanged. Cursor uses message event sequence, stable across delivery events. Optional `waitMs` integer 0–25000 waits for scoped nonempty mail or the original deadline; irrelevant events recheck but do not extend it. Disconnect/shutdown cleans the wait. Default0 preserves immediate inbox. Viewer never calls this endpoint.
 - `GET /v1/status?id=msg_...` scope/admin/viewer -> `{message,deliveries}` visible only to permitted participants/room scope.
 - `GET /v1/history?room=room_...&after=0&limit=50` admin/viewer -> `{items:[message with deliveries],cursor}`. Never marks read.
 
@@ -39,5 +39,7 @@ Client module: `HubClient({url,token,fetchImpl?})`, `request(method,path,body?,{
 ## CLI/MCP/viewer
 
 Private JSON config files (0600, own directories0700) contain `{url,token,...}`; explicit `--config` per identity, default path in agent-dialogue-lite. MCP `serveTools({client,input?,output?})` exports four tools `context/send/inbox/status`; no from/self/room override outside scope. `send` requires stable client-generated ID. Reuse standalone existing MCP transport inside package with provenance.
+
+CLI `adl wait --config chat.json [--after 0] [--limit 10]` requires agent config and exits with one nonempty inbox JSON result. `waitForInbox({client,after=0,limit=10,signal?})` uses bounded25s requests, silently repeats healthy empties, retries transport/408/429/5xx with1–30s abortable exponential backoff, fails permanent4xx. A1s minimum healthy-empty request interval also bounds calls to older Hubs ignoring waitMs. No local cursor mutation, delivery grant or new MCP tool. Harness-native task completion may wake a model; ordinary CLI execution alone does not. Cancellation emits no inbox result. Kimi usage and output/cursor lifecycle are in KIMI-TUI.md.
 
 Hub serves `web/index.html`, `web/app.js`, `web/style.css`. Viewer token exchanged via `POST /v1/viewer-session {token}` to same-origin HttpOnly SameSite=Strict cookie; bearer also accepted for API. Origin checked for cookie exchange/requests, no CORS, no token URL. Viewer polls context/history/status, renders via textContent, uses message ID for reply links. No message writes/read marks from browser.
