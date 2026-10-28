@@ -1,0 +1,157 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-28",
+  "baseCommit": "7c799b736022c966f4503ee9a1d17442a7cf4f21",
+  "runtimeSha256": {
+    "packages/lite/bin/adl.mjs": "8c948bf3eab2c4d7b4af73080884595bfab55b5991b2bb8ef5b0fe86b94a9337",
+    "packages/lite/lib/hub.mjs": "3e23fdd7c7af2745561c4aa98022e4fddd59a85b6c3be51cd175a84a3ff3715c",
+    "packages/lite/lib/wait.mjs": "db071e0214f40d07fb9c71d939a6bd36c0b03783e4670b6df2eb77ac2f43f646"
+  },
+  "scope": "Local owned Kimi TUI receiving two real Hub messages from a controlled CLI peer, plus separate OpenCode TUI control; not cross-machine or autonomous collaboration quality.",
+  "kimi": {
+    "version": "2.1.1",
+    "model": "DeepSeek/deepseek-flash",
+    "permissionMode": "Always Ask",
+    "tuiKeptOpen": true,
+    "secondEngineStarted": false,
+    "kimiSourcePatched": false,
+    "identityAssurance": "operator-assigned",
+    "nativePromptOrigins": [
+      {
+        "turnId": 0,
+        "origin": "user",
+        "at": "2026-10-28T10:37:57.880Z"
+      },
+      {
+        "turnId": 1,
+        "origin": "task",
+        "taskId": "bash-m31vbgre",
+        "at": "2026-10-28T10:39:02.662Z"
+      },
+      {
+        "turnId": 2,
+        "origin": "user",
+        "at": "2026-10-28T10:40:55.105Z"
+      },
+      {
+        "turnId": 3,
+        "origin": "task",
+        "taskId": "bash-zyyolipt",
+        "at": "2026-10-28T10:43:42.813Z"
+      },
+      {
+        "turnId": 4,
+        "origin": "user",
+        "at": "2026-10-28T10:46:26.635Z"
+      },
+      {
+        "turnId": 5,
+        "origin": "task",
+        "taskId": "bash-g8zep28d",
+        "at": "2026-10-28T10:47:05.971Z"
+      }
+    ],
+    "backgroundTasks": 3,
+    "mailboxWaiters": 2,
+    "replyMessages": 2,
+    "manualTuiGuidanceVerified": true,
+    "manualGuidanceWhileSecondWaiterRunning": true,
+    "approvals": {
+      "policy": "approve once for each exact Bash command",
+      "count": 5,
+      "includesNativeProbe": true,
+      "blanketApproval": false
+    },
+    "samples": [
+      {
+        "messageId": "msg_db58726a-984a-4972-be7f-128e8827d42b",
+        "replyId": "msg_f9531ec6-108d-49b9-a6aa-dfdadd206375",
+        "replyTo": "msg_db58726a-984a-4972-be7f-128e8827d42b",
+        "text": "KIMI_DIALOGUE_REPLY_1",
+        "cursor": 3,
+        "acceptedAt": "2026-10-28T10:43:42.791Z",
+        "taskNotificationAt": "2026-10-28T10:43:42.813Z",
+        "acceptedToNativeTaskPromptMs": 22,
+        "humanApprovedSend": true,
+        "receivedState": "tool-read"
+      },
+      {
+        "messageId": "msg_29ce1535-3976-47c1-92bb-895ee04fba37",
+        "replyId": "msg_425165c4-ae24-458f-ab15-294a1b270883",
+        "replyTo": "msg_29ce1535-3976-47c1-92bb-895ee04fba37",
+        "text": "KIMI_DIALOGUE_REPLY_2",
+        "cursor": 6,
+        "acceptedAt": "2026-10-28T10:47:05.875Z",
+        "taskNotificationAt": "2026-10-28T10:47:05.971Z",
+        "acceptedToNativeTaskPromptMs": 96,
+        "humanApprovedSend": true,
+        "receivedState": "tool-read"
+      }
+    ],
+    "sourceBoundary": "First mailbox helper loaded before the minimum-empty-interval compatibility fix. Second mailbox helper started after the final runtime files were written. Both used the same new long-poll Hub; mixed-version pacing separately verified by deterministic tests.",
+    "rawWireSha256": "93951d1a906d50270d1709e926094cb1e155af5736b4c8a6914340f7b4bb83cc",
+    "cleanup": {
+      "ownedTuiExitCode": 0,
+      "ownedHubExitCode": 0,
+      "userExistingChatsStopped": false
+    }
+  },
+  "opencode": {
+    "version": "2.0.20",
+    "model": "opencode/deepseek-v4.1-flash-free",
+    "tuiKeptOpen": true,
+    "autoWakeVerified": true,
+    "manualTuiGuidanceVerified": true,
+    "assertionsPassed": 8,
+    "sourceCommit": "7c799b736022c966f4503ee9a1d17442a7cf4f21",
+    "sourceBoundary": "Control demonstration before new Kimi waiter implementation; no new OpenCode runtime code was required.",
+    "cleanup": {
+      "ownedTuiExitCode": 0,
+      "ownedHubAndNodeStopped": true,
+      "nativeSharedServiceStopped": false
+    }
+  },
+  "tests": {
+    "node24": {
+      "version": "24.19.0",
+      "passed": 56,
+      "failed": 0,
+      "skipped": 0
+    },
+    "node26": {
+      "version": "26.10.0",
+      "passed": 56,
+      "failed": 0,
+      "skipped": 0
+    },
+    "waiterSuitePassed": 13,
+    "package": {
+      "passed": true,
+      "files": 22,
+      "packedBytes": 51048,
+      "runtimeDependencies": 0
+    },
+    "finalPackage": {
+      "passed": true,
+      "files": 22,
+      "packedBytes": 51140,
+      "runtimeDependencies": 0,
+      "note": "Final packaged guide includes quoted paths. Earlier package snapshot51048 retained separately; runtime unchanged."
+    }
+  },
+  "review": {
+    "independent": true,
+    "foundAndFixed": [
+      "Older Hub ignoring waitMs caused a tight empty-inbox loop; enforce an abortable minimum one-second request interval."
+    ],
+    "finalBlockingFindings": 0
+  },
+  "limitations": [
+    "Native Kimi task completion verified on 2.1.1 only.",
+    "One waiter per chat and rearm with returned cursor are current agent lifecycle obligations; no singleton lock or automatic cursor store.",
+    "Automatic wake respects original approvals, user pause and cancellation.",
+    "No wake after target TUI exits or switches away; no process auto-launch.",
+    "Viewer shows project messages, not full native tool transcript.",
+    "No new remote machine deployment or cross-machine test in this slice."
+  ]
+}

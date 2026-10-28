@@ -1,0 +1,17 @@
+{
+  "name": "@idle-cloud/agent-dialogue-lite",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "A central SQLite mailbox and one connector per machine for existing agent chats",
+  "license": "UNLICENSED",
+  "repository": { "type": "git", "url": "https://github.com/IDLE-Cloud/agent-dialogue.git", "directory": "packages/lite" },
+  "engines": { "node": ">=24.0.0" },
+  "os": ["darwin", "linux", "win32"],
+  "bin": { "adl": "bin/adl.mjs" },
+  "files": ["bin/", "lib/", "web/", "README.md", "docs/", "THIRD_PARTY_NOTICES.md"],
+  "scripts": {
+    "test": "node --test tests/*.test.mjs",
+    "test:package": "node scripts/package-smoke.mjs"
+  }
+}
